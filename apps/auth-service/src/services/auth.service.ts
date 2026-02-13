@@ -2,7 +2,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { randomUUID } from 'crypto';
 import { AuthRepository } from '../auth.repository.js';
-import type { RegisterInput,LoginInput } from '../constants/auth.types.js';
+import type { RegisterInput,LoginInput } from '../types/auth.types.js';
 
 export class AuthService {
   constructor(private repo: AuthRepository) {}

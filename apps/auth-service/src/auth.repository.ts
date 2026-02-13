@@ -1,4 +1,4 @@
-import type { User } from './constants/auth.types.js';
+import type { User } from './types/auth.types.js';
 
 export class AuthRepository {
   private users: User[] = [];

@@ -6,7 +6,7 @@ describe('AuthController', () => {
   const mockService = {
     register: vi.fn(),
     login: vi.fn(),
-  } as unknown as AuthService;
+  } as unknown as AuthService
 
   const controller = new AuthController(mockService);
 
@@ -28,9 +28,7 @@ describe('AuthController', () => {
 
       const res = mockResponse();
 
-      mockService.register = vi
-        .fn()
-        .mockResolvedValue({ id: '1', email: 'test@test.com' });
+      mockService.register = vi.fn().mockResolvedValue({ id: '1', email: 'test@test.com' });
 
       await controller.register(req, res);
 
@@ -39,14 +37,15 @@ describe('AuthController', () => {
 
     it('returns 409 when email exists', async () => {
       const req = {
-        body: { email: 'dup@test.com', password: '123456' },
+        body: { 
+             email: 'dup@test.com',
+             password: '123456' 
+            },
       } as Request;
 
       const res = mockResponse();
 
-      mockService.register = vi
-        .fn()
-        .mockRejectedValue(new Error('EMAIL_TAKEN'));
+      mockService.register = vi.fn().mockRejectedValue(new Error('EMAIL_TAKEN'));
 
       await controller.register(req, res);
 
