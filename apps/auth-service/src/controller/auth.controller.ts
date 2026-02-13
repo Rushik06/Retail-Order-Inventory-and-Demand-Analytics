@@ -2,10 +2,13 @@ import type { Request, Response } from 'express';
 import { AuthService } from '../services/auth.service.js';
 
 export class AuthController {
-  constructor(private service: AuthService) {}
+  constructor(private readonly service: AuthService) {}
 
-  register = async (req: Request, res: Response) => {
-    const { email, password } = req.body;
+  register = async (req: Request, res: Response): Promise<Response> => {
+    const { email, password } = req.body as {
+      email?: string;
+      password?: string;
+    };
 
     if (!email || !password) {
       return res.status(400).json({
@@ -22,8 +25,8 @@ export class AuthController {
     try {
       const result = await this.service.register({ email, password });
       return res.status(201).json(result);
-    } catch (error: any) {
-      if (error.message === 'EMAIL_TAKEN') {
+    } catch (error: unknown) {
+      if (error instanceof Error && error.message === 'EMAIL_TAKEN') {
         return res.status(409).json({
           error: 'Email already exists',
         });
@@ -35,8 +38,11 @@ export class AuthController {
     }
   };
 
-  login = async (req: Request, res: Response) => {
-    const { email, password } = req.body;
+  login = async (req: Request, res: Response): Promise<Response> => {
+    const { email, password } = req.body as {
+      email?: string;
+      password?: string;
+    };
 
     if (!email || !password) {
       return res.status(400).json({
@@ -47,8 +53,8 @@ export class AuthController {
     try {
       const result = await this.service.login({ email, password });
       return res.status(200).json(result);
-    } catch (error: any) {
-      if (error.message === 'INVALID_CREDENTIALS') {
+    } catch (error: unknown) {
+      if (error instanceof Error && error.message === 'INVALID_CREDENTIALS') {
         return res.status(401).json({
           error: 'Invalid credentials',
         });
