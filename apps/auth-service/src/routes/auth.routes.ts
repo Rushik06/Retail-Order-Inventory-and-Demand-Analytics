@@ -36,6 +36,9 @@ const controller = new AuthController(service);
  *         description: User registered
  *       409:
  *         description: Email already exists
+ *       400:
+ *          description: Invalid format
+ * 
  */
 
 router.post('/register', controller.register);
@@ -64,6 +67,9 @@ router.post('/register', controller.register);
  *         description: Returns JWT token
  *       401:
  *         description: Invalid credentials
+ *       400:
+ *          description: Invalid format
+ *          
  */
 
 router.post('/login', controller.login);
