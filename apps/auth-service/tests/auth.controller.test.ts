@@ -20,7 +20,10 @@ describe('AuthController', () => {
   describe('register', () => {
     it('returns 201 when successful', async () => {
       const req = {
-        body: { email: 'test@test.com', password: '123456' },
+        body: {
+            email: 'test@test.com', 
+            password: '123456'
+         },
       } as Request;
 
       const res = mockResponse();
