@@ -128,7 +128,7 @@ describe('AuthService', () => {
     ).rejects.toThrow('INVALID_CREDENTIALS');
   });
 
-  it('should throw INVALID_CREDENTIALS if password incorrect', async () => {
+  it('should throw INVALID_CREDENTIALS if password incoorect', async () => {
     mockRepo.findByEmail.mockResolvedValue({
       id: '1',
       email: 'test@test.com',

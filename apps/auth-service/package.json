@@ -6,6 +6,8 @@
   "type": "module",
   "scripts": {
     "dev": "node --loader ts-node/esm src/server.ts",
+    "start":"abc",
+    "build":"abc",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "jest --coverage"
