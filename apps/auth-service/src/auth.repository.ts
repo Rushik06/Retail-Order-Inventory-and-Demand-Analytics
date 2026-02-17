@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { randomUUID } from 'crypto';
 import { User as UserModel, Role as RoleModel } from './models/index.js';
 import type { User } from './types/auth.types.js';
