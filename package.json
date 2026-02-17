@@ -9,7 +9,10 @@
     "build": "abc",
     "lint": "eslint .",
     "format": "prettier --write \"**/*.{ts,js,json,css,md}\"",
-    "prepare": "husky"
+    "prepare": "husky",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "jest --coverage"
   },
   "keywords": [],
   "author": "",
@@ -27,7 +30,9 @@
     "prettier": "^3.8.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.54.0"
+    "typescript-eslint": "^8.54.0",
+    "supertest": "^7.2.2",
+    "vitest": "^4.0.18"
   },
   "lint-staged": {
     "**/*.{js,ts}": [
