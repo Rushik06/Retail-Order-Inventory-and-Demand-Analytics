@@ -113,7 +113,7 @@ describe('AuthService', () => {
       password: 'password123',
     });
 
-    expect(result.token).toBe('fake_jwt_token');
+    expect(result.accessToken).toBe('fake_jwt_token');
     expect(result.user.email).toBe('test@test.com');
   });
 
