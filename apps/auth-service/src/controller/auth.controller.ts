@@ -9,6 +9,7 @@ export class AuthController {
       const result = await this.service.register(req.body);
       return res.status(201).json(result);
     } catch (error: unknown) {
+      console.error('Registration error:', error);
       if (error instanceof Error && error.message === 'EMAIL_TAKEN') {
         return res.status(409).json({ error: 'Email already exists' });
       }
@@ -22,6 +23,7 @@ export class AuthController {
       const result = await this.service.login(req.body);
       return res.status(200).json(result);
     } catch (error: unknown) {
+    
       if (error instanceof Error && error.message === 'INVALID_CREDENTIALS') {
         return res.status(401).json({ error: 'Invalid credentials' });
       }

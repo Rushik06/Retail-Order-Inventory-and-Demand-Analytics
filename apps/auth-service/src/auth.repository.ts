@@ -1,69 +1,85 @@
 /* eslint-disable */
-import { randomUUID } from 'crypto';
-import { User as UserModel, Role as RoleModel } from './models/index.js';
+import { User as UserModel } from './models/index.js';
 import type { User } from './types/auth.types.js';
 
 export class AuthRepository {
-  verifyRefreshToken(refreshToken: string) {
-    throw new Error('Method not implemented.');
-  }
-  saveRefreshToken(refreshToken: string, id: string) {
-    throw new Error('Method not implemented.');
-  }
 
-  // Find user by email
+  // ---------------------------
+  // FIND BY EMAIL
+  // ---------------------------
   async findByEmail(email: string): Promise<User | null> {
     const user = await UserModel.findOne({
       where: { email },
-      include: [
-        {
-          model: RoleModel,
-          attributes: ['name'],
-        },
-      ],
     });
 
-    if (!user) {
-      return null;
-    }
-
-    const role = (user as any).Role?.name ?? 'staff';
+    if (!user) return null;
 
     return {
-      id: user.getDataValue('id'),
+      id: user.getDataValue('user_id'),        
+      name: user.getDataValue('name'),         
+      email: user.getDataValue('email'),
+      password: user.getDataValue('password'), 
+      isActive: user.getDataValue('isActive'), 
+    };
+  }
+
+  // ---------------------------
+  // FIND BY ID
+  // ---------------------------
+  async findById(id: string): Promise<User | null> {
+    const user = await UserModel.findByPk(id);
+
+    if (!user) return null;
+
+    return {
+      id: user.getDataValue('user_id'),        
+      name: user.getDataValue('name'),
       email: user.getDataValue('email'),
       password: user.getDataValue('password'),
-      role,
       isActive: user.getDataValue('isActive'),
     };
   }
 
-  //  Create user
+  // ---------------------------
+  // CREATE USER
+  // ---------------------------
   async create(user: User): Promise<User> {
-
-    // find role first
-    const roleRecord = await RoleModel.findOne({
-      where: { name: user.role },
-    });
-
-    if (!roleRecord) {
-      throw new Error('ROLE_NOT_FOUND');
-    }
-
     const createdUser = await UserModel.create({
-      id: randomUUID(),
+      user_id: user.id,        
+      name: user.name,         
       email: user.email,
-      password: user.password,
-      roleId: roleRecord.getDataValue('id'),
+      password: user.password, 
       isActive: user.isActive,
     });
-
+   console.log('Created user in DB:', createdUser.get());
     return {
-      id: createdUser.getDataValue('id'),
+      id: createdUser.getDataValue('user_id'), 
+      name: createdUser.getDataValue('name'),
       email: createdUser.getDataValue('email'),
       password: createdUser.getDataValue('password'),
-      role: user.role,
       isActive: createdUser.getDataValue('isActive'),
     };
+  }
+
+  // ---------------------------
+  // REFRESH TOKEN METHODS
+  // ---------------------------
+  async saveRefreshToken(
+    _refreshToken: string,
+    _userId: string
+  ): Promise<void> {
+    return;
+  }
+
+  async verifyRefreshToken(
+    _refreshToken: string
+  ): Promise<void> {
+    return;
+  }
+
+  async deleteRefreshToken(
+    _refreshToken: string
+  ): Promise<void> {
+    return;
   }
 }

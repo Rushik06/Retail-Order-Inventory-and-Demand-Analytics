@@ -58,6 +58,7 @@ describe('AuthService', () => {
     const result = await service.register({
       email: 'test@test.com',
       password: 'password123',
+      name: '',
     });
 
     expect(result).toEqual({
@@ -83,6 +84,8 @@ describe('AuthService', () => {
       service.register({
         email: 'test@test.com',
         password: 'password123',
+        name: '',
+       
       })
     ).rejects.toThrow('EMAIL_TAKEN');
   });

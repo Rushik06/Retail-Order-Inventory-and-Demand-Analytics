@@ -28,22 +28,35 @@ const controller = new AuthController(service);
  *           schema:
  *             type: object
  *             required:
+ *               - name
  *               - email
  *               - password
  *             properties:
+ *               name:
+ *                 type: string
  *               email:
  *                 type: string
  *               password:
  *                 type: string
- *               role:
- *                 type: string
  *     responses:
  *       201:
- *         description: User registered
+ *         description: User registered successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                 name:
+ *                   type: string
+ *                 email:
+ *                   type: string
+ *              
  *       409:
  *         description: Email already exists
  *       400:
- *         description: Invalid format
+ *         description: Validation error
  */
 router.post(
   '/register',

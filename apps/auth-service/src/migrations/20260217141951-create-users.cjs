@@ -4,6 +4,10 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable('users', {
+      name: {
+      type: Sequelize.STRING,
+      allowNull: false,
+      },
       user_id: {
         type: Sequelize.UUID,
         primaryKey: true,
@@ -21,8 +25,8 @@ module.exports = {
         type: Sequelize.BOOLEAN,
         defaultValue: true,
       },
-      createdAt: Sequelize.DATE,
-      updatedAt: Sequelize.DATE,
+      created_at: Sequelize.DATE,
+      updated_at: Sequelize.DATE,
     });
   },
 
