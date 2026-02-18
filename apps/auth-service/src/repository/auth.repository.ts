@@ -1,6 +1,6 @@
 /* eslint-disable */
-import { User as UserModel } from './models/index.js';
-import type { User } from './types/auth.types.js';
+import { User as UserModel } from '../models/index.js';
+import type { User } from '../types/auth.types.js';
 
 export class AuthRepository {
 

@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt';
 import jwt, { type SignOptions } from 'jsonwebtoken';
 import { randomUUID } from 'crypto';
-import type { AuthRepository } from '../auth.repository.js';
+import type { AuthRepository } from '../repository/auth.repository.js';
 import type {
   RegisterUserInput,
   LoginInput,
