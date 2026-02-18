@@ -55,14 +55,14 @@ export class AuthService {
       throw new Error('INVALID_CREDENTIALS');
     }
 
-    // Access Token
+    // Access Token(created)
     const accessToken = jwt.sign(
       { id: user.id },
       env.JWT_ACCESS_SECRET as string,
       { expiresIn: env.ACCESS_TOKEN_EXPIRY } as SignOptions
     );
 
-    // Refresh Token
+    // Refresh Token(created)
     const refreshToken = jwt.sign(
       { id: user.id },
       env.JWT_REFRESH_SECRET as string,

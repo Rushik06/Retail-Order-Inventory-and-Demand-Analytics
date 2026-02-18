@@ -4,9 +4,8 @@ import type { User } from '../types/auth.types.js';
 
 export class AuthRepository {
 
-  // ---------------------------
   // FIND BY EMAIL
-  // ---------------------------
+ 
   async findByEmail(email: string): Promise<User | null> {
     const user = await UserModel.findOne({
       where: { email },
@@ -23,9 +22,7 @@ export class AuthRepository {
     };
   }
 
-  // ---------------------------
   // FIND BY ID
-  // ---------------------------
   async findById(id: string): Promise<User | null> {
     const user = await UserModel.findByPk(id);
 
@@ -40,9 +37,8 @@ export class AuthRepository {
     };
   }
 
-  // ---------------------------
   // CREATE USER
-  // ---------------------------
+
   async create(user: User): Promise<User> {
     const createdUser = await UserModel.create({
       user_id: user.id,        
@@ -61,9 +57,7 @@ export class AuthRepository {
     };
   }
 
-  // ---------------------------
   // REFRESH TOKEN METHODS
-  // ---------------------------
   async saveRefreshToken(
     _refreshToken: string,
     _userId: string

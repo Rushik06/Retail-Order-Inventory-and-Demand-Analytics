@@ -5,7 +5,6 @@ import { env } from '../config/index.js';
 export interface AuthenticatedRequest extends Request {
   user?: {
     id: string;
-    role: string;
   };
 }
 
@@ -16,6 +15,7 @@ export const authenticate = (
 ): Response | void => {
   const authHeader = req.headers.authorization;
 
+  // Check header exists
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({
       error: 'Unauthorized',
@@ -24,15 +24,22 @@ export const authenticate = (
 
   const token = authHeader.split(' ')[1];
 
-  try {
-    const decoded = jwt.verify(token!, env.JWT_ACCESS_SECRET!) as unknown as {
-      id: string;
-      role: string;
-    };
+  if (!token) {
+    return res.status(401).json({
+      error: 'Unauthorized',
+    });
+  }
 
+  try {
+    //  Verify JWT
+    const decoded = jwt.verify(
+      token,
+      env.JWT_ACCESS_SECRET as string
+    ) as unknown as { id: string };
+
+    //  Attach user to request
     req.user = {
       id: decoded.id,
-      role: decoded.role,
     };
 
     next();
