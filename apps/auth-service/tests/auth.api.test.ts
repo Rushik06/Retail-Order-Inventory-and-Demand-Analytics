@@ -21,7 +21,7 @@ describe('Auth API', () => {
       expect(res.body).toBe('User One');
       expect(res.body).toHaveProperty('id');
       expect(res.body.email).toBe('user1@test.com');
-    
+      
 
       // ensure password is safety
       expect(res.body).not.toHaveProperty('password');

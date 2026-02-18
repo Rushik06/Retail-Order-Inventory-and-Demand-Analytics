@@ -1,3 +1,4 @@
+/*eslint-disable @typescript-eslint/no-explicit-any */
 import request from 'supertest';
 import { describe, it, expect, vi } from 'vitest';
 import app from '../src/app.js';
