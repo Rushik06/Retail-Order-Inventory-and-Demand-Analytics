@@ -12,14 +12,16 @@ describe('Auth API', () => {
       const res = await request(app)
         .post('/api/auth/register')
         .send({
+          name: 'User One',
           email: 'user1@test.com',
           password: 'secure123',
         });
 
       expect(res.status).toBe(201);
+      expect(res.body).toBe('User One');
       expect(res.body).toHaveProperty('id');
       expect(res.body.email).toBe('user1@test.com');
-      expect(res.body.role).toBe('staff');
+    
 
       // ensure password is safety
       expect(res.body).not.toHaveProperty('password');

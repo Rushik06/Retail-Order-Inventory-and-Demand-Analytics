@@ -126,3 +126,4 @@ router.patch(
  *         description: User not found
  */
 router.delete('/', authenticate, controller.deleteProfile);
+export default router;
