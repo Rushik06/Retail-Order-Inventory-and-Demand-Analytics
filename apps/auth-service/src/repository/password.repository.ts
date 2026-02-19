@@ -8,7 +8,11 @@ export class PasswordRepository {
   async findUserByEmail(email: string) {
     return User.findOne({ where: { email } });
   }
-
+   async findUserById(userId: string) {
+   return User.findOne({
+    where: { user_id: userId },
+  });
+  }
   async updatePassword(userId: string, hashedPassword: string) {
     await User.update(
       { password: hashedPassword },

@@ -16,7 +16,7 @@ export class PasswordService {
     currentPassword: string,
     newPassword: string
   ) {
-    const user = await this.repo.findUserByEmail(userId);
+    const user = await this.repo.findUserById(userId);
     if (!user) throw new Error('USER_NOT_FOUND');
 
     const isMatch = await bcrypt.compare(
