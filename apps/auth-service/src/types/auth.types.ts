@@ -1,4 +1,5 @@
-export interface RegisterInput {
+export interface RegisterUserInput {
+  name: string;
   email: string;
   password: string;
 }
@@ -10,8 +11,8 @@ export interface LoginInput {
 
 export interface User {
   id: string;
+  name: string;
   email: string;
   password: string;
-  role: string;
   isActive: boolean;
 }

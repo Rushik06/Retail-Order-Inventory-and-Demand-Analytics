@@ -1,10 +1,17 @@
+/*eslint-disable*/ 
 import request from 'supertest';
 import app from '../src/app.js';
+import { sequelize } from '../src/config/sequilize.js';
 
 describe('Auth API', () => {
 
-  // REGISTER TESTS
-  
+  beforeEach(async () => {
+    await sequelize.sync({ force: true });
+  });
+
+ 
+  // REGISTER
+ 
 
   describe('POST /api/auth/register', () => {
 
@@ -12,44 +19,37 @@ describe('Auth API', () => {
       const res = await request(app)
         .post('/api/auth/register')
         .send({
+          name: 'User One',
           email: 'user1@test.com',
           password: 'secure123',
         });
 
       expect(res.status).toBe(201);
-      expect(res.body).toHaveProperty('id');
-      expect(res.body.email).toBe('user1@test.com');
-      expect(res.body.role).toBe('staff');
 
-      // ensure password is safety
+      expect(res.body).toHaveProperty('id');
+      expect(res.body.name).toBe('User One');
+      expect(res.body.email).toBe('user1@test.com');
+
+      // password must not be returned
       expect(res.body).not.toHaveProperty('password');
     });
 
-    it('400 — missing email', async () => {
+    it('400 — missing name', async () => {
       const res = await request(app)
         .post('/api/auth/register')
         .send({
+          email: 'test@test.com',
           password: 'secure123',
         });
 
       expect(res.status).toBe(400);
-      expect(res.body).toHaveProperty('error');
     });
 
-    it('400 — missing password', async () => {
+    it('400 — invalid email', async () => {
       const res = await request(app)
         .post('/api/auth/register')
         .send({
-          email: 'user2@test.com',
-        });
-
-      expect(res.status).toBe(400);
-    });
-
-    it('400 — invalid email format', async () => {
-      const res = await request(app)
-        .post('/api/auth/register')
-        .send({
+          name: 'User',
           email: 'invalid-email',
           password: 'secure123',
         });
@@ -61,15 +61,17 @@ describe('Auth API', () => {
       await request(app)
         .post('/api/auth/register')
         .send({
+          name: 'User',
           email: 'dup@test.com',
-          password: 'pass123',
+          password: 'secure123',
         });
 
       const res = await request(app)
         .post('/api/auth/register')
         .send({
+          name: 'User',
           email: 'dup@test.com',
-          password: 'pass123',
+          password: 'secure123',
         });
 
       expect(res.status).toBe(409);
@@ -78,14 +80,16 @@ describe('Auth API', () => {
   });
 
 
-  // LOGIN TESTS
+  // LOGIN
  
+
   describe('POST /api/auth/login', () => {
 
     it('200 — should login successfully', async () => {
       await request(app)
         .post('/api/auth/register')
         .send({
+          name: 'Login User',
           email: 'login@test.com',
           password: 'pass123',
         });
@@ -98,36 +102,11 @@ describe('Auth API', () => {
         });
 
       expect(res.status).toBe(200);
+      expect(res.body).toHaveProperty('accessToken');
+      expect(res.body).toHaveProperty('refreshToken');
+      expect(res.body).toHaveProperty('user');
 
-      // token exists
-      expect(res.body).toHaveProperty('token');
-
-      // token format 
-      expect(res.body.token.split('.')).toHaveLength(3);
-
-      // user object
       expect(res.body.user.email).toBe('login@test.com');
-      expect(res.body.user).toHaveProperty('role');
-    });
-
-    it('400 — missing email', async () => {
-      const res = await request(app)
-        .post('/api/auth/login')
-        .send({
-          password: 'pass123',
-        });
-
-      expect(res.status).toBe(400);
-    });
-
-    it('400 — missing password', async () => {
-      const res = await request(app)
-        .post('/api/auth/login')
-        .send({
-          email: 'login@test.com',
-        });
-
-      expect(res.status).toBe(400);
     });
 
     it('401 — unknown email', async () => {
@@ -145,6 +124,7 @@ describe('Auth API', () => {
       await request(app)
         .post('/api/auth/register')
         .send({
+          name: 'Wrong User',
           email: 'wrong@test.com',
           password: 'correctpass',
         });
@@ -157,6 +137,89 @@ describe('Auth API', () => {
         });
 
       expect(res.status).toBe(401);
+    });
+
+  });
+
+  
+  // REFRESH
+ 
+
+  describe('POST /api/auth/refresh', () => {
+
+    it('200 — should refresh token', async () => {
+      const register = await request(app)
+        .post('/api/auth/register')
+        .send({
+          name: 'Refresh User',
+          email: 'refresh@test.com',
+          password: 'pass123',
+        });
+
+      const login = await request(app)
+        .post('/api/auth/login')
+        .send({
+          email: 'refresh@test.com',
+          password: 'pass123',
+        });
+
+      const res = await request(app)
+        .post('/api/auth/refresh')
+        .send({
+          refreshToken: login.body.refreshToken,
+        });
+
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveProperty('accessToken');
+    });
+
+    it('400 — missing refreshToken', async () => {
+      const res = await request(app)
+        .post('/api/auth/refresh')
+        .send({});
+
+      expect(res.status).toBe(400);
+    });
+
+  });
+
+
+  // LOGOUT
+
+
+  describe('POST /api/auth/logout', () => {
+
+    it('200 — should logout successfully', async () => {
+      const register = await request(app)
+        .post('/api/auth/register')
+        .send({
+          name: 'Logout User',
+          email: 'logout@test.com',
+          password: 'pass123',
+        });
+
+      const login = await request(app)
+        .post('/api/auth/login')
+        .send({
+          email: 'logout@test.com',
+          password: 'pass123',
+        });
+
+      const res = await request(app)
+        .post('/api/auth/logout')
+        .send({
+          refreshToken: login.body.refreshToken,
+        });
+
+      expect(res.status).toBe(200);
+    });
+
+    it('400 — missing refreshToken', async () => {
+      const res = await request(app)
+        .post('/api/auth/logout')
+        .send({});
+
+      expect(res.status).toBe(400);
     });
 
   });

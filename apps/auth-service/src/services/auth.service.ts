@@ -1,13 +1,18 @@
 import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
+import jwt, { type SignOptions } from 'jsonwebtoken';
 import { randomUUID } from 'crypto';
-import { AuthRepository } from '../auth.repository.js';
-import type { RegisterInput,LoginInput } from '../types/auth.types.js';
+import type { AuthRepository } from '../repository/auth.repository.js';
+import type {
+  RegisterUserInput,
+  LoginInput,
+} from '../types/auth.types.js';
+import { env } from '../config/index.js';
 
 export class AuthService {
-  constructor(private repo: AuthRepository) {}
+  constructor(private readonly repo: AuthRepository) {}
 
-  async register(input: RegisterInput) {
+  // REGISTER
+  async register(input: RegisterUserInput) {
     const existingUser = await this.repo.findByEmail(input.email);
 
     if (existingUser) {
@@ -18,23 +23,26 @@ export class AuthService {
 
     const newUser = await this.repo.create({
       id: randomUUID(),
+      name: input.name,
       email: input.email,
       password: hashedPassword,
-      role: 'staff',   // default role
       isActive: true,
+      
     });
-
+   
+    console.log('New user created:', newUser);
     return {
       id: newUser.id,
+      name: newUser.name,
       email: newUser.email,
-      role: newUser.role,
     };
   }
 
+  // LOGIN
   async login(input: LoginInput) {
     const user = await this.repo.findByEmail(input.email);
 
-    if (!user || !user.isActive) {
+    if (!user) {
       throw new Error('INVALID_CREDENTIALS');
     }
 
@@ -47,19 +55,79 @@ export class AuthService {
       throw new Error('INVALID_CREDENTIALS');
     }
 
-    const token = jwt.sign(
-      { id: user.id, role: user.role },
-      'secret',                 
-      { expiresIn: '1h' }
+    // Access Token(created)
+    const accessToken = jwt.sign(
+      { id: user.id },
+      env.JWT_ACCESS_SECRET as string,
+      { expiresIn: env.ACCESS_TOKEN_EXPIRY } as SignOptions
     );
 
+    // Refresh Token(created)
+    const refreshToken = jwt.sign(
+      { id: user.id },
+      env.JWT_REFRESH_SECRET as string,
+      { expiresIn: env.REFRESH_TOKEN_EXPIRY } as SignOptions
+    );
+
+    
+    if (this.repo.saveRefreshToken) {
+      await this.repo.saveRefreshToken(refreshToken, user.id);
+    }
+
     return {
-      token,
+      accessToken,
+      refreshToken,
       user: {
         id: user.id,
+        name: user.name,
         email: user.email,
-        role: user.role,
       },
+    };
+  }
+
+
+  // REFRESH TOKEN
+  async refresh(refreshToken: string) {
+    try {
+      const payload = jwt.verify(
+        refreshToken,
+        env.JWT_REFRESH_SECRET
+      ) as { id: string };
+
+      if (this.repo.verifyRefreshToken) {
+        await this.repo.verifyRefreshToken(refreshToken);
+      }
+
+      const user = await this.repo.findById(payload.id);
+
+      if (!user) {
+        throw new Error('INVALID_REFRESH');
+      }
+
+      const newAccessToken = jwt.sign(
+        { id: user.id },
+        env.JWT_ACCESS_SECRET as string,
+        { expiresIn: env.ACCESS_TOKEN_EXPIRY } as SignOptions
+      );
+
+      return {
+        accessToken: newAccessToken,
+      };
+    } catch {
+      throw new Error('INVALID_REFRESH');
+    }
+  }
+
+
+  // LOGOUT
+ 
+  async logout(refreshToken: string) {
+      if (this.repo.verifyRefreshToken) {
+        await this.repo.verifyRefreshToken(refreshToken);
+      }
+
+    return {
+      message: 'Logged out successfully',
     };
   }
 }
