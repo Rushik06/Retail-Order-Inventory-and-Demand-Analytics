@@ -1,0 +1,146 @@
+/*eslint-disable*/ 
+import { useState } from "react";
+import { registerUser } from "../../app/app.logic";
+import { Link, useNavigate } from "react-router-dom";
+
+export default function Register() {
+  const navigate = useNavigate();
+
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+  });
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      setLoading(true);
+      setError("");
+
+      await registerUser(form.name, form.email, form.password);
+
+      navigate("/login");
+    } catch (err: any) {
+      setError(err.response?.data?.error || "Registration failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex">
+
+      {/* LEFT SIDE - Brand Panel */}
+      <div className="hidden lg:flex w-1/2 bg-blue-50 flex-col justify-center px-20">
+        <h1 className="text-4xl font-bold text-gray-800">
+          Join Retail Inventory
+        </h1>
+        <p className="mt-4 text-gray-600 max-w-md leading-relaxed">
+          Manage Your Store Smarter
+        </p>
+      </div>
+
+      {/* RIGHT SIDE - Form */}
+      <div className="flex w-full lg:w-1/2 items-center justify-center bg-white p-6">
+        <div className="w-full max-w-md space-y-8">
+
+          {/* Heading */}
+          <div>
+            <h2 className="text-3xl font-semibold text-gray-900">
+              Create Account
+            </h2>
+            <p className="text-gray-500 text-sm mt-2">
+              Start managing your inventory today
+            </p>
+          </div>
+
+          {/* Error */}
+          {error && (
+            <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg">
+              {error}
+            </div>
+          )}
+
+          {/* Form */}
+          <form onSubmit={handleRegister} className="space-y-5">
+
+            <input
+              required
+              placeholder="Full Name"
+              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+              value={form.name}
+              onChange={(e) =>
+                setForm({ ...form, name: e.target.value })
+              }
+            />
+
+            <input
+              type="email"
+              required
+              placeholder="Email Address"
+              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+              value={form.email}
+              onChange={(e) =>
+                setForm({ ...form, email: e.target.value })
+              }
+            />
+
+            <input
+              type="password"
+              required
+              placeholder="Password"
+              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+              value={form.password}
+              onChange={(e) =>
+                setForm({ ...form, password: e.target.value })
+              }
+            />
+
+            <button
+              disabled={loading}
+              className="w-full bg-blue-600 hover:bg-blue-700 transition-all duration-200 text-white py-3 rounded-lg font-medium shadow-sm"
+            >
+              {loading ? "Creating Account..." : "Create Account"}
+            </button>
+          </form>
+
+          {/* Divider */}
+          <div className="flex items-center gap-4 text-gray-400 text-sm">
+            <div className="flex-1 h-px bg-gray-200" />
+            OR
+            <div className="flex-1 h-px bg-gray-200" />
+          </div>
+
+          {/* Google Button */}
+          <button
+            type="button"
+            className="w-full border border-gray-300 hover:bg-gray-50 transition py-3 rounded-lg flex items-center justify-center gap-3 text-sm font-medium"
+          >
+            <img
+              src="https://www.svgrepo.com/show/475656/google-color.svg"
+              className="w-5 h-5"
+            />
+            Continue with Google
+          </button>
+
+          {/* Login Link */}
+          <p className="text-sm text-center text-gray-600">
+            Already have an account?{" "}
+            <Link
+              to="/login"
+              className="text-blue-600 hover:underline font-medium"
+            >
+              Sign in
+            </Link>
+          </p>
+
+        </div>
+      </div>
+    </div>
+  );
+}

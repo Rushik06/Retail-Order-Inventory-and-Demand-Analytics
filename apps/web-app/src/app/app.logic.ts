@@ -1,17 +1,27 @@
-import { api } from "../api/axios";
-import { useAppStore } from "./app.state";
+import api from "../api/axios";
+import { setTokens } from "../utils/token";
+import { useAuthStore } from "./app.state";
 
 export const loginUser = async (email: string, password: string) => {
   const res = await api.post("/auth/login", { email, password });
 
-  useAppStore.getState().setUser(res.data.user);
-  useAppStore.getState().setToken(res.data.accessToken);
+  setTokens(res.data.accessToken, res.data.refreshToken);
 
-  localStorage.setItem("token", res.data.accessToken);
+  useAuthStore.getState().setUser(res.data.user);
+
+  return res.data;
 };
 
-export const fetchProfile = async () => {
-  const res = await api.get("/profile");
+export const registerUser = async (
+  name: string,
+  email: string,
+  password: string
+) => {
+  const res = await api.post("/auth/register", {
+    name,
+    email,
+    password,
+  });
 
-  useAppStore.getState().setUser(res.data);
+  return res.data;
 };
