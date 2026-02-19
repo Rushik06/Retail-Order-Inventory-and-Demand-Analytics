@@ -1,29 +1,17 @@
-import { create } from "zustand";
+import { api } from "../api/axios";
+import { useAppStore } from "./app.state";
 
-interface AppState {
-  user: {
-    id: string;
-    name: string;
-    email: string;
-  } | null;
+export const loginUser = async (email: string, password: string) => {
+  const res = await api.post("/auth/login", { email, password });
 
-  accessToken: string | null; 
+  useAppStore.getState().setUser(res.data.user);
+  useAppStore.getState().setToken(res.data.accessToken);
 
-  setUser: (user: AppState["user"]) => void;
-  setToken: (token: string | null) => void;
-  logout: () => void;
-}
+  localStorage.setItem("token", res.data.accessToken);
+};
 
-export const useAppStore = create<AppState>((set) => ({
-  user: null,
-  accessToken: null,
+export const fetchProfile = async () => {
+  const res = await api.get("/profile");
 
-  setUser: (user) => set({ user }),
-  setToken: (token) => set({ accessToken: token }),
-
-  logout: () =>
-    set({
-      user: null,
-      accessToken: null,
-    }),
-}));
+  useAppStore.getState().setUser(res.data);
+};
