@@ -2,6 +2,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "@/api/axios";
+import { 
+  isRequired, 
+  isValidEmail, 
+  minLength, 
+  passwordsMatch 
+} from "@/utils/validators";
 
 export default function ResetPassword() {
   const navigate = useNavigate();
@@ -12,15 +18,45 @@ export default function ResetPassword() {
     newPassword: "",
   });
 
+  const [confirmPassword, setConfirmPassword] = useState("");
+
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
   const handleReset = async () => {
+    setError("");
+    setMessage("");
+
+    // VALIDATIONS FIRST
+
+    if (
+      !isRequired(form.email) ||
+      !isRequired(form.otp) ||
+      !isRequired(form.newPassword) ||
+      !isRequired(confirmPassword)
+    ) {
+      setError("All fields are required.");
+      return;
+    }
+
+    if (!isValidEmail(form.email)) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+
+    if (!minLength(form.newPassword, 6)) {
+      setError("Password must be at least 6 characters.");
+      return;
+    }
+
+    if (!passwordsMatch(form.newPassword, confirmPassword)) {
+      setError("Passwords do not match.");
+      return;
+    }
+
     try {
       setLoading(true);
-      setError("");
-      setMessage("");
 
       await axios.patch("/password/reset", form);
 
@@ -29,6 +65,7 @@ export default function ResetPassword() {
       setTimeout(() => {
         navigate("/login");
       }, 1500);
+
     } catch (err: any) {
       setError(err.response?.data?.error || "Reset failed");
     } finally {
@@ -84,13 +121,24 @@ export default function ResetPassword() {
             className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-400 outline-none"
           />
 
+          <input
+            type="password"
+            placeholder="Confirm New Password"
+            value={confirmPassword}
+            onChange={(e) =>
+              setConfirmPassword(e.target.value)
+            }
+            className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-400 outline-none"
+          />
+
           <button
             onClick={handleReset}
             disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg transition"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg transition disabled:opacity-60"
           >
             {loading ? "Resetting..." : "Reset Password"}
           </button>
+
         </div>
       </div>
     </div>

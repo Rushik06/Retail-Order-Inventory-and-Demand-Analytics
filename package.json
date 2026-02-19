@@ -4,7 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon --watch src --exec node --loader ts-node/esm src/server.ts",
+    
+    "dev": "pnpm --parallel --filter auth-service --filter web-app run dev",
+
+    "migrate": "pnpm --filter auth-service run migrate",
+    "migrate:undo": "pnpm --filter auth-service run migrate:undo",
+
+    "seed": "pnpm --filter auth-service run seed",
+    "seed:undo": "pnpm --filter auth-service run seed:undo",
+    
     "start": "abc",
     "build": "abc",
     "lint": "eslint .",

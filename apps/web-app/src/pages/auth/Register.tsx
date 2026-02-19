@@ -1,7 +1,12 @@
-/*eslint-disable*/ 
+/*eslint-disable*/
 import { useState } from "react";
 import { registerUser } from "../../app/app.logic";
 import { Link, useNavigate } from "react-router-dom";
+import {
+  isValidEmail,
+  isRequired,
+  minLength,
+} from "../../utils/validators";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -17,6 +22,19 @@ export default function Register() {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // CLIENT SIDE VALIDATION 
+    if (!isRequired(form.name)) {
+      return setError("Full name is required");
+    }
+
+    if (!isValidEmail(form.email)) {
+      return setError("Please enter a valid email address");
+    }
+
+    if (!minLength(form.password, 6)) {
+      return setError("Password must be at least 6 characters");
+    }
 
     try {
       setLoading(true);
@@ -34,8 +52,7 @@ export default function Register() {
 
   return (
     <div className="min-h-screen flex">
-
-      {/* LEFT SIDE - Brand Panel */}
+      {/* LEFT SIDE */}
       <div className="hidden lg:flex w-1/2 bg-blue-50 flex-col justify-center px-20">
         <h1 className="text-4xl font-bold text-gray-800">
           Join Retail Inventory
@@ -45,11 +62,10 @@ export default function Register() {
         </p>
       </div>
 
-      {/* RIGHT SIDE - Form */}
+      {/* RIGHT SIDE */}
       <div className="flex w-full lg:w-1/2 items-center justify-center bg-white p-6">
         <div className="w-full max-w-md space-y-8">
 
-          {/* Heading */}
           <div>
             <h2 className="text-3xl font-semibold text-gray-900">
               Create Account
@@ -59,18 +75,15 @@ export default function Register() {
             </p>
           </div>
 
-          {/* Error */}
           {error && (
             <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg">
               {error}
             </div>
           )}
 
-          {/* Form */}
           <form onSubmit={handleRegister} className="space-y-5">
 
             <input
-              required
               placeholder="Full Name"
               className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
               value={form.name}
@@ -81,7 +94,6 @@ export default function Register() {
 
             <input
               type="email"
-              required
               placeholder="Email Address"
               className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
               value={form.email}
@@ -92,7 +104,6 @@ export default function Register() {
 
             <input
               type="password"
-              required
               placeholder="Password"
               className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
               value={form.password}
@@ -109,14 +120,12 @@ export default function Register() {
             </button>
           </form>
 
-          {/* Divider */}
           <div className="flex items-center gap-4 text-gray-400 text-sm">
             <div className="flex-1 h-px bg-gray-200" />
             OR
             <div className="flex-1 h-px bg-gray-200" />
           </div>
 
-          {/* Google Button */}
           <button
             type="button"
             className="w-full border border-gray-300 hover:bg-gray-50 transition py-3 rounded-lg flex items-center justify-center gap-3 text-sm font-medium"
@@ -128,7 +137,6 @@ export default function Register() {
             Continue with Google
           </button>
 
-          {/* Login Link */}
           <p className="text-sm text-center text-gray-600">
             Already have an account?{" "}
             <Link

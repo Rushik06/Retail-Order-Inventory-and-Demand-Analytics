@@ -1,8 +1,9 @@
-/*eslint-disable*/ 
+/*eslint-disable*/
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "@/api/axios";
 import { useAuthStore } from "@/app/app.state";
+import { isRequired, isValidEmail } from "@/utils/validators";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -16,7 +17,21 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleLogin = async () => {
+  const handleLogin = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    
+
+    // Client-side validation
+    if (!isRequired(form.email) || !isRequired(form.password)) {
+      setError("All fields are required.");
+      return;
+    }
+
+    if (!isValidEmail(form.email)) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+
     try {
       setLoading(true);
       setError("");
@@ -28,8 +43,15 @@ export default function Login() {
 
       setUser(res.data.user);
       navigate("/dashboard");
+
     } catch (err: any) {
-      setError(err.response?.data?.error || "Login failed");
+
+      if (err.response?.status === 401) {
+        setError("Invalid email or password.");
+      } else {
+        setError("Something went wrong. Please try again.");
+      }
+
     } finally {
       setLoading(false);
     }
@@ -38,8 +60,11 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-[#f1f3f6] flex items-center justify-center px-4">
 
-      {/* Login Card */}
-      <div className="w-full max-w-md bg-white rounded-xl shadow-md p-8">
+      <form
+        noValidate
+        onSubmit={handleLogin}
+        className="w-full max-w-md bg-white rounded-xl shadow-md p-8"
+      >
 
         {/* Brand */}
         <div className="text-center mb-6">
@@ -51,22 +76,23 @@ export default function Login() {
           </p>
         </div>
 
+        {/* Error Message */}
         {error && (
-          <p className="text-red-500 text-sm mb-4 text-center">
+          <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg mb-4 text-center">
             {error}
-          </p>
+          </div>
         )}
 
         {/* Email */}
         <div className="mb-4">
           <input
-            type="email"
+            type="text"
             placeholder="Email address"
             value={form.email}
             onChange={(e) =>
               setForm({ ...form, email: e.target.value })
             }
-            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
           />
         </div>
 
@@ -79,15 +105,15 @@ export default function Login() {
             onChange={(e) =>
               setForm({ ...form, password: e.target.value })
             }
-            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
           />
         </div>
 
         {/* Login Button */}
         <button
-          onClick={handleLogin}
+          type="submit"
           disabled={loading}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-medium transition"
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-medium transition disabled:opacity-60"
         >
           {loading ? "Signing in..." : "Login"}
         </button>
@@ -101,6 +127,7 @@ export default function Login() {
 
         {/* Google Button */}
         <button
+          type="button"
           onClick={() => {
             window.location.href =
               "http://localhost:3000/api/auth/google";
@@ -131,7 +158,8 @@ export default function Login() {
             Create account
           </Link>
         </div>
-      </div>
+
+      </form>
     </div>
   );
 }
