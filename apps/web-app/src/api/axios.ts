@@ -12,9 +12,6 @@ const api = axios.create({
   withCredentials: false,
 });
 
-/* ================================
-   REQUEST INTERCEPTOR
-================================ */
 api.interceptors.request.use((config) => {
   const token = getAccessToken();
 
