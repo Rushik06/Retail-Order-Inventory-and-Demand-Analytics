@@ -1,5 +1,8 @@
 import app from './app.js';
 import { sequelize, env } from './config/index.js';
+import morgan from 'morgan';
+
+app.use(morgan('dev'));
 
 async function startServer(): Promise<void> {
   try {
