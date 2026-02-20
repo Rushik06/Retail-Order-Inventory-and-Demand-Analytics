@@ -6,8 +6,8 @@
   "type": "module",
   "scripts": {
     "dev": "tsx --watch src/server.ts",
-    "start": "abc",
-    "build": "abc",
+    "build": "tsc",
+    "start": "node dist/server.js",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "jest --coverage"
