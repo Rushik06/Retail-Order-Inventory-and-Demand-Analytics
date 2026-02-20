@@ -1,7 +1,4 @@
-version: "3.8"
-
 services:
-
   postgres:
     image: postgres:15
     container_name: retail_postgres
@@ -10,39 +7,34 @@ services:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: password
       POSTGRES_DB: retaildb
+    ports:
+      - "5432:5432"
     volumes:
       - D:/rms_postgres_data:/var/lib/postgresql/data
-    networks:
-      - retail_network
 
   auth-service:
-    build:
-      context: ./apps/auth-service
     container_name: retail_auth_service
-    restart: always
-    env_file:
-      - ./apps/auth-service/.env
+    build:
+      context: .
+      dockerfile: apps/auth-service/Dockerfile
     ports:
       - "3000:3000"
     depends_on:
       - postgres
-    networks:
-      - retail_network
 
   web-app:
-    build:
-      context: ./apps/web-app
     container_name: retail_web_app
-    restart: always
+    build:
+      context: .
+      dockerfile: apps/web-app/Dockerfile
     ports:
       - "5173:5173"
-    networks:
-      - retail_network
+    depends_on:
+      - auth-service
 
   nginx:
     image: nginx:alpine
     container_name: retail_nginx
-    restart: always
     ports:
       - "80:80"
     volumes:
@@ -50,9 +42,3 @@ services:
     depends_on:
       - web-app
       - auth-service
-    networks:
-      - retail_network
-
-networks:
-  retail_network:
-    driver: bridge
