@@ -33,4 +33,4 @@ Built using modern web technologies with Docker-based containerized architecture
 
 ---
 
-## 📁 Project Structure
+
