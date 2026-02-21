@@ -6,7 +6,7 @@ export const loginUser = async (email: string, password: string) => {
   const res = await api.post("/auth/login", { email, password });
 
   setTokens(res.data.accessToken, res.data.refreshToken);
-
+                                                          
   useAuthStore.getState().setUser(res.data.user);
 
   return res.data;
