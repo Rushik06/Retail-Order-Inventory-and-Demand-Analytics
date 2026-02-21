@@ -1,15 +1,29 @@
 import { useNavigate } from "react-router-dom";
 import { LogOut } from "lucide-react";
 import { useAuthStore } from "@/app/app.state";
+import api from "@/api/axios";
 
 export default function Topbar() {
   const navigate = useNavigate();
   const logout = useAuthStore((s) => s.logout);
   const user = useAuthStore((s) => s.user);
 
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
+
+
+  const handleLogout = async () => {
+    try {
+      const refreshToken = localStorage.getItem("refreshToken");
+
+      await api.post("/api/auth/logout", {
+        refreshToken,
+      });
+
+    } catch (err) {
+      console.error(err);
+    } finally {
+      logout(); 
+      navigate("/login");
+    }
   };
 
   return (
