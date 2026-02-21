@@ -125,22 +125,6 @@ export default function Login() {
           <div className="flex-1 h-px bg-gray-300"></div>
         </div>
 
-        {/* Google Button */}
-        <button
-          type="button"
-          onClick={() => {
-            window.location.href =
-              "http://localhost:3000/api/auth/google";
-          }}
-          className="w-full border border-gray-300 hover:bg-gray-50 py-2 rounded-lg flex items-center justify-center gap-2 transition"
-        >
-          <img
-            src="https://www.svgrepo.com/show/475656/google-color.svg"
-            alt="google"
-            className="w-5 h-5"
-          />
-          Continue with Google
-        </button>
 
         {/* Footer Links */}
         <div className="flex justify-between mt-6 text-sm">

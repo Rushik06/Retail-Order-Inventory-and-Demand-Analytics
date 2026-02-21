@@ -126,16 +126,7 @@ export default function Register() {
             <div className="flex-1 h-px bg-gray-200" />
           </div>
 
-          <button
-            type="button"
-            className="w-full border border-gray-300 hover:bg-gray-50 transition py-3 rounded-lg flex items-center justify-center gap-3 text-sm font-medium"
-          >
-            <img
-              src="https://www.svgrepo.com/show/475656/google-color.svg"
-              className="w-5 h-5"
-            />
-            Continue with Google
-          </button>
+          
 
           <p className="text-sm text-center text-gray-600">
             Already have an account?{" "}
