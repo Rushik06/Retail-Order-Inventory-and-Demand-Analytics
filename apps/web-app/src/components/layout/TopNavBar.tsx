@@ -14,7 +14,7 @@ export default function Topbar() {
     try {
       const refreshToken = localStorage.getItem("refreshToken");
 
-      await api.post("/api/auth/logout", {
+      await api.post("/auth/logout", {
         refreshToken,
       });
 
