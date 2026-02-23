@@ -19,7 +19,6 @@ export default function Login() {
 
   const handleLogin = async (e?: React.FormEvent) => {
     e?.preventDefault();
-    
 
     // Client-side validation
     if (!isRequired(form.email) || !isRequired(form.password)) {
@@ -58,54 +57,58 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f1f3f6] flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[#f3f4f6] flex items-center justify-center px-4">
 
       <form
         noValidate
         onSubmit={handleLogin}
-        className="w-full max-w-md bg-white rounded-xl shadow-md p-8"
+        className="w-full max-w-md bg-white rounded-2xl shadow-lg border border-gray-100 p-8"
       >
 
         {/* Brand */}
-        <div className="text-center mb-6">
+        <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-gray-800">
             Retail Inventory
           </h1>
-          <p className="text-gray-500 text-sm mt-1">
+          <p className="text-gray-500 text-sm mt-2">
             Manage your store smarter
           </p>
         </div>
 
         {/* Error Message */}
         {error && (
-          <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg mb-4 text-center">
+          <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg mb-5 text-center border border-red-100">
             {error}
           </div>
         )}
 
         {/* Email */}
-        <div className="mb-4">
+        <div className="mb-5">
+          <label className="block text-sm text-gray-600 mb-1">
+            Email address
+          </label>
           <input
             type="text"
-            placeholder="Email address"
             value={form.email}
             onChange={(e) =>
               setForm({ ...form, email: e.target.value })
             }
-            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+            className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
           />
         </div>
 
         {/* Password */}
-        <div className="mb-4">
+        <div className="mb-6">
+          <label className="block text-sm text-gray-600 mb-1">
+            Password
+          </label>
           <input
             type="password"
-            placeholder="Password"
             value={form.password}
             onChange={(e) =>
               setForm({ ...form, password: e.target.value })
             }
-            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+            className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
           />
         </div>
 
@@ -113,34 +116,31 @@ export default function Login() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-medium transition disabled:opacity-60"
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-lg font-medium transition disabled:opacity-60"
         >
-          {loading ? "Signing in..." : "Login"}
+          {loading ? "Signing in..." : "Sign In"}
         </button>
 
-        {/* Divider */}
-        <div className="flex items-center my-5">
-          <div className="flex-1 h-px bg-gray-300"></div>
-          <span className="px-3 text-sm text-gray-500">OR</span>
-          <div className="flex-1 h-px bg-gray-300"></div>
-        </div>
-
-
         {/* Footer Links */}
-        <div className="flex justify-between mt-6 text-sm">
+        <div className="mt-8 space-y-3 text-sm text-center">
+
           <Link
             to="/forgot-password"
-            className="text-gray-500 hover:text-blue-600"
+            className="block text-gray-500 hover:text-blue-600 transition"
           >
-            Forgot password?
+            Forgot your password?
           </Link>
 
-          <Link
-            to="/register"
-            className="text-gray-500 hover:text-blue-600"
-          >
-            Create account
-          </Link>
+          <div className="text-gray-500">
+            Don’t have an account?{" "}
+            <Link
+              to="/register"
+              className="text-blue-600 hover:underline font-medium"
+            >
+              Create one
+            </Link>
+          </div>
+
         </div>
 
       </form>
