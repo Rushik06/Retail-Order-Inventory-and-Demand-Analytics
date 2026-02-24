@@ -3,10 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "type": "module",
   "scripts": {
     
-    "dev": "pnpm --parallel --filter auth-service --filter product-service --filter web-app run dev",
+    "dev": "pnpm --parallel --filter auth-service --filter web-app run dev",
 
     "migrate": "pnpm --filter auth-service run migrate",
     "migrate:undo": "pnpm --filter auth-service run migrate:undo",
@@ -27,19 +26,6 @@
   "author": "",
   "license": "ISC",
   "packageManager": "pnpm@10.29.3",
-  "dependencies": {
-     "bcrypt": "^6.0.0",
-    "cors": "^2.8.6",
-    "dotenv": "^17.3.1",
-    "express": "^5.2.1",
-    "jsonwebtoken": "^9.0.3",
-    "pg": "^8.18.0",
-    "pg-hstore": "^2.3.4",
-    "sequelize": "^6.37.7",
-    "swagger-jsdoc": "^6.2.8",
-    "swagger-ui-express": "^5.0.1",
-    "zod": "^4.3.6"
-  },
   "devDependencies": {
     "@commitlint/cli": "^20.3.1",
     "@commitlint/config-conventional": "^20.3.1",
@@ -54,17 +40,7 @@
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.54.0",
     "supertest": "^7.2.2",
-    "vitest": "^4.0.18",
-    "@types/bcrypt": "^6.0.0",
-    "@types/cors": "^2.8.19",
-    "@types/jsonwebtoken": "^9.0.10",
-    "@types/node": "^25.2.3",
-    "@types/sequelize": "^6.12.0",
-    "@types/supertest": "^6.0.3",
-    "@types/swagger-jsdoc": "^6.0.4",
-    "@types/swagger-ui-express": "^4.1.8",
-    "sequelize-cli": "^6.6.5"
-    
+    "vitest": "^4.0.18"
   },
   "lint-staged": {
     "**/*.{js,ts}": [
@@ -76,6 +52,3 @@
     ]
   }
 }
- 
- 
-  

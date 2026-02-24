@@ -1,5 +1,5 @@
 import { DataTypes, Model } from "sequelize";
-import { sequelize} from "../config/index.js";
+import { sequelize } from "@retail/database";
 
 export class Product extends Model {}
 

@@ -1,4 +1,5 @@
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
+
 dotenv.config();
 
 const getEnv = (key: string): string => {
@@ -10,18 +11,15 @@ const getEnv = (key: string): string => {
 };
 
 export const env = {
-  PORT: getEnv('PORT'),
+  // Server
+  PORT: Number(getEnv("PORT")),
 
-  DB_NAME: getEnv('DB_NAME'),
-  DB_USER: getEnv('DB_USER'),
-  DB_PASSWORD: getEnv('DB_PASSWORD'),
-  DB_HOST: getEnv('DB_HOST'),
+  // JWT (mainly used in auth-service)
+  JWT_ACCESS_SECRET: process.env.JWT_ACCESS_SECRET,
+  JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET,
 
-  JWT_ACCESS_SECRET: getEnv('JWT_ACCESS_SECRET'),
-  JWT_REFRESH_SECRET: getEnv('JWT_REFRESH_SECRET'),
+  ACCESS_TOKEN_EXPIRY: process.env.ACCESS_TOKEN_EXPIRY || "1h",
+  REFRESH_TOKEN_EXPIRY: process.env.REFRESH_TOKEN_EXPIRY || "7d",
 
-  ACCESS_TOKEN_EXPIRY: getEnv('ACCESS_TOKEN_EXPIRY'),
-  REFRESH_TOKEN_EXPIRY: getEnv('REFRESH_TOKEN_EXPIRY'),
-
-
+  NODE_ENV: process.env.NODE_ENV || "development",
 };

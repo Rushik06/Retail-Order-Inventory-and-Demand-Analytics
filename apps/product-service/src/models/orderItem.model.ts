@@ -1,5 +1,5 @@
 import { DataTypes, Model } from "sequelize";
-import { sequelize } from "../config/sequilize.js";
+import { sequelize } from "@retail/database";
 import { Product } from "./product.model.js";
 import { Order } from "./order.model.js";
 

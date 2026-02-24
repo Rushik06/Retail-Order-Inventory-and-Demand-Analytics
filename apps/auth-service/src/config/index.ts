@@ -1,2 +1,2 @@
 export * from './env.js';
-export * from './sequilize.js';
+//export * from './sequilize.js';
