@@ -10,10 +10,12 @@ Order.init(
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
+
     customerName: {
       type: DataTypes.STRING,
       allowNull: false,
     },
+
     status: {
       type: DataTypes.ENUM(
         "CREATED",
@@ -24,6 +26,7 @@ Order.init(
       ),
       defaultValue: "CREATED",
     },
+    
     totalAmount: {
       type: DataTypes.DECIMAL(10, 2),
       defaultValue: 0,

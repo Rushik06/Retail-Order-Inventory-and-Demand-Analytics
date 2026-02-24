@@ -10,23 +10,28 @@ Product.init(
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
+
     sku: {
       type: DataTypes.STRING,
       unique: true,
       allowNull: false,
     },
+
     name: {
       type: DataTypes.STRING,
       allowNull: false,
     },
+
     category: {
       type: DataTypes.STRING,
       allowNull: false,
     },
+
     price: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
     },
+    
     stock: {
       type: DataTypes.INTEGER,
       defaultValue: 0,

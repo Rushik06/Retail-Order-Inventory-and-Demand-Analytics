@@ -22,7 +22,7 @@ app.get("/health", (_req, res) => {
 
 //API Routes
  
-app.use("/api", productServiceRoutes);
+app.use("/api/products", productServiceRoutes);
 
 
 export default app;

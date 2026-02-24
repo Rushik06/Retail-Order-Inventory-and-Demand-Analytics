@@ -12,10 +12,12 @@ OrderItem.init(
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
+
     quantity: {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
+    
     price: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,
