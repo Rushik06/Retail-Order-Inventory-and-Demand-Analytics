@@ -2,6 +2,7 @@
 import type { Request, Response, NextFunction } from "express";
 
 export const authorize =
+
   (...allowedRoles: string[]) =>
   (req: Request, res: Response, next: NextFunction) => {
 

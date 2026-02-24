@@ -1,6 +1,5 @@
 /*eslint-disable @typescript-eslint/no-explicit-any */
 import * as service from "../services/order.service.js";
-
 export const createOrder = async (req: any, res: any) => {
   const { customerName, items } = req.body;
 

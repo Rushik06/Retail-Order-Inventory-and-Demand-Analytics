@@ -1,7 +1,6 @@
 /*eslint-disable @typescript-eslint/no-explicit-any */
 import {Product} from "../models/product.model.js";
 
-
 export const createProduct = async (data: any) => {
   return Product.create(data);
 };
