@@ -3,6 +3,7 @@ import cors from "cors";
 import morgan from "morgan";
 import productServiceRoutes from "./routes/product.routes.js";
 import { setupSwagger } from "./swagger/swagger.js";
+import orderRoutes from "./routes/order.routes.js";
 
 const app: Express = express();
 
@@ -23,6 +24,6 @@ app.get("/health", (_req, res) => {
 //API Routes
  
 app.use("/api/products", productServiceRoutes);
-
+app.use("/api/orders", orderRoutes);  
 
 export default app;
