@@ -54,9 +54,9 @@ export const updateOrderStatus = async (
   if (!order) {
     throw new Error("Order not found");
   }
-
+console.log("Updating order status:", { orderId, status });
   order.set("status", status);
   await order.save();
-
+console.log("Order status updated:", order.getDataValue("status"));
   return order;
 };
