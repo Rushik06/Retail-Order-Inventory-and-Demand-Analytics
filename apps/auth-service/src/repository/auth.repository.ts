@@ -86,9 +86,8 @@ export class AuthRepository {
     };
   }
 
-  // =========================
   // REFRESH TOKEN METHODS
-  // =========================
+  
   async saveRefreshToken(
     _refreshToken: string,
     _userId: string

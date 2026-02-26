@@ -117,5 +117,9 @@ router.patch(
   authorize("ADMIN", "MANAGER"),
   controller.updateOrderStatus
 );
-
+router.get(
+  "/",
+  authorize("ADMIN", "MANAGER", "STAFF"),
+  controller.getOrders
+);
 export default router;

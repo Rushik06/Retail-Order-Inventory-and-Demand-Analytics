@@ -5,10 +5,14 @@ import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
 import ForgotPassword from "../pages/auth/ForgotPassword";
 import ResetPassword from "../pages/auth/ResetPassword";
+
 import Profile from "../pages/dashboard/profile/Profile";
 import Home from "@/pages/dashboard/Home";
-import DashboardLayout from "../components/layout/DashboardLayout";
 import Security from "@/pages/dashboard/Security";
+import Products from "@/pages/dashboard/product/Product";
+import Orders from "@/pages/dashboard/order/Order";
+
+import DashboardLayout from "../components/layout/DashboardLayout";
 
 function AppRoutes() {
   const user = useAuthStore((s) => s.user);
@@ -19,7 +23,11 @@ function AppRoutes() {
       <Route
         path="/"
         element={
-          user ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />
+          user ? (
+            <Navigate to="/dashboard" replace />
+          ) : (
+            <Navigate to="/login" replace />
+          )
         }
       />
 
@@ -55,9 +63,14 @@ function AppRoutes() {
           )
         }
       >
+        {/* Dashboard pages */}
         <Route index element={<Home />} />
         <Route path="profile" element={<Profile />} />
         <Route path="security" element={<Security />} />
+
+        {/* NEW: Product & Order Pages */}
+        <Route path="products" element={<Products />} />
+        <Route path="orders" element={<Orders />} />
       </Route>
 
       {/* Fallback */}

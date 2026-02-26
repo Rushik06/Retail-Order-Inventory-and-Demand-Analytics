@@ -1,30 +1,27 @@
 /*eslint-disable @typescript-eslint/no-explicit-any */
 import type { Request, Response } from "express";
 import * as service from "../services/order.service.js";
+import {
+  createOrderSchema,
+  updateOrderStatusSchema,
+} from "../validations/order.schema.js";
 
 export const createOrder = async (
   req: Request,
   res: Response
 ): Promise<Response> => {
   try {
-    
-    if (!req.body) {
-      return res.status(400).json({ message: "Request body is required" });
-    }
+    const parsed = createOrderSchema.safeParse({
+      body: req.body,
+    });
 
-    const { customerName, items } = req.body as {
-      customerName?: string;
-      items?: {
-        productId: string;
-        quantity: number;
-      }[];
-    };
-
-    if (!customerName || !Array.isArray(items) || items.length === 0) {
+    if (!parsed.success) {
       return res.status(400).json({
-        message: "customerName and items are required",
+        message: parsed.error.issues[0]!.message,
       });
     }
+
+    const { customerName, items } = parsed.data.body;
 
     const order = await service.createOrder(customerName, items);
 
@@ -42,17 +39,19 @@ export const updateOrderStatus = async (
   res: Response
 ): Promise<Response> => {
   try {
-    const id = req.params.id as string;
+    const parsed = updateOrderStatusSchema.safeParse({
+      params: req.params,
+      body: req.body,
+    });
 
-    if (!id) {
-      return res.status(400).json({ message: "Order ID is required" });
+    if (!parsed.success) {
+      return res.status(400).json({
+        message: parsed.error.issues[0]!.message,
+      });
     }
 
-    if (!req.body || !req.body.status) {
-      return res.status(400).json({ message: "Status is required" });
-    }
-
-    const { status } = req.body as { status: string };
+    const { id } = parsed.data.params;
+    const { status } = parsed.data.body;
 
     const order = await service.updateOrderStatus(id, status);
 
@@ -63,4 +62,12 @@ export const updateOrderStatus = async (
       message: error.message || "Internal server error",
     });
   }
+};
+
+export const getOrders = async (
+  _req: Request,
+  res: Response
+): Promise<Response> => {
+  const orders = await service.getOrders();
+  return res.json(orders);
 };
