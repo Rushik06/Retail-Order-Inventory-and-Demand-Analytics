@@ -1,6 +1,6 @@
 import app from './app.js';
 import {  env } from './config/index.js';
-import { sequelize } from "@retail/database";
+import { sequelize } from "./config/sequilize.js";
 
 async function startServer(): Promise<void> {
   try {

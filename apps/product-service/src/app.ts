@@ -4,6 +4,7 @@ import morgan from "morgan";
 import productServiceRoutes from "./routes/product.routes.js";
 import { setupSwagger } from "./swagger/swagger.js";
 import orderRoutes from "./routes/order.routes.js";
+import { authenticate } from "./middleware/authenticate.js";
 
 const app: Express = express();
 
@@ -22,8 +23,7 @@ app.get("/health", (_req, res) => {
 });
 
 //API Routes
- 
-app.use("/api/products", productServiceRoutes);
-app.use("/api/orders", orderRoutes);  
+app.use("/api/products", authenticate, productServiceRoutes);
+app.use("/api/orders", authenticate, orderRoutes);  
 
 export default app;

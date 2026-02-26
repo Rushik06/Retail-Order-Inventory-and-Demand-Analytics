@@ -1,5 +1,5 @@
 import { DataTypes, Model } from "sequelize";
-import { sequelize } from "@retail/database";
+import { sequelize } from "../config/index.js";
 
 export class Order extends Model {}
 

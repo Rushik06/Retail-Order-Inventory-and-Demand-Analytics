@@ -1,5 +1,5 @@
 import { DataTypes, Model } from 'sequelize';
-import { sequelize } from '../config/sequilize.js'
+import { sequelize } from '../config/sequilize.js';
 
 export class User extends Model {
   declare user_id: string;

@@ -138,9 +138,6 @@ importers:
 
   apps/product-service:
     dependencies:
-      '@retail/database':
-        specifier: workspace:*
-        version: link:../../packages/database
       bcrypt:
         specifier: ^6.0.0
         version: 6.0.0
@@ -196,6 +193,9 @@ importers:
       '@types/node':
         specifier: ^25.2.3
         version: 25.2.3
+      '@types/sequelize':
+        specifier: ^6.12.0
+        version: 6.12.0(pg-hstore@2.3.4)(pg@8.18.0)
       '@types/supertest':
         specifier: ^6.0.3
         version: 6.0.3
@@ -329,21 +329,6 @@ importers:
       vite:
         specifier: ^7.3.1
         version: 7.3.1(@types/node@24.10.13)(jiti@2.6.1)(lightningcss@1.31.1)(tsx@4.21.0)(yaml@2.8.2)
-
-  packages/database:
-    dependencies:
-      dotenv:
-        specifier: ^17.3.1
-        version: 17.3.1
-      pg:
-        specifier: ^8.18.0
-        version: 8.18.0
-      pg-hstore:
-        specifier: ^2.3.4
-        version: 2.3.4
-      sequelize:
-        specifier: ^6.37.7
-        version: 6.37.7(pg-hstore@2.3.4)(pg@8.18.0)
 
 packages:
 
