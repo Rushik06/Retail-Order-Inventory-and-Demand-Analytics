@@ -6,27 +6,36 @@ import { Order } from "./order.model.js";
 export class OrderItem extends Model {}
 
 OrderItem.init(
-  {
-    id: {
-      type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
-      primaryKey: true,
-    },
-
-    quantity: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    
-    price: {
-      type: DataTypes.DECIMAL(10, 2),
-      allowNull: false,
-    },
+{
+  id: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true,
   },
-  {
-    sequelize,
-    tableName: "order_items",
-  }
+
+  orderId: {
+    type: DataTypes.UUID,
+    allowNull: false,
+    field: "order_id",
+  },
+
+  productId: {
+    type: DataTypes.UUID,
+    allowNull: false,
+    field: "product_id",
+  },
+
+  quantity: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+},
+{
+  sequelize,
+  tableName: "order_items",
+  timestamps: true,
+  underscored: true,
+}
 );
 
 Order.hasMany(OrderItem, { foreignKey: "orderId" });

@@ -1,17 +1,62 @@
-/*eslint-disable @typescript-eslint/no-explicit-any */
-import * as service from "../services/order.service.js";
-export const createOrder = async (req: any, res: any) => {
-  const { customerName, items } = req.body;
+import { randomUUID } from "crypto";
+import { Order } from "../models/order.model.js";
+import { OrderItem } from "../models/orderItem.model.js";
+import { Product } from "../models/product.model.js";
 
-  const order = await service.createOrder(customerName, items);
-  res.status(201).json(order);
+export const createOrder = async (
+  customerName: string,
+  items: { productId: string; quantity: number }[]
+) => {
+  if (!customerName || !items || items.length === 0) {
+    throw new Error("Invalid order data");
+  }
+
+  let totalAmount = 0;
+
+  // Calculate total amount
+  for (const item of items) {
+    const product = await Product.findByPk(item.productId);
+
+    if (!product) {
+      throw new Error(`Product not found: ${item.productId}`);
+    }
+
+    totalAmount += Number(product.getDataValue("price")) * item.quantity;
+  }
+
+  //  Create order with totalAmount
+  const order = await Order.create({
+    id: randomUUID(),
+    customerName,
+    totalAmount,     
+    status: "PENDING",
+  });
+
+  //Create order items
+  for (const item of items) {
+    await OrderItem.create({
+      
+      orderId: order.getDataValue("id"),   
+      productId: item.productId,
+      quantity: item.quantity,
+    });
+  }
+
+  return order;
 };
 
-export const updateOrderStatus = async (req: any, res: any) => {
-  const order = await service.updateOrderStatus(
-    req.params.id,
-    req.body.status
-  );
+export const updateOrderStatus = async (
+  orderId: string,
+  status: string
+) => {
+  const order = await Order.findByPk(orderId);
 
-  res.json(order);
+  if (!order) {
+    throw new Error("Order not found");
+  }
+
+  order.set("status", status);
+  await order.save();
+
+  return order;
 };

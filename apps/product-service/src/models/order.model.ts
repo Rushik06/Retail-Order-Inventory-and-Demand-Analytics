@@ -14,6 +14,7 @@ Order.init(
     customerName: {
       type: DataTypes.STRING,
       allowNull: false,
+      field: "customer_name",
     },
 
     status: {
@@ -30,10 +31,13 @@ Order.init(
     totalAmount: {
       type: DataTypes.DECIMAL(10, 2),
       defaultValue: 0,
+      field: "total_amount",
     },
   },
   {
     sequelize,
     tableName: "orders",
+    timestamps: true,
+    underscored: true,
   }
 );
