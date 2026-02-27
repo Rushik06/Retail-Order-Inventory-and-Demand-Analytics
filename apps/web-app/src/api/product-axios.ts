@@ -8,16 +8,13 @@ import {
 } from "../utils/token";
 
 
- // Product & Order Service (PORT 3001)
 
 const productAxios = axios.create({
-  baseURL: "http://localhost:3001/api",
+  baseURL: "/api", 
   withCredentials: false,
 });
 
-
-// Attach Access Token Automatically
- 
+//Attach Access Token Automatically
 productAxios.interceptors.request.use((config) => {
   const token = getAccessToken();
 
@@ -28,6 +25,7 @@ productAxios.interceptors.request.use((config) => {
   return config;
 });
 
+//Handle Token Refresh
 productAxios.interceptors.response.use(
   (response) => response,
 
@@ -41,14 +39,13 @@ productAxios.interceptors.response.use(
         const refreshToken = getRefreshToken();
 
         if (!refreshToken) {
-          throw new Error("No refresh token");
+          throw new Error("No refresh token available");
         }
 
-        // Call Auth Service (PORT 3000) for refresh
-        const res = await axios.post(
-          "http://localhost:3000/api/auth/refresh",
-          { refreshToken }
-        );
+  
+        const res = await axios.post("/api/auth/refresh", {
+          refreshToken,
+        });
 
         setTokens(res.data.accessToken, refreshToken);
 
@@ -69,8 +66,8 @@ productAxios.interceptors.response.use(
 
 export default productAxios;
 
+/*PRODUCT APIs */
 
-//PRODUCT APIs
 export const createProduct = (data: {
   name: string;
   sku: string;
@@ -96,8 +93,7 @@ export const updateProduct = (
 export const deleteProduct = (id: string) =>
   productAxios.delete(`/products/${id}`);
 
-
-// ORDER APIs          
+/* ORDER APIs */
 
 export const createOrder = (data: {
   customerName: string;
