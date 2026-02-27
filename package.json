@@ -5,10 +5,10 @@
   "main": "index.js",
   "scripts": {
     
-    "dev": "pnpm --parallel --filter auth-service --filter web-app run dev",
+    "dev": "pnpm --parallel --filter auth-service --filter product-service --filter web-app run dev",
 
-    "migrate": "pnpm --filter auth-service run migrate",
-    "migrate:undo": "pnpm --filter auth-service run migrate:undo",
+    "migrate": "pnpm --filter auth-service --filter product-service run migrate",
+    "migrate:undo": "pnpm --filter auth-service --filter product-service run migrate:undo",
 
     "seed": "pnpm --filter auth-service run seed",
     "seed:undo": "pnpm --filter auth-service run seed:undo",
