@@ -17,7 +17,7 @@ export const createOrder = async (
   try {
     let totalAmount = 0;
 
-    // Validate + calculate
+    // Validate and calculate
     for (const item of items) {
       const product = await Product.findByPk(item.productId, { transaction });
 
@@ -48,7 +48,7 @@ export const createOrder = async (
       { transaction }
     );
 
-    // Deduct stock + create order items
+    // stock deduction & order items creation
     for (const item of items) {
       const product = await Product.findByPk(item.productId, { transaction });
 
