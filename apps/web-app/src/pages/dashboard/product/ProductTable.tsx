@@ -1,15 +1,6 @@
 /* eslint-disable */
 import { Pencil, Trash2 } from "lucide-react";
-
-interface Product {
-  id: string;
-  name: string;
-  sku: string;
-  category: string;
-  price: number;
-  stock: number;
-}
-
+import type { Product } from "@/types/product.types";
 interface Props {
   products: Product[];
   loading: boolean;

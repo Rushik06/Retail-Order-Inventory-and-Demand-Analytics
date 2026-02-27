@@ -1,11 +1,6 @@
 /* eslint-disable */
 
-type Props = {
-  form: any;
-  editingId: string | null;
-  setForm: (data: any) => void;
-  onSubmit: (e: any) => void;
-};
+import type { Props } from "@/types/product.types";
 
 export default function ProductForm({
   form,
