@@ -3,21 +3,7 @@ import { useEffect, useState } from "react";
 import productApi from "@/api/product-axios";
 import OrderForm from "./OrderForm";
 import OrdersTable from "./OrderTable";
-
-interface Product {
-  id: string;
-  name: string;
-  sku: string;
-}
-
-interface OrderItem {
-  id: string;
-  quantity: number;
-  Product?: {
-    id: string;
-    name: string;
-  };
-}
+import type { Product, OrderItem } from "@/types/order.types";
 
 export interface Order {
   id: string;

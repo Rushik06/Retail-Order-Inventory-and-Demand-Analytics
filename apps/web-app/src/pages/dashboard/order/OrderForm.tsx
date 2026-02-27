@@ -1,12 +1,7 @@
 /* eslint-disable */
 import { useState } from "react";
 
-interface Props {
-  form: any;
-  setForm: any;
-  products: any[];
-  onCreate: () => Promise<void>;
-}
+import type { Props } from "@/types/order.types";
 
 export default function OrderForm({
   form,

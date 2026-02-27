@@ -71,7 +71,7 @@ export default function ProductsTable({
                   </td>
 
                   <td className="px-6 py-4 font-semibold text-slate-900">
-                    ₹ {product.price.toLocaleString()}
+                    Rs{product.price.toLocaleString()}/-
                   </td>
 
                   <td className="px-6 py-4">

@@ -103,7 +103,7 @@ export default function OrdersTable({
                     </td>
 
                     <td className="px-6 py-4 font-semibold text-slate-900">
-                      ₹ {order.totalAmount.toLocaleString()}
+                      Rs{order.totalAmount.toLocaleString()}/-
                     </td>
 
                     <td className="px-6 py-4">
