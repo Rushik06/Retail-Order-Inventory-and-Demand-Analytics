@@ -1,5 +1,7 @@
 /* eslint-disable */
+import { useMemo, useState } from "react";
 import type { Order } from "./Order";
+import OrdersTableContent from "@/components/ui/orders/OrderTable";
 
 interface Props {
   orders: Order[];
@@ -12,6 +14,13 @@ export default function OrdersTable({
   loading,
   onStatusChange,
 }: Props) {
+
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [sortBy, setSortBy] = useState("");
+  const [page, setPage] = useState(1);
+  const [entries, setEntries] = useState(6);
+
   const getStatusStyle = (status: string) => {
     switch (status) {
       case "DELIVERED":
@@ -27,117 +36,127 @@ export default function OrdersTable({
     }
   };
 
-  return (
-    <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+  /* Filter */
+  const filtered = useMemo(() => {
+    return orders.filter((order) => {
+      const matchSearch =
+        order.customerName
+          .toLowerCase()
+          .includes(search.toLowerCase());
 
-      {/* Table Header Section */}
-      <div className="px-6 py-4 border-b border-slate-100">
+      const matchStatus = statusFilter
+        ? order.status === statusFilter
+        : true;
+
+      return matchSearch && matchStatus;
+    });
+  }, [orders, search, statusFilter]);
+
+  /* Sort */
+  const sorted = useMemo(() => {
+    const copy = [...filtered];
+
+    switch (sortBy) {
+      case "total_desc":
+        return copy.sort((a, b) => b.totalAmount - a.totalAmount);
+      case "total_asc":
+        return copy.sort((a, b) => a.totalAmount - b.totalAmount);
+      case "status_asc":
+        return copy.sort((a, b) =>
+          a.status.localeCompare(b.status)
+        );
+      case "status_desc":
+        return copy.sort((a, b) =>
+          b.status.localeCompare(a.status)
+        );
+      default:
+        return copy;
+    }
+  }, [filtered, sortBy]);
+
+  const totalPages = Math.max(1, Math.ceil(sorted.length / entries));
+
+  const paginated = sorted.slice(
+    (page - 1) * entries,
+    page * entries
+  );
+
+  return (
+    <div className="bg-white rounded-3xl shadow-sm border border-slate-200 flex flex-col">
+
+      {/* Filters */}
+      <div className="px-6 py-4 border-b flex flex-wrap gap-3 items-center justify-between">
+
         <h2 className="text-lg font-semibold text-slate-800">
           Orders Overview
         </h2>
-        <p className="text-sm text-slate-500">
-        </p>
+
+        <div className="flex flex-wrap gap-3">
+
+          <input
+            placeholder="Search customer..."
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+            className="h-10 px-3 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+          />
+
+          <select
+            value={statusFilter}
+            onChange={(e) => {
+              setStatusFilter(e.target.value);
+              setPage(1);
+            }}
+            className="h-10 px-3 border rounded-lg text-sm"
+          >
+            <option value="">All Status</option>
+            <option value="PENDING">PENDING</option>
+            <option value="PROCESSING">PROCESSING</option>
+            <option value="SHIPPED">SHIPPED</option>
+            <option value="DELIVERED">DELIVERED</option>
+            <option value="CANCELLED">CANCELLED</option>
+          </select>
+
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="h-10 px-3 border rounded-lg text-sm"
+          >
+            <option value="">Sort</option>
+            <option value="total_desc">Total High → Low</option>
+            <option value="total_asc">Total Low → High</option>
+            <option value="status_asc">Status A → Z</option>
+            <option value="status_desc">Status Z → A</option>
+          </select>
+
+          <select
+            value={entries}
+            onChange={(e) => {
+              setEntries(Number(e.target.value));
+              setPage(1);
+            }}
+            className="h-10 px-3 border rounded-lg text-sm"
+          >
+            <option value={6}>6</option>
+            <option value={10}>10</option>
+            <option value={20}>20</option>
+          </select>
+
+        </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead className="bg-slate-50 text-slate-500 uppercase text-xs tracking-wider">
-            <tr>
-              <th className="px-6 py-4 text-left">Order No</th>
-              <th className="px-6 py-4 text-left">Customer</th>
-              <th className="px-6 py-4 text-left">Items</th>
-              <th className="px-6 py-4 text-left">Total</th>
-              <th className="px-6 py-4 text-left">Status</th>
-              <th className="px-6 py-4 text-left">Update</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {loading ? (
-              <tr>
-                <td
-                  colSpan={6}
-                  className="py-10 text-center text-slate-400"
-                >
-                  Loading orders...
-                </td>
-              </tr>
-            ) : orders.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={6}
-                  className="py-10 text-center text-slate-400"
-                >
-                  No orders found
-                </td>
-              </tr>
-            ) : (
-              orders.map((order, index) => {
-                const orderNumber = `ORD-${String(index + 1).padStart(4, "0")}`;
-
-                return (
-                  <tr
-                    key={order.id}
-                    className="border-t border-slate-100 hover:bg-slate-50 transition-all duration-200"
-                  >
-                    <td className="px-6 py-4 font-semibold text-slate-800">
-                      {orderNumber}
-                    </td>
-
-                    <td className="px-6 py-4 text-slate-700">
-                      {order.customerName}
-                    </td>
-
-                    <td className="px-6 py-4 text-slate-600">
-                      {order.OrderItems?.length ? (
-                        order.OrderItems.map((item) => (
-                          <div key={item.id} className="leading-6">
-                            {item.Product?.name} × {item.quantity}
-                          </div>
-                        ))
-                      ) : (
-                        <span className="text-slate-400 text-xs">
-                          No items
-                        </span>
-                      )}
-                    </td>
-
-                    <td className="px-6 py-4 font-semibold text-slate-900">
-                      Rs{order.totalAmount.toLocaleString()}/-
-                    </td>
-
-                    <td className="px-6 py-4">
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusStyle(
-                          order.status
-                        )}`}
-                      >
-                        {order.status}
-                      </span>
-                    </td>
-
-                    <td className="px-6 py-4">
-                      <select
-                        value={order.status}
-                        onChange={(e) =>
-                          onStatusChange(order.id, e.target.value)
-                        }
-                        className="border border-slate-200 rounded-lg px-3 py-1 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white"
-                      >
-                        <option value="PENDING">PENDING</option>
-                        <option value="PROCESSING">PROCESSING</option>
-                        <option value="SHIPPED">SHIPPED</option>
-                        <option value="DELIVERED">DELIVERED</option>
-                        <option value="CANCELLED">CANCELLED</option>
-                      </select>
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
+      <OrdersTableContent
+        loading={loading}
+        paginated={paginated}
+        entries={entries}
+        page={page}
+        totalPages={totalPages}
+        setPage={setPage}
+        getStatusStyle={getStatusStyle}
+        onStatusChange={onStatusChange}
+      />
     </div>
   );
 }
