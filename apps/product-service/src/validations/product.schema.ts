@@ -1,10 +1,18 @@
 import { z } from "zod";
 
+/* CREATE */
+
 export const createProductSchema = z.object({
   body: z.object({
-    name: z.string().min(3, "Name must be at least 3 characters").trim(),
-    sku: z.string().min(3, "SKU must be at least 3 characters").trim(),
-    category: z.string().min(2, "Category is required").trim(),
+    name: z
+      .string()
+      .min(3, "Name must be at least 3 characters")
+      .trim(),
+
+    category: z
+      .string()
+      .min(2, "Category is required")
+      .trim(),
 
     price: z.coerce
       .number()
@@ -17,12 +25,17 @@ export const createProductSchema = z.object({
   }),
 });
 
+/* UPDATE */
+
 export const updateProductSchema = z.object({
   params: z.object({
     id: z.string().uuid("Invalid product ID"),
   }),
+
   body: z.object({
     name: z.string().min(3).trim().optional(),
+
+    category: z.string().min(2).trim().optional(),
 
     price: z.coerce
       .number()

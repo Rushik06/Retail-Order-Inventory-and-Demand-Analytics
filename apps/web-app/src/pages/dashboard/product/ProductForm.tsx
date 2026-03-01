@@ -1,6 +1,16 @@
 /* eslint-disable */
-
+import { useMemo } from "react";
 import type { Props } from "@/types/product.types";
+
+const CATEGORY_OPTIONS = [
+  "Electronics",
+  "Fashion",
+  "Groceries",
+  "Books",
+  "Home & Kitchen",
+  "Sports",
+  "Beauty",
+];
 
 export default function ProductForm({
   form,
@@ -17,15 +27,26 @@ export default function ProductForm({
 
   const disabled =
     !form.name?.trim() ||
-    !form.sku?.trim() ||
     !form.category?.trim() ||
     form.price === "" ||
     Number(form.price) <= 0 ||
     form.stock === "" ||
     Number(form.stock) < 0;
 
+  /* SKU Preview */
+  const previewSku = useMemo(() => {
+    if (!form.category) return "SKU ";
+
+    const prefix = form.category
+      .slice(0, 4)
+      .toUpperCase();
+
+    return `${prefix}-AUTO`;
+  }, [form.category]);
+
   return (
     <form
+      id="product-form"
       onSubmit={(e) => {
         if (disabled) {
           e.preventDefault();
@@ -35,6 +56,7 @@ export default function ProductForm({
       }}
       className="grid md:grid-cols-3 gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-100"
     >
+
       {/* Name */}
       <input
         placeholder="Product Name"
@@ -45,25 +67,29 @@ export default function ProductForm({
         className="h-11 border border-slate-200 rounded-lg px-4 focus:ring-2 focus:ring-blue-500 focus:outline-none"
       />
 
-      {/* SKU */}
+      {/* SKU (Auto Generated) */}
       <input
         placeholder="SKU"
-        value={form.sku}
-        onChange={(e) =>
-          setForm({ ...form, sku: e.target.value })
-        }
-        className="h-11 border border-slate-200 rounded-lg px-4 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+        value={editingId ? form.sku : previewSku}
+        disabled
+        className="h-11 bg-slate-100 text-slate-500 border border-slate-200 rounded-lg px-4 cursor-not-allowed"
       />
 
-      {/* Category */}
-      <input
-        placeholder="Category"
+      {/* Category Dropdown */}
+      <select
         value={form.category}
         onChange={(e) =>
           setForm({ ...form, category: e.target.value })
         }
-        className="h-11 border border-slate-200 rounded-lg px-4 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-      />
+        className="h-11 border border-slate-200 rounded-lg px-4 bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
+      >
+        <option value="">Select Category</option>
+        {CATEGORY_OPTIONS.map((cat) => (
+          <option key={cat} value={cat}>
+            {cat}
+          </option>
+        ))}
+      </select>
 
       {/* Price */}
       <div className="flex flex-col">
@@ -113,7 +139,7 @@ export default function ProductForm({
         </div>
       </div>
 
-      {/* Button */}
+      {/* Submit Button */}
       <button
         type="submit"
         disabled={disabled}
