@@ -31,26 +31,17 @@ export const createProduct = async (
   }
 };
 
-export const getProducts = async (req: Request, res: Response) => {
+export const getProducts = async (
+  _req: Request,
+  res: Response
+): Promise<Response> => {
   try {
-    const page = Number(req.query.page) || 1;
-    const limit = Number(req.query.limit) || 6;
-    const search = String(req.query.search || "");
-    const category = String(req.query.category || "");
-    const sort = String(req.query.sort || "");
-
-    const result = await service.getProducts({
-      page,
-      limit,
-      search,
-      category,
-      sort,
-    });
-
-    return res.json(result);
-
+    const products = await service.getProducts();
+    return res.json(products);
   } catch {
-    return res.status(500).json({ message: "Unexpected error" });
+    return res.status(500).json({
+      message: "Unexpected error",
+    });
   }
 };
 

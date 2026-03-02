@@ -124,7 +124,7 @@ export default function ProductsTable({
 
       <ProductsTableContent
         loading={loading}
-        products={paginated}
+        paginated={paginated}
         entries={entries}
         page={page}
         totalPages={totalPages}
