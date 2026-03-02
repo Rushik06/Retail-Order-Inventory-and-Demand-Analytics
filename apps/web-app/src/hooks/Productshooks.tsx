@@ -27,7 +27,7 @@ export function useProductsTable(products: Product[]) {
       sort: sortBy,
       page: String(page),
     });
-  }, [search, category, entries, sortBy, page]);
+  }, [search, category, entries, sortBy, page, setSearchParams]);
 
   /* Debounced search */
   const [debouncedSearch, setDebouncedSearch] = useState(search);
@@ -37,6 +37,11 @@ export function useProductsTable(products: Product[]) {
     }, 400);
     return () => clearTimeout(timer);
   }, [search]);
+
+  /* Reset page when filters change */
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch, category, sortBy, entries]);
 
   /* Categories */
   const categories = useMemo(

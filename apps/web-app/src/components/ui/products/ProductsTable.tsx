@@ -4,7 +4,7 @@ import type { Product } from "@/types/product.types";
 
 interface Props {
   loading: boolean;
-  paginated: Product[];
+  products: Product[]; 
   entries: number;
   page: number;
   totalPages: number;
@@ -20,7 +20,7 @@ interface Props {
 
 export default function ProductsTableContent({
   loading,
-  paginated,
+  products, 
   entries,
   page,
   totalPages,
@@ -59,14 +59,14 @@ export default function ProductsTableContent({
                   ))}
                 </tr>
               ))
-            ) : paginated.length === 0 ? (
+            ) : products.length === 0 ? ( 
               <tr>
                 <td colSpan={6} className="py-12 text-center text-slate-400">
                   No products found
                 </td>
               </tr>
             ) : (
-              paginated.map((product) => (
+              products.map((product) => ( 
                 <tr key={product.id} className="border-t hover:bg-slate-50 transition">
                   <td className="px-6 py-4 font-medium">{product.name}</td>
                   <td className="px-6 py-4">{product.sku}</td>
