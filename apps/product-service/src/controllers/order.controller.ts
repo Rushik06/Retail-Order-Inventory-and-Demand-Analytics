@@ -64,10 +64,20 @@ export const updateOrderStatus = async (
   }
 };
 
-export const getOrders = async (
-  _req: Request,
-  res: Response
-): Promise<Response> => {
-  const orders = await service.getOrders();
-  return res.json(orders);
+export const getOrders = async (req: Request, res: Response) => {
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 6;
+  const search = String(req.query.search || "");
+  const status = String(req.query.status || "");
+  const sort = String(req.query.sort || "");
+
+  const result = await service.getOrders({
+    page,
+    limit,
+    search,
+    status,
+    sort,
+  });
+
+  return res.json(result);
 };

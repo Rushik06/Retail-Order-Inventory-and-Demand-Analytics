@@ -67,13 +67,15 @@ export default function OrdersTableContent({
                     <td className="px-6 py-4">{order.customerName}</td>
 
                     <td className="px-6 py-4 text-slate-600">
-                      {order.OrderItems?.length
-                        ? order.OrderItems.map((item) => (
-                            <div key={item.id}>
-                              {item.Product?.name} × {item.quantity}
-                            </div>
-                          ))
-                        : <span className="text-xs text-slate-400">No items</span>}
+                      {order.OrderItems?.length ? (
+                        order.OrderItems.map((item) => (
+                          <div key={item.id}>
+                            {item.Product?.name} × {item.quantity}
+                          </div>
+                        ))
+                      ) : (
+                        <span className="text-xs text-slate-400">No items</span>
+                      )}
                     </td>
 
                     <td className="px-6 py-4 font-semibold">
@@ -81,7 +83,11 @@ export default function OrdersTableContent({
                     </td>
 
                     <td className="px-6 py-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusStyle(order.status)}`}>
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusStyle(
+                          order.status
+                        )}`}
+                      >
                         {order.status}
                       </span>
                     </td>

@@ -3,6 +3,7 @@ import { sequelize } from "../config/index.js";
 import { Order } from "../models/order.model.js";
 import { OrderItem } from "../models/orderItem.model.js";
 import { Product } from "../models/product.model.js";
+import { Op } from "sequelize";
 
 export const createOrder = async (
   customerName: string,
@@ -137,17 +138,75 @@ export const updateOrderStatus = async (
     throw error;
   }
 };
+/*eslint-disable @typescript-eslint/no-explicit-any */
+export const getOrders = async ({
+  page = 1,
+  limit = 6,
+  search = "",
+  status = "",
+  sort = "",
+}: {
+  page?: number;
+  limit?: number;
+  search?: string;
+  status?: string;
+  sort?: string;
+}) => {
+  const offset = (page - 1) * limit;
 
-export const getOrders = async () => {
-  const orders = await Order.findAll({
+  /* WHERE CONDITIONS */
+  const where: any = {};
+
+  if (search) {
+    where.customerName = {
+      [Op.iLike]: `%${search}%`, 
+    };
+  }
+
+  if (status) {
+    where.status = status;
+  }
+
+  /* SORTING */
+  const order: any[] = [];
+
+  switch (sort) {
+    case "total_desc":
+      order.push(["totalAmount", "DESC"]);
+      break;
+
+    case "total_asc":
+      order.push(["totalAmount", "ASC"]);
+      break;
+
+    case "status_asc":
+      order.push(["status", "ASC"]);
+      break;
+
+    case "status_desc":
+      order.push(["status", "DESC"]);
+      break;
+
+    default:
+      order.push(["createdAt", "DESC"]);
+  }
+
+  const { rows, count } = await Order.findAndCountAll({
+    where,
     include: [
       {
         model: OrderItem,
         include: [Product],
       },
     ],
-    order: [["createdAt", "DESC"]],
+    limit,
+    offset,
+    order,
   });
 
-  return orders;
+  return {
+    data: rows,
+    total: count,
+    totalPages: Math.ceil(count / limit),
+  };
 };

@@ -1,25 +1,52 @@
 /* eslint-disable */
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import type { Order } from "./Order";
 import OrdersTableContent from "@/components/ui/orders/OrderTable";
+import orderApi from "@/api/product-axios";
 
 interface Props {
-  orders: Order[];
-  loading: boolean;
   onStatusChange: (id: string, status: string) => void;
 }
 
 export default function OrdersTable({
-  orders,
-  loading,
   onStatusChange,
 }: Props) {
+
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(false);
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [sortBy, setSortBy] = useState("");
   const [page, setPage] = useState(1);
   const [entries, setEntries] = useState(6);
+  const [totalPages, setTotalPages] = useState(1);
+
+  const fetchOrders = async () => {
+    try {
+      setLoading(true);
+
+      const res = await orderApi.get("/orders", {
+        params: {
+          page,
+          limit: entries,
+          search,
+          status: statusFilter,
+          sort: sortBy,
+        },
+      });
+
+      setOrders(res.data.data);
+      setTotalPages(res.data.totalPages);
+
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchOrders();
+  }, [page, entries, search, statusFilter, sortBy]);
 
   const getStatusStyle = (status: string) => {
     switch (status) {
@@ -35,51 +62,6 @@ export default function OrdersTable({
         return "bg-slate-100 text-slate-700";
     }
   };
-
-  /* Filter */
-  const filtered = useMemo(() => {
-    return orders.filter((order) => {
-      const matchSearch =
-        order.customerName
-          .toLowerCase()
-          .includes(search.toLowerCase());
-
-      const matchStatus = statusFilter
-        ? order.status === statusFilter
-        : true;
-
-      return matchSearch && matchStatus;
-    });
-  }, [orders, search, statusFilter]);
-
-  /* Sort */
-  const sorted = useMemo(() => {
-    const copy = [...filtered];
-
-    switch (sortBy) {
-      case "total_desc":
-        return copy.sort((a, b) => b.totalAmount - a.totalAmount);
-      case "total_asc":
-        return copy.sort((a, b) => a.totalAmount - b.totalAmount);
-      case "status_asc":
-        return copy.sort((a, b) =>
-          a.status.localeCompare(b.status)
-        );
-      case "status_desc":
-        return copy.sort((a, b) =>
-          b.status.localeCompare(a.status)
-        );
-      default:
-        return copy;
-    }
-  }, [filtered, sortBy]);
-
-  const totalPages = Math.max(1, Math.ceil(sorted.length / entries));
-
-  const paginated = sorted.slice(
-    (page - 1) * entries,
-    page * entries
-  );
 
   return (
     <div className="bg-white rounded-3xl shadow-sm border border-slate-200 flex flex-col">
@@ -149,7 +131,7 @@ export default function OrdersTable({
 
       <OrdersTableContent
         loading={loading}
-        paginated={paginated}
+        paginated={orders}
         entries={entries}
         page={page}
         totalPages={totalPages}

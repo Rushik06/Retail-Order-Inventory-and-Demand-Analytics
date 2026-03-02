@@ -93,8 +93,11 @@ export const updateProduct = (
 export const deleteProduct = (id: string) =>
   productAxios.delete(`/products/${id}`);
 
+
+
 /* ORDER APIs */
 
+/* Create Order */
 export const createOrder = (data: {
   customerName: string;
   items: {
@@ -103,10 +106,25 @@ export const createOrder = (data: {
   }[];
 }) => productAxios.post("/orders", data);
 
+
+/* Update Order Status */
 export const updateOrderStatus = (
   id: string,
   status: string
 ) =>
   productAxios.patch(`/orders/${id}/status`, {
     status,
+  });
+
+
+/* Get Orders  */
+export const getOrders = (params: {
+  page?: number;
+  limit?: number;
+  search?: string;
+  status?: string;
+  sort?: string;
+}) =>
+  productAxios.get("/orders", {
+    params,
   });
