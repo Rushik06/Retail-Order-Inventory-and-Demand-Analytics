@@ -46,7 +46,7 @@ module.exports= {
     });
   },
 
-  async down(queryInterface, Sequelize) {
+  async down(queryInterface) {
     await queryInterface.dropTable('inventory_movements');
     await queryInterface.sequelize.query('DROP TYPE IF EXISTS "enum_inventory_movements_movement_type";');
   },

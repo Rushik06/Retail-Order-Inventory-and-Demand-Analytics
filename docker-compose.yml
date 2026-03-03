@@ -33,6 +33,16 @@ services:
     depends_on:
       - postgres
 
+      
+  inventory-service:
+    container_name: retail_inventory_service
+    build:
+      context: .
+      dockerfile: apps/inventory-service/Dockerfile
+    ports:
+      - "3002:3002"
+    depends_on:
+      - postgres
   web-app:
     container_name: retail_web_app
     build:
