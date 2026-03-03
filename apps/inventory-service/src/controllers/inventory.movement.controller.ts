@@ -9,10 +9,10 @@ export const addStockController = async (
     const { productId, warehouseId, quantity, referenceId } = req.body;
 
     await inventoryMovementService.addStock(
-      Number(productId),
-      Number(warehouseId),
-      Number(quantity),
-      referenceId ? Number(referenceId) : undefined
+      productId,                
+      warehouseId,              
+      Number(quantity),          
+      referenceId ?? undefined   
     );
 
     res.status(200).json({
@@ -36,10 +36,10 @@ export const deductStockController = async (
     const { productId, warehouseId, quantity, referenceId } = req.body;
 
     await inventoryMovementService.deductStock(
-      Number(productId),
-      Number(warehouseId),
+      productId,              
+      warehouseId,            
       Number(quantity),
-      Number(referenceId)
+      referenceId            
     );
 
     res.status(200).json({

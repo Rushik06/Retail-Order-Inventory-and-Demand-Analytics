@@ -5,8 +5,8 @@ import type { Transaction } from "sequelize";
 class InventoryAlertService {
 
   async checkLowStock(
-    productId: number,
-    warehouseId: number,
+    productId: string,      
+    warehouseId: string,    
     threshold: number,
     transaction: Transaction
   ): Promise<void> {
@@ -19,16 +19,32 @@ class InventoryAlertService {
 
     if (!inventory) return;
 
-    const currentQty = inventory.getDataValue("available_qty");
+    const available = inventory.getDataValue("available_qty");
+    const reserved = inventory.getDataValue("reserved_qty");
 
-    if (currentQty <= threshold) {
-      await StockAlert.create({
-        product_id: productId,
-        warehouse_id: warehouseId,
-        alert_type: "LOW_STOCK",
-        threshold_qty: threshold,
-        current_qty: currentQty,
-      }, { transaction });
+    const effectiveQty = available - reserved;
+
+    if (effectiveQty <= threshold) {
+
+      const existingAlert = await StockAlert.findOne({
+        where: {
+          product_id: productId,
+          warehouse_id: warehouseId,
+          alert_type: "LOW_STOCK",
+          is_resolved: false,
+        },
+        transaction,
+      });
+
+      if (!existingAlert) {
+        await StockAlert.create({
+          product_id: productId,
+          warehouse_id: warehouseId,
+          alert_type: "LOW_STOCK",
+          threshold_qty: threshold,
+          current_qty: effectiveQty,
+        }, { transaction });
+      }
     }
   }
 }

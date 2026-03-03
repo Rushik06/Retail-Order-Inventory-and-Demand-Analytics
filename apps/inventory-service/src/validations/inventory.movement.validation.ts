@@ -2,14 +2,12 @@ import { z } from "zod";
 
 export const addStockSchema = z.object({
   productId: z
-    .number({ message: "Product ID is required" })
-    .int()
-    .positive(),
+    .string({ message: "Product ID is required" })
+    .uuid({ message: "Product ID must be a valid UUID" }),
 
   warehouseId: z
-    .number({ message: "Warehouse ID is required" })
-    .int()
-    .positive(),
+    .string({ message: "Warehouse ID is required" })
+    .uuid({ message: "Warehouse ID must be a valid UUID" }),
 
   quantity: z
     .number({ message: "Quantity is required" })
@@ -17,22 +15,19 @@ export const addStockSchema = z.object({
     .positive(),
 
   referenceId: z
-    .number()
-    .int()
-    .positive()
+    .string()
+    .uuid({ message: "Reference ID must be a valid UUID" })
     .optional(),
 });
 
 export const deductStockSchema = z.object({
   productId: z
-    .number({ message: "Product ID is required" })
-    .int()
-    .positive(),
+    .string({ message: "Product ID is required" })
+    .uuid({ message: "Product ID must be a valid UUID" }),
 
   warehouseId: z
-    .number({message: "Warehouse ID is required" })
-    .int()
-    .positive(),
+    .string({ message: "Warehouse ID is required" })
+    .uuid({ message: "Warehouse ID must be a valid UUID" }),
 
   quantity: z
     .number({ message: "Quantity is required" })
@@ -40,7 +35,6 @@ export const deductStockSchema = z.object({
     .positive(),
 
   referenceId: z
-    .number({ message: "Reference ID is required" })
-    .int()
-    .positive(),
+    .string({ message: "Reference ID is required" })
+    .uuid({ message: "Reference ID must be a valid UUID" }),
 });

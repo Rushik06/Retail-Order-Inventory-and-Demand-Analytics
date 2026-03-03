@@ -9,9 +9,9 @@ export const reserveStockController = async (
     const { productId, warehouseId, quantity } = req.body;
 
     await inventoryReservationService.reserveStock(
-      Number(productId),
-      Number(warehouseId),
-      Number(quantity)
+      productId,           
+      warehouseId,         
+      Number(quantity)     
     );
 
     res.status(200).json({
@@ -35,8 +35,8 @@ export const releaseStockController = async (
     const { productId, warehouseId, quantity } = req.body;
 
     await inventoryReservationService.releaseStock(
-      Number(productId),
-      Number(warehouseId),
+      productId,           
+      warehouseId,         
       Number(quantity)
     );
 

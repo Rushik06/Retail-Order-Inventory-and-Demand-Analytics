@@ -3,6 +3,7 @@ import cors from "cors";
 import morgan from "morgan";
 import { setupSwagger } from "./swagger/swagger.js";
 import inventoryRoutes from "./routes/inventory.routes.js";
+import warehouseRoutes from "./routes/warehouse.routes.js"
 import { authenticate } from "./middleware/auth.middleware.js";
 
 const app: Express = express();
@@ -22,6 +23,7 @@ app.get("/health", (_req, res) => {
 });
 
 //API Routes
-app.use("/api/products", authenticate, inventoryRoutes);
+app.use("/api/inventory", authenticate, inventoryRoutes);
+app.use("/api/warehouse", authenticate, warehouseRoutes);
 
 export default app;

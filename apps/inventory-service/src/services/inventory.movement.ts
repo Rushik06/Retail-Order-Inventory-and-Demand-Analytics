@@ -6,10 +6,10 @@ import { findInventory, saveInventory } from "../repository/inventory.repository
 class InventoryMovementService {
 
   async addStock(
-    productId: number,
-    warehouseId: number,
+    productId: string,
+    warehouseId: string,
     quantity: number,
-    referenceId?: number
+    referenceId?: string
   ): Promise<void> {
 
     await sequelize.transaction(async (transaction: Transaction) => {
@@ -44,10 +44,10 @@ class InventoryMovementService {
   }
 
   async deductStock(
-    productId: number,
-    warehouseId: number,
+    productId: string,
+    warehouseId: string,
     quantity: number,
-    referenceId: number
+    referenceId: string
   ): Promise<void> {
 
     await sequelize.transaction(async (transaction: Transaction) => {
@@ -64,8 +64,11 @@ class InventoryMovementService {
       }
 
       const previous = inventory.getDataValue("available_qty");
+      const reserved = inventory.getDataValue("reserved_qty");
 
-      if (previous < quantity) {
+      const effectiveAvailable = previous - reserved;
+
+      if (effectiveAvailable < quantity) {
         throw new Error("Insufficient stock");
       }
 

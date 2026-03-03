@@ -2,8 +2,8 @@ import { Inventory } from "../models/inventory.model.js";
 import type { Transaction, FindOptions } from "sequelize";
 
 export const findInventory = async (
-  productId: number,
-  warehouseId: number,
+  productId: string,
+  warehouseId: string,
   transaction?: Transaction,
   lock = false
 ) => {

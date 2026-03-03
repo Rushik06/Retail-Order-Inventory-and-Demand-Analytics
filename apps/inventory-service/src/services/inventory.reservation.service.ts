@@ -5,8 +5,8 @@ import { findInventory, saveInventory } from "../repository/inventory.repository
 class InventoryReservationService {
 
   async reserveStock(
-    productId: number,
-    warehouseId: number,
+    productId: string,   
+    warehouseId: string, 
     quantity: number
   ): Promise<void> {
 
@@ -16,7 +16,7 @@ class InventoryReservationService {
         productId,
         warehouseId,
         transaction,
-        true // row lock
+        true
       );
 
       if (!inventory) {
@@ -41,8 +41,8 @@ class InventoryReservationService {
   }
 
   async releaseStock(
-    productId: number,
-    warehouseId: number,
+    productId: string,
+    warehouseId: string,
     quantity: number
   ): Promise<void> {
 
@@ -59,9 +59,15 @@ class InventoryReservationService {
         throw new Error("Inventory not found");
       }
 
+      const reserved = inventory.getDataValue("reserved_qty");
+
+      if (reserved < quantity) {
+        throw new Error("Cannot release more than reserved quantity");
+      }
+
       inventory.set(
         "reserved_qty",
-        inventory.getDataValue("reserved_qty") - quantity
+        reserved - quantity
       );
 
       await saveInventory(inventory, transaction);
