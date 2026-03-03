@@ -46,7 +46,6 @@ class InventoryMovementService {
 
     });
   }
-
   async deductStock(
     productId: string,
     warehouseId: string,
