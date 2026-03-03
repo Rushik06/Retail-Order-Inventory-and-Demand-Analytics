@@ -1,6 +1,7 @@
 import app from './app.js';
 import {  env } from './config/index.js';
 import { sequelize } from "./config/sequilize.js";
+import { connectRabbitMQ } from './utils/rabbitmq.js';
 
 async function startServer(): Promise<void> {
   try {
@@ -9,6 +10,8 @@ async function startServer(): Promise<void> {
 
     await sequelize.sync();
     console.log('Database synced successfully');
+
+    connectRabbitMQ();
 
     app.listen(env.PORT, () => {
       console.log(`Product service running on http://localhost:${env.PORT}`);

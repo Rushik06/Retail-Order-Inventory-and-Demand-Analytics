@@ -1,4 +1,5 @@
 services:
+
   postgres:
     image: postgres:15
     container_name: retail_postgres
@@ -12,6 +13,21 @@ services:
     volumes:
       - D:/rms_postgres_data:/var/lib/postgresql/data
 
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: retail_rabbitmq
+    restart: always
+    ports:
+      - "5672:5672"      
+      - "15672:15672"   
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+
   auth-service:
     container_name: retail_auth_service
     build:
@@ -20,9 +36,10 @@ services:
     ports:
       - "3000:3000"
     depends_on:
-      - postgres
+      postgres:
+        condition: service_started
 
-  
+
   product-service:
     container_name: retail_product_service
     build:
@@ -31,9 +48,10 @@ services:
     ports:
       - "3001:3001"
     depends_on:
-      - postgres
+      postgres:
+        condition: service_started
 
-      
+
   inventory-service:
     container_name: retail_inventory_service
     build:
@@ -42,7 +60,12 @@ services:
     ports:
       - "3002:3002"
     depends_on:
-      - postgres
+      postgres:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy   
+
+
   web-app:
     container_name: retail_web_app
     build:
@@ -52,7 +75,8 @@ services:
       - "5173:5173"
     depends_on:
       - auth-service
-      - product-service   
+      - product-service
+
 
   nginx:
     image: nginx:alpine
@@ -64,4 +88,4 @@ services:
     depends_on:
       - web-app
       - auth-service
-      - product-service   
+      - product-service

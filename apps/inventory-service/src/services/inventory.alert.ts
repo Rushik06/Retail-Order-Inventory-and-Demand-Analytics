@@ -1,12 +1,11 @@
 import { StockAlert } from "../models/stockalert.model.js";
 import { findInventory } from "../repository/inventory.repository.js";
+import { publishEvent } from "../utils/rabbitmq.js";
 import type { Transaction } from "sequelize";
-
 class InventoryAlertService {
-
   async checkLowStock(
-    productId: string,      
-    warehouseId: string,    
+    productId: string,
+    warehouseId: string,
     threshold: number,
     transaction: Transaction
   ): Promise<void> {
@@ -37,6 +36,7 @@ class InventoryAlertService {
       });
 
       if (!existingAlert) {
+
         await StockAlert.create({
           product_id: productId,
           warehouse_id: warehouseId,
@@ -44,7 +44,32 @@ class InventoryAlertService {
           threshold_qty: threshold,
           current_qty: effectiveQty,
         }, { transaction });
+
+        // Publish RabbitMQ Event
+        await publishEvent("inventory.low_stock", {
+          event: "LOW_STOCK",
+          productId,
+          warehouseId,
+          currentQty: effectiveQty,
+          threshold,
+          occurredAt: new Date().toISOString(),
+        });
       }
+
+    } else {
+      // Auto resolve if stock recovered
+      await StockAlert.update(
+        { is_resolved: true },
+        {
+          where: {
+            product_id: productId,
+            warehouse_id: warehouseId,
+            alert_type: "LOW_STOCK",
+            is_resolved: false,
+          },
+          transaction,
+        }
+      );
     }
   }
 }
