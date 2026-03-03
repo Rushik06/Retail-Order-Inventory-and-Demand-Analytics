@@ -1,7 +1,7 @@
 import { sequelize } from "../config/index.js";
 import type { Transaction } from "sequelize";
+import { Inventory } from "../models/inventory.model.js";
 import { InventoryLog } from "../models/inventorylog.model.js";
-import { findInventory, saveInventory } from "../repository/inventory.repository.js";
 
 class InventoryMovementService {
 
@@ -14,22 +14,26 @@ class InventoryMovementService {
 
     await sequelize.transaction(async (transaction: Transaction) => {
 
-      const inventory = await findInventory(
-        productId,
-        warehouseId,
+      const [inventory] = await Inventory.findOrCreate({
+        where: {
+          product_id: productId,
+          warehouse_id: warehouseId,
+        },
+        defaults: {
+          product_id: productId,
+          warehouse_id: warehouseId,
+          available_qty: 0,
+          reserved_qty: 0,
+        },
         transaction,
-        true
-      );
-
-      if (!inventory) {
-        throw new Error("Inventory not found");
-      }
+        lock: transaction.LOCK.UPDATE,
+      });
 
       const previous = inventory.getDataValue("available_qty");
 
       inventory.set("available_qty", previous + quantity);
 
-      await saveInventory(inventory, transaction);
+      await inventory.save({ transaction });
 
       await InventoryLog.create({
         product_id: productId,
@@ -52,16 +56,20 @@ class InventoryMovementService {
 
     await sequelize.transaction(async (transaction: Transaction) => {
 
-      const inventory = await findInventory(
-        productId,
-        warehouseId,
+      const [inventory] = await Inventory.findOrCreate({
+        where: {
+          product_id: productId,
+          warehouse_id: warehouseId,
+        },
+        defaults: {
+          product_id: productId,
+          warehouse_id: warehouseId,
+          available_qty: 0,
+          reserved_qty: 0,
+        },
         transaction,
-        true
-      );
-
-      if (!inventory) {
-        throw new Error("Inventory not found");
-      }
+        lock: transaction.LOCK.UPDATE,
+      });
 
       const previous = inventory.getDataValue("available_qty");
       const reserved = inventory.getDataValue("reserved_qty");
@@ -74,7 +82,7 @@ class InventoryMovementService {
 
       inventory.set("available_qty", previous - quantity);
 
-      await saveInventory(inventory, transaction);
+      await inventory.save({ transaction });
 
       await InventoryLog.create({
         product_id: productId,

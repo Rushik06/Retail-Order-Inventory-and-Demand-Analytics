@@ -16,7 +16,7 @@ export const addStockSchema = z.object({
 
   referenceId: z
     .string()
-    .uuid({ message: "Reference ID must be a valid UUID" })
+    .uuid({ message: "Reference ID must be a valid UUID" }).nullable()
     .optional(),
 });
 
@@ -36,5 +36,6 @@ export const deductStockSchema = z.object({
 
   referenceId: z
     .string({ message: "Reference ID is required" })
-    .uuid({ message: "Reference ID must be a valid UUID" }),
+    .uuid({ message: "Reference ID must be a valid UUID" }).nullable()
+    .optional,
 });

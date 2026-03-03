@@ -6,7 +6,7 @@ export class Inventory extends Model {}
 
 Inventory.init(
   {
-    id: {
+    inventory_id: {
       type: DataTypes.UUID,
       primaryKey: true,
       defaultValue: () => randomUUID(),
