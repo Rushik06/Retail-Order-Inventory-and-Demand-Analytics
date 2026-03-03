@@ -2,41 +2,26 @@
 
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('stock_alerts', {
-      alert_id: {
+    await queryInterface.createTable('warehouses', {
+      warehouse_id: {
         type: Sequelize.UUID,
         primaryKey: true,
         defaultValue: Sequelize.literal('gen_random_uuid()'),
       },
 
-      product_id: {
-        type: Sequelize.UUID,
-        allowNull: false,
-      },
-
-      warehouse_id: {
-        type: Sequelize.UUID,
-        allowNull: false,
-      },
-
-      alert_type: {
+      name: {
         type: Sequelize.STRING,
         allowNull: false,
       },
 
-      threshold_qty: {
-        type: Sequelize.INTEGER,
+      location: {
+        type: Sequelize.STRING,
         allowNull: false,
       },
 
-      current_qty: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-      },
-
-      is_resolved: {
+      is_active: {
         type: Sequelize.BOOLEAN,
-        defaultValue: false,
+        defaultValue: true,
       },
 
       createdAt: {
@@ -52,6 +37,6 @@ module.exports = {
   },
 
   async down(queryInterface) {
-    await queryInterface.dropTable('stock_alerts');
+    await queryInterface.dropTable('warehouses');
   },
 };

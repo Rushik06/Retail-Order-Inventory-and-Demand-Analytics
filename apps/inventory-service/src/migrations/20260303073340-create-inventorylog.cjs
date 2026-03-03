@@ -2,8 +2,8 @@
 
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('inventory', {
-      inventory_id: {
+    await queryInterface.createTable('inventory_logs', {
+      inventory_log_id: {
         type: Sequelize.UUID,
         primaryKey: true,
         defaultValue: Sequelize.literal('gen_random_uuid()'),
@@ -19,16 +19,29 @@ module.exports = {
         allowNull: false,
       },
 
-      available_qty: {
-        type: Sequelize.INTEGER,
+      action_type: {
+        type: Sequelize.STRING,
         allowNull: false,
-        defaultValue: 0,
       },
 
-      reserved_qty: {
+      previous_available_qty: {
         type: Sequelize.INTEGER,
         allowNull: false,
-        defaultValue: 0,
+      },
+
+      new_available_qty: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+      },
+
+      reference_id: {
+        type: Sequelize.UUID,
+        allowNull: true,
+      },
+
+      performed_by: {
+        type: Sequelize.UUID,
+        allowNull: true,
       },
 
       createdAt: {
@@ -41,15 +54,9 @@ module.exports = {
         type: Sequelize.DATE,
       },
     });
-
-    await queryInterface.addConstraint('inventory', {
-      fields: ['product_id', 'warehouse_id'],
-      type: 'unique',
-      name: 'unique_product_warehouse_inventory',
-    });
   },
 
   async down(queryInterface) {
-    await queryInterface.dropTable('inventory');
+    await queryInterface.dropTable('inventory_logs');
   },
 };
