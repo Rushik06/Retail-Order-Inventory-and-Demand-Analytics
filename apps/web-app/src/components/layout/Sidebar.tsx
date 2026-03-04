@@ -9,6 +9,8 @@ import {
   ShoppingCart,
   ChevronLeft,
   ChevronRight,
+  Boxes,
+  Warehouse,
 } from "lucide-react";
 import { useAuthStore } from "@/app/app.state";
 
@@ -20,6 +22,10 @@ export default function Sidebar() {
     { to: "/dashboard", label: "Home", icon: <LayoutDashboard size={18} /> },
     { to: "/dashboard/products", label: "Products", icon: <Package size={18} /> },
     { to: "/dashboard/orders", label: "Orders", icon: <ShoppingCart size={18} /> },
+
+    { to: "/dashboard/inventory", label: "Inventory", icon: <Boxes size={18} /> },
+    { to: "/dashboard/warehouses", label: "Warehouses", icon: <Warehouse size={18} /> },
+
     { to: "/dashboard/profile", label: "Profile", icon: <User size={18} /> },
     { to: "/dashboard/security", label: "Security", icon: <Shield size={18} /> },
   ];
@@ -93,7 +99,7 @@ export default function Sidebar() {
             </div>
           )}
 
-          {/* Hover Tooltip when collapsed */}
+          {/* Hover Tooltip */}
           {collapsed && (
             <div className="absolute left-16 opacity-0 group-hover:opacity-100 transition bg-white shadow-lg border border-slate-200 rounded-lg p-3 text-sm whitespace-nowrap">
               <p className="font-medium text-slate-800">

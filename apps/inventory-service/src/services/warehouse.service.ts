@@ -94,5 +94,21 @@ class WarehouseService {
 
         await warehouse.save();
     }
+    
+    /* ACTIVATE WAREHOUSE */
+    async activateWarehouse(
+        warehouseId: string
+    ): Promise<void> {
+
+        const warehouse = await Warehouse.findByPk(warehouseId);
+
+        if (!warehouse) {
+            throw new Error("Warehouse not found");
+        }
+
+        warehouse.set("is_active", true);
+
+        await warehouse.save();
+    }
 }
 export const warehouseService = new WarehouseService();

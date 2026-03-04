@@ -12,6 +12,9 @@ import Security from "@/pages/dashboard/Security";
 import Products from "@/pages/dashboard/product/Product";
 import Orders from "@/pages/dashboard/order/Order";
 
+import Inventory from "@/pages/dashboard/inventory/Inventory";
+import Warehouse from "@/pages/dashboard/warehouse/Warehouse";
+
 import DashboardLayout from "../components/layout/DashboardLayout";
 
 function AppRoutes() {
@@ -68,9 +71,14 @@ function AppRoutes() {
         <Route path="profile" element={<Profile />} />
         <Route path="security" element={<Security />} />
 
-        {/* NEW: Product & Order Pages */}
+        {/* Product */}
         <Route path="products" element={<Products />} />
         <Route path="orders" element={<Orders />} />
+
+        {/* Inventory */}
+        <Route path="inventory" element={<Inventory />} />
+        <Route path="warehouses" element={<Warehouse />} />
+
       </Route>
 
       {/* Fallback */}

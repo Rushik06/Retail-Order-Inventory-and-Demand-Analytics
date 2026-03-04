@@ -8,6 +8,7 @@ import {
     getWarehouseByIdController,
     updateWarehouseController,
     deactivateWarehouseController,
+    activateWarehouseController,
 } from "../controllers/warehouse.controller.js";
 
 const router: Router = Router();
@@ -132,7 +133,7 @@ router.get("/:id", authorizeRoles("ADMIN", "MANAGER", "STAFF"), getWarehouseById
 
 /**
  * @swagger
- * /warehouses/{warehouseId}:
+ * /warehouse/{warehouseId}:
  *   patch:
  *     summary: Update warehouse
  *     tags: [Warehouse]
@@ -161,7 +162,7 @@ router.patch("/:id", authorizeRoles("ADMIN", "MANAGER"), updateWarehouseControll
 
 /**
  * @swagger
- * /warehouses/{warehouseId}/deactivate:
+ * /warehouse/{warehouseId}/deactivate:
  *   patch:
  *     summary: Deactivate warehouse
  *     tags: [Warehouse]
@@ -181,5 +182,6 @@ router.patch("/:id", authorizeRoles("ADMIN", "MANAGER"), updateWarehouseControll
  *         description: Warehouse not found
  */
 router.patch("/:id/deactivate", authorizeRoles("ADMIN"), deactivateWarehouseController);
+router.patch("/:id/activate",authorizeRoles("ADMIN"),activateWarehouseController);
 
 export default router;

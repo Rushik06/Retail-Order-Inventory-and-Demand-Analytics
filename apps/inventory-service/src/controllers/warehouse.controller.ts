@@ -49,13 +49,13 @@ export const getAllWarehousesController = async (
 };
 
 
-/*  GET WAREHOUSE BY ID*/
+/* GET WAREHOUSE BY ID*/
 export const getWarehouseByIdController = async (
   req: Request,
   res: Response
 ): Promise<void> => {
   try {
-    const  warehouseId  = req.params.id as string;
+    const warehouseId = req.params.id as string;
 
     const warehouse = await warehouseService.getWarehouseById(
       warehouseId
@@ -74,13 +74,13 @@ export const getWarehouseByIdController = async (
 };
 
 
-/*UPDATE WAREHOUSE*/
+/* UPDATE WAREHOUSE*/
 export const updateWarehouseController = async (
   req: Request,
   res: Response
 ): Promise<void> => {
   try {
-    const  warehouseId  = req.params.id as string;
+    const warehouseId = req.params.id as string;
     const { name, location } = req.body;
 
     const updatedWarehouse = await warehouseService.updateWarehouse(
@@ -103,7 +103,7 @@ export const updateWarehouseController = async (
 };
 
 
-/*DEACTIVATE WAREHOUSE */
+/* DEACTIVATE WAREHOUSE */
 export const deactivateWarehouseController = async (
   req: Request,
   res: Response
@@ -117,6 +117,31 @@ export const deactivateWarehouseController = async (
 
     res.status(200).json({
       message: "Warehouse deactivated successfully",
+    });
+
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error ? error.message : "Internal server error";
+
+    res.status(400).json({ message });
+  }
+};
+
+
+/* ACTIVATE WAREHOUSE */
+export const activateWarehouseController = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const warehouseId = req.params.id as string;
+
+    await warehouseService.activateWarehouse(
+      warehouseId
+    );
+
+    res.status(200).json({
+      message: "Warehouse activated successfully",
     });
 
   } catch (error: unknown) {

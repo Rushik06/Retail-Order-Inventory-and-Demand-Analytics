@@ -76,6 +76,7 @@ services:
     depends_on:
       - auth-service
       - product-service
+      - inventory-service
 
 
   nginx:
@@ -89,3 +90,4 @@ services:
       - web-app
       - auth-service
       - product-service
+      - inventory-service
