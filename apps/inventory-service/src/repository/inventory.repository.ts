@@ -1,6 +1,8 @@
 import { Inventory } from "../models/inventory.model.js";
 import type { Transaction, FindOptions } from "sequelize";
 
+/* EXISTING CODE (UNCHANGED) */
+
 export const findInventory = async (
   productId: string,
   warehouseId: string,
@@ -30,4 +32,21 @@ export const saveInventory = async (
   transaction: Transaction
 ) => {
   return inventory.save({ transaction });
+};
+
+
+export const getAllInventory = async () => {
+  return Inventory.findAll();
+};
+
+export const getInventoryByProductWarehouse = async (
+  productId: string,
+  warehouseId: string
+) => {
+  return Inventory.findOne({
+    where: {
+      product_id: productId,
+      warehouse_id: warehouseId,
+    },
+  });
 };

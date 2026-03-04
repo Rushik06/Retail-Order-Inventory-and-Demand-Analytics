@@ -14,6 +14,11 @@ import {
 } from "../controllers/inventory.movement.controller.js";
 
 import {
+    getAllInventoryController,
+    getInventoryController
+} from "../controllers/inventory.query.controller.js";
+
+import {
     reserveStockSchema,
     releaseStockSchema,
 } from "../validations/inventory.reservation.validation.js";
@@ -32,6 +37,8 @@ const router: Router = Router();
  *     description: Inventory reservation management
  *   - name: Movement
  *     description: Inventory stock movement management
+ *   - name: Inventory
+ *     description: Inventory query APIs
  */
 
 /**
@@ -42,188 +49,135 @@ const router: Router = Router();
  *       type: http
  *       scheme: bearer
  *       bearerFormat: JWT
- *
- *   schemas:
- *     ReserveStock:
- *       type: object
- *       required:
- *         - productId
- *         - warehouseId
- *         - quantity
- *       properties:
- *         productId:
- *           type: integer
- *         warehouseId:
- *           type: integer
- *         quantity:
- *           type: integer
- *
- *     ReleaseStock:
- *       type: object
- *       required:
- *         - productId
- *         - warehouseId
- *         - quantity
- *       properties:
- *         productId:
- *           type: integer
- *         warehouseId:
- *           type: integer
- *         quantity:
- *           type: integer
- *
- *     AddStock:
- *       type: object
- *       required:
- *         - productId
- *         - warehouseId
- *         - quantity
- *       properties:
- *         productId:
- *           type: integer
- *         warehouseId:
- *           type: integer
- *         quantity:
- *           type: integer
- *         referenceId:
- *           type: integer
- *           nullable: true
- *
- *     DeductStock:
- *       type: object
- *       required:
- *         - productId
- *         - warehouseId
- *         - quantity
- *         - referenceId
- *       properties:
- *         productId:
- *           type: integer
- *         warehouseId:
- *           type: integer
- *         quantity:
- *           type: integer
- *         referenceId:
- *           type: integer
  */
 
 /* All inventory routes require authentication */
 router.use(authenticate);
 
+
+/* INVENTORY QUERY ROUTES */
+
 /**
  * @swagger
- * /reserve:
+ * /api/inventory:
+ *   get:
+ *     summary: Get all inventory records
+ *     tags: [Inventory]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of inventory records
+ *       401:
+ *         description: Unauthorized
+ */
+router.get(
+    "/",
+    authorizeRoles("ADMIN", "MANAGER","STAFF"),
+    getAllInventoryController
+);
+
+/**
+ * @swagger
+ * /api/inventory/{productId}/{warehouseId}:
+ *   get:
+ *     summary: Get inventory for specific product and warehouse
+ *     tags: [Inventory]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: productId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *       - in: path
+ *         name: warehouseId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       200:
+ *         description: Inventory record
+ *       404:
+ *         description: Inventory not found
+ */
+router.get(
+    "/:id/:id",
+    authorizeRoles("ADMIN", "MANAGER","STAFF"),
+    getInventoryController
+);
+
+/* RESERVATION ROUTES */
+
+/**
+ * @swagger
+ * /api/inventory/reserve:
  *   post:
  *     summary: Reserve stock (Prevent overselling)
  *     tags: [Reservation]
  *     security:
  *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/ReserveStock'
- *     responses:
- *       200:
- *         description: Stock reserved successfully
- *       400:
- *         description: Validation or business error
- *       401:
- *         description: Unauthorized
- *       403:
- *         description: Forbidden
  */
 router.post(
     "/reserve",
-    authorizeRoles("ORDER_SERVICE", "ADMIN"), validate(reserveStockSchema), reserveStockController
+    authorizeRoles("MANAGER", "ADMIN"),
+    validate(reserveStockSchema),
+    reserveStockController
 );
 
 /**
  * @swagger
- * /release:
+ * /api/inventory/release:
  *   post:
  *     summary: Release reserved stock
  *     tags: [Reservation]
  *     security:
  *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/ReleaseStock'
- *     responses:
- *       200:
- *         description: Stock released successfully
- *       400:
- *         description: Validation or business error
- *       401:
- *         description: Unauthorized
- *       403:
- *         description: Forbidden
  */
 router.post(
     "/release",
-    authorizeRoles("ORDER_SERVICE", "ADMIN"), validate(releaseStockSchema), releaseStockController
+    authorizeRoles("MANAGER", "ADMIN"),
+    validate(releaseStockSchema),
+    releaseStockController
 );
+
+
+/* MOVEMENT ROUTES */
+
 
 /**
  * @swagger
- * /add:
+ * /api/inventory/add:
  *   post:
  *     summary: Add stock (Inbound movement)
  *     tags: [Movement]
  *     security:
  *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/AddStock'
- *     responses:
- *       200:
- *         description: Stock added successfully
- *       400:
- *         description: Validation or business error
- *       401:
- *         description: Unauthorized
- *       403:
- *         description: Forbidden
  */
 router.post(
     "/add",
-    authorizeRoles("ADMIN", "WAREHOUSE_MANAGER"), validate(addStockSchema), addStockController
+    authorizeRoles("ADMIN", "MANAGER"),
+    validate(addStockSchema),
+    addStockController
 );
 
 /**
  * @swagger
- * /deduct:
+ * /api/inventory/deduct:
  *   post:
  *     summary: Deduct stock (Outbound movement)
  *     tags: [Movement]
  *     security:
  *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/DeductStock'
- *     responses:
- *       200:
- *         description: Stock deducted successfully
- *       400:
- *         description: Validation or business error
- *       401:
- *         description: Unauthorized
- *       403:
- *         description: Forbidden
  */
 router.post(
     "/deduct",
-    authorizeRoles("ADMIN", "ORDER_SERVICE"), validate(deductStockSchema), deductStockController
+    authorizeRoles("ADMIN", "MANAGER"),
+    validate(deductStockSchema),
+    deductStockController
 );
 
 export default router;

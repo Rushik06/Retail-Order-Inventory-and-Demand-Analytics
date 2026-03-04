@@ -3,7 +3,7 @@ import cors from "cors";
 import morgan from "morgan";
 import { setupSwagger } from "./swagger/swagger.js";
 import inventoryRoutes from "./routes/inventory.routes.js";
-import warehouseRoutes from "./routes/warehouse.routes.js"
+import warehouseRoutes from "./routes/warehouse.routes.js";
 import { authenticate } from "./middleware/auth.middleware.js";
 
 const app: Express = express();
