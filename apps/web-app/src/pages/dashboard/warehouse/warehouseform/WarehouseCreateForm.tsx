@@ -71,7 +71,7 @@ export default function WarehouseCreateForm({
 
       <CardHeader>
         <CardTitle className="text-lg font-semibold">
-          Create Warehouse
+
         </CardTitle>
       </CardHeader>
 

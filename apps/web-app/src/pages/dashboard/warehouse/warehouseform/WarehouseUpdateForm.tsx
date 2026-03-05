@@ -44,16 +44,26 @@ export default function WarehouseUpdateForm({
           }
         />
 
-        <Button
-          className="bg-blue-600 hover:bg-blue-700 text-white"
-          onClick={handleUpdate}
-        >
-          Update Warehouse
-        </Button>
+        <div className="flex gap-3">
+
+          <Button
+            className="bg-blue-600 hover:bg-blue-700 text-white"
+            onClick={handleUpdate}
+          >
+            Update Warehouse
+          </Button>
+
+          <Button
+            variant="outline"
+            onClick={() => setSelectedWarehouse(null)}
+          >
+            Close
+          </Button>
+
+        </div>
 
       </CardContent>
 
     </Card>
-
   );
 }
