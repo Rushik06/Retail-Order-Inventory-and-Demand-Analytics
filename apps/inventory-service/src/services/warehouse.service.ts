@@ -1,4 +1,5 @@
 import { Warehouse } from "../models/warehouse.model.js";
+import { Op } from "sequelize";
 
 class WarehouseService {
 
@@ -9,11 +10,11 @@ class WarehouseService {
     ): Promise<Warehouse> {
 
         const existing = await Warehouse.findOne({
-            where: { name },
+            where: { name ,location},
         });
 
         if (existing) {
-            throw new Error("Warehouse with this name already exists");
+            throw new Error("Warehouse already exists in this location");
         }
 
         const warehouse = await Warehouse.create({
@@ -26,16 +27,54 @@ class WarehouseService {
     }
 
 
-    /* GET ALL WAREHOUSES */
-    async getAllWarehouses(): Promise<Warehouse[]> {
+    /* GET ALL WAREHOUSES (WITH PAGINATION + SEARCH + SORT) */
 
-        return Warehouse.findAll({
-            order: [["createdAt", "DESC"]],
+    async getAllWarehouses(
+        page: number = 1,
+        limit: number = 10,
+        search: string = "",
+        sortField: string = "createdAt",
+        sortOrder: "ASC" | "DESC" = "DESC"
+    ) {
+
+        const offset = (page - 1) * limit;
+
+        const whereClause = search
+            ? {
+                [Op.or]: [
+                    {
+                        name: {
+                            [Op.iLike]: `%${search}%`,
+                        },
+                    },
+                    {
+                        location: {
+                            [Op.iLike]: `%${search}%`,
+                        },
+                    },
+                ],
+            }
+            : {};
+
+        const { rows, count } = await Warehouse.findAndCountAll({
+            where: whereClause,
+            limit,
+            offset,
+            order: [[sortField, sortOrder]],
         });
+
+        return {
+            data: rows,
+            total: count,
+            page,
+            limit,
+            totalPages: Math.ceil(count / limit),
+        };
     }
 
 
     /* GET WAREHOUSE BY ID */
+
     async getWarehouseById(
         warehouseId: string
     ): Promise<Warehouse> {
@@ -52,7 +91,8 @@ class WarehouseService {
     }
 
 
-    /* UPDATE WAREHOUSE*/
+    /* UPDATE WAREHOUSE */
+
     async updateWarehouse(
         warehouseId: string,
         name?: string,
@@ -80,6 +120,7 @@ class WarehouseService {
 
 
     /* DEACTIVATE WAREHOUSE */
+
     async deactivateWarehouse(
         warehouseId: string
     ): Promise<void> {
@@ -94,8 +135,10 @@ class WarehouseService {
 
         await warehouse.save();
     }
-    
+
+
     /* ACTIVATE WAREHOUSE */
+
     async activateWarehouse(
         warehouseId: string
     ): Promise<void> {
@@ -111,4 +154,5 @@ class WarehouseService {
         await warehouse.save();
     }
 }
-export const warehouseService = new WarehouseService();
+
+export const warehouseService = new WarehouseService()

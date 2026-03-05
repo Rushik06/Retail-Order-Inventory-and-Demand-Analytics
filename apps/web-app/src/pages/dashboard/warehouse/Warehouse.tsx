@@ -1,237 +1,199 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { toast } from "sonner";
 
 import {
-  fetchWarehouses,
-  fetchWarehouseById,
-  createNewWarehouse,
-  updateExistingWarehouse,
-  deactivateExistingWarehouse,
-  activateExistingWarehouse,
+fetchWarehouses,
+fetchWarehouseById,
+createNewWarehouse,
+updateExistingWarehouse,
 } from "@/app/inventory.logic";
 
-import WarehouseForm from "./WarehouseForm";
-import WarehouseTable from "./WarehouseTable";
+import WarehouseForm from "./warehouseform/WarehouseForm";
+import WarehouseTable from "./warehousetable/WarehouseTable";
+import WarehouseActionModal from "./WarehouseActionModal";
 
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import useWarehouseActionModal from "@/hooks/Warehousehooks";
 
-import { Button } from "@/components/ui/Button";
-
-type Warehouse = {
-  warehouse_id: string;
-  name: string;
-  location: string;
-  is_active: boolean;
-};
+import type { Warehouse } from "@/types/warehouse.types";
 
 export default function WarehousePage() {
 
-  const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
-  const [selectedWarehouse, setSelectedWarehouse] = useState<Warehouse | null>(null);
+const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
+const [selectedWarehouse, setSelectedWarehouse] = useState<Warehouse | null>(null);
 
-  const [name, setName] = useState("");
-  const [location, setLocation] = useState("");
+const [name, setName] = useState("");
+const [location, setLocation] = useState("");
 
-  const [search, setSearch] = useState("");
-  const [sortField, setSortField] = useState<"name" | "location">("name");
+/* SCROLL REF */
 
-  const [page, setPage] = useState(1);
-  const perPage = 6;
+const detailsRef = useRef<HTMLDivElement | null>(null);
 
-  /* MODAL STATE */
+/* QUERY STATE */
 
-  const [actionModalOpen, setActionModalOpen] = useState(false);
-  const [actionType, setActionType] = useState<"activate" | "deactivate" | null>(null);
-  const [targetWarehouseId, setTargetWarehouseId] = useState<string | null>(null);
+const [search, setSearch] = useState("");
+const [sortField, setSortField] = useState<"name" | "location">("name");
+const [sortOrder, setSortOrder] = useState<"ASC" | "DESC">("ASC");
 
-  /* LOAD */
+const [page, setPage] = useState(1);
+const [limit, setLimit] = useState(6);
+const [totalPages, setTotalPages] = useState(1);
 
-  const loadWarehouses = async () => {
-    const data = await fetchWarehouses();
-    setWarehouses(data.data || []);
-  };
+/* LOAD FROM BACKEND */
 
-  useEffect(() => {
-    loadWarehouses();
-  }, []);
+const loadWarehouses = async () => {
+try {
+const res = await fetchWarehouses({
+page,
+limit,
+search,
+sortField,
+sortOrder,
+});
 
-  /* FILTER */
+  setWarehouses(res.data || []);
+  setTotalPages(res.totalPages || 1);
 
-  const filtered = warehouses.filter((w) =>
-    w.name.toLowerCase().includes(search.toLowerCase())
-  );
+} catch (error) {
+  console.error("Failed to load warehouses:", error);
+  toast.error("Failed to load warehouses");
+}
 
-  /* SORT */
+};
 
-  const sorted = [...filtered].sort((a, b) =>
-    a[sortField].localeCompare(b[sortField])
-  );
+useEffect(() => {
+loadWarehouses();
+}, [page, limit, search, sortField, sortOrder]);
 
-  /* PAGINATION */
+/* CREATE */
 
-  const paginated = sorted.slice(
-    (page - 1) * perPage,
-    page * perPage
-  );
+const handleCreate = async () => {
+try {
+await createNewWarehouse(name, location);
 
-  const totalPages = Math.ceil(sorted.length / perPage);
+  toast.success("Warehouse created");
 
-  /* CREATE */
+  setName("");
+  setLocation("");
 
-  const handleCreate = async () => {
-    await createNewWarehouse(name, location);
-    toast.success("Warehouse created");
-    setName("");
-    setLocation("");
-    loadWarehouses();
-  };
+  loadWarehouses();
+} catch {
+  toast.error("Failed to create warehouse");
+}
 
-  /* VIEW */
+};
 
-  const handleView = async (id: string) => {
-    const data = await fetchWarehouseById(id);
-    setSelectedWarehouse(data.data);
-  };
+/* VIEW */
 
-  /* UPDATE */
+const handleView = async (id: string) => {
+try {
+const data = await fetchWarehouseById(id);
 
-  const handleUpdate = async () => {
+  setSelectedWarehouse(data.data);
 
-    if (!selectedWarehouse) return;
-
-    await updateExistingWarehouse(selectedWarehouse.warehouse_id, {
-      name: selectedWarehouse.name,
-      location: selectedWarehouse.location,
+  setTimeout(() => {
+    detailsRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
     });
+  }, 100);
 
-    toast.success("Warehouse updated");
-    setSelectedWarehouse(null);
-    loadWarehouses();
-  };
+} catch {
+  toast.error("Failed to fetch warehouse");
+}
 
-  /* OPEN MODAL */
+};
 
-  const openActionModal = (
-    id: string,
-    type: "activate" | "deactivate"
-  ) => {
-    setTargetWarehouseId(id);
-    setActionType(type);
-    setActionModalOpen(true);
-  };
+/* UPDATE */
 
-  /* CONFIRM ACTION */
+const handleUpdate = async () => {
 
-  const handleConfirmAction = async () => {
+if (!selectedWarehouse) return;
 
-    if (!targetWarehouseId || !actionType) return;
+try {
+  await updateExistingWarehouse(selectedWarehouse.warehouse_id, {
+    name: selectedWarehouse.name,
+    location: selectedWarehouse.location,
+  });
 
-    if (actionType === "deactivate") {
-      await deactivateExistingWarehouse(targetWarehouseId);
-      toast.success("Warehouse deactivated");
+  toast.success("Warehouse updated");
+
+  setSelectedWarehouse(null);
+
+  loadWarehouses();
+
+} catch {
+  toast.error("Failed to update warehouse");
+}
+
+};
+
+/* MODAL HOOK */
+
+const {
+actionModalOpen,
+setActionModalOpen,
+actionType,
+openActionModal,
+handleConfirmAction,
+} = useWarehouseActionModal(loadWarehouses);
+
+return (
+
+<div className="p-8 space-y-8">
+
+  <h1 className="text-3xl font-semibold tracking-tight">
+    Warehouse Management
+  </h1>
+
+  {/* DETAILS FORM */}
+
+  <div ref={detailsRef}>
+    <WarehouseForm
+      name={name}
+      setName={setName}
+      location={location}
+      setLocation={setLocation}
+      handleCreate={handleCreate}
+      selectedWarehouse={selectedWarehouse}
+      setSelectedWarehouse={setSelectedWarehouse}
+      handleUpdate={handleUpdate}
+    />
+  </div>
+
+  {/* TABLE */}
+
+  <WarehouseTable
+    search={search}
+    setSearch={setSearch}
+    sortField={sortField}
+    setSortField={setSortField}
+    sortOrder={sortOrder}
+    setSortOrder={setSortOrder}
+    warehouses={warehouses}
+    page={page}
+    totalPages={totalPages}
+    setPage={setPage}
+    limit={limit}
+    setLimit={setLimit}
+    handleView={handleView}
+    handleDeactivate={(id: string) =>
+      openActionModal(id, "deactivate")
     }
-
-    if (actionType === "activate") {
-      await activateExistingWarehouse(targetWarehouseId);
-      toast.success("Warehouse activated");
+    handleActivate={(id: string) =>
+      openActionModal(id, "activate")
     }
+  />
 
-    setActionModalOpen(false);
-    setTargetWarehouseId(null);
-    setActionType(null);
+  {/* ACTION MODAL */}
 
-    loadWarehouses();
-  };
+  <WarehouseActionModal
+    actionModalOpen={actionModalOpen}
+    setActionModalOpen={setActionModalOpen}
+    actionType={actionType}
+    handleConfirmAction={handleConfirmAction}
+  />
 
-  return (
+</div>
 
-    <div className="p-8 space-y-8">
-
-      <h1 className="text-3xl font-semibold tracking-tight">
-        Warehouse Management
-      </h1>
-
-      <WarehouseForm
-        name={name}
-        setName={setName}
-        location={location}
-        setLocation={setLocation}
-        handleCreate={handleCreate}
-        selectedWarehouse={selectedWarehouse}
-        setSelectedWarehouse={setSelectedWarehouse}
-        handleUpdate={handleUpdate}
-      />
-
-      <WarehouseTable
-        search={search}
-        setSearch={setSearch}
-        setSortField={setSortField}
-        paginated={paginated}
-        page={page}
-        totalPages={totalPages}
-        setPage={setPage}
-        handleView={handleView}
-        handleDeactivate={(id: string) =>
-          openActionModal(id, "deactivate")
-        }
-        handleActivate={(id: string) =>
-          openActionModal(id, "activate")
-        }
-      />
-
-      {/* ACTION MODAL */}
-
-      <Dialog open={actionModalOpen} onOpenChange={setActionModalOpen}>
-
-        <DialogContent>
-
-          <DialogHeader>
-            <DialogTitle>
-
-              {actionType === "deactivate"
-                ? "Deactivate Warehouse"
-                : "Activate Warehouse"}
-
-            </DialogTitle>
-          </DialogHeader>
-
-          <p className="text-sm text-gray-600">
-
-            {actionType === "deactivate"
-              ? "Are you sure you want to deactivate this warehouse?"
-              : "Are you sure you want to activate this warehouse?"}
-
-          </p>
-
-          <DialogFooter className="mt-4">
-
-            <Button
-              variant="outline"
-              onClick={() => setActionModalOpen(false)}
-            >
-              Cancel
-            </Button>
-
-            <Button
-              className={
-                actionType === "deactivate"
-                  ? "bg-orange-500 hover:bg-orange-600 text-white"
-                  : "bg-blue-600 hover:bg-blue-700 text-white"
-              }
-              onClick={handleConfirmAction}
-            >
-              Confirm
-            </Button>
-
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
+);
 }

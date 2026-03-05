@@ -1,6 +1,8 @@
 import { Router } from "express";
 import { authenticate } from "../middleware/auth.middleware.js";
 import { authorizeRoles } from "../middleware/authorize.middleware.js";
+import { validate } from "../middleware/validate.middleware.js";
+import { createWarehouseSchema,updateWarehouseSchema } from "../validations/warehouse.validation.js";
 
 import {
     createWarehouseController,
@@ -90,7 +92,7 @@ router.use(authenticate);
  *       403:
  *         description: Forbidden
  */
-router.post("/", authorizeRoles("ADMIN"), createWarehouseController);
+router.post("/", authorizeRoles("ADMIN"),validate(createWarehouseSchema), createWarehouseController);
 
 /**
  * @swagger
@@ -158,7 +160,7 @@ router.get("/:id", authorizeRoles("ADMIN", "MANAGER", "STAFF"), getWarehouseById
  *       404:
  *         description: Warehouse not found
  */
-router.patch("/:id", authorizeRoles("ADMIN", "MANAGER"), updateWarehouseController);
+router.patch("/:id", authorizeRoles("ADMIN", "MANAGER"), validate(updateWarehouseSchema),updateWarehouseController);
 
 /**
  * @swagger

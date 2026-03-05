@@ -29,18 +29,29 @@ export const createWarehouseController = async (
 
 
 /* GET ALL WAREHOUSES*/
-export const getAllWarehousesController = async (
-  _req: Request,
-  res: Response
-): Promise<void> => {
-  try {
-    const warehouses = await warehouseService.getAllWarehouses();
+export const getAllWarehousesController = async (req: Request, res: Response) => {
 
-    res.status(200).json({
-      data: warehouses,
-    });
+  try {
+
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 10;
+    const search = (req.query.search as string) || "";
+    const sortField = (req.query.sortField as string) || "createdAt";
+    const sortOrder =
+      (req.query.sortOrder as "ASC" | "DESC") || "DESC";
+
+    const result = await warehouseService.getAllWarehouses(
+      page,
+      limit,
+      search,
+      sortField,
+      sortOrder
+    );
+
+    res.status(200).json(result);
 
   } catch (error: unknown) {
+
     const message =
       error instanceof Error ? error.message : "Internal server error";
 
