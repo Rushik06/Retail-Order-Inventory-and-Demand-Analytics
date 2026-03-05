@@ -123,8 +123,16 @@ export const createWarehouse = (data: {
   inventoryAxios.post("/warehouse", data);
 
 // Get all warehouses
-export const getWarehouses = () =>
-  inventoryAxios.get("/warehouse");
+export const getWarehouses = (params: {
+  page?: number;
+  limit?: number;
+  search?: string;
+  sortField?: string;
+  sortOrder?: "ASC" | "DESC";
+}) =>
+  inventoryAxios.get("/warehouse", {
+    params,
+  });
 
 // Get warehouse by ID
 export const getWarehouseById = (id: string) =>

@@ -113,8 +113,14 @@ export const createNewWarehouse = async (
 };
 
 // Get all warehouses
-export const fetchWarehouses = async () => {
-  const res = await getWarehouses();
+export const fetchWarehouses = async (params: {
+  page?: number;
+  limit?: number;
+  search?: string;
+  sortField?: string;
+  sortOrder?: "ASC" | "DESC";
+}) => {
+  const res = await getWarehouses(params);
   return res.data;
 };
 
