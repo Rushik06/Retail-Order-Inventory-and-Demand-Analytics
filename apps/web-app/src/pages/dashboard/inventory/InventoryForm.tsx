@@ -80,8 +80,13 @@ export default function InventoryCreateCard({
             <option value="">Select Warehouse</option>
 
             {warehouses.map((w: any) => (
-              <option key={w.warehouse_id} value={w.warehouse_id}>
+              <option
+                key={w.warehouse_id}
+                value={w.warehouse_id}
+                disabled={!w.is_active}
+              >
                 {w.name} - {w.location}
+                {!w.is_active ? " (Inactive)" : ""}
               </option>
             ))}
           </select>
