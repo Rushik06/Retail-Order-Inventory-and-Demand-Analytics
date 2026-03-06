@@ -11,6 +11,7 @@ import {
 import {
     addStockController,
     deductStockController,
+    createInventoryController
 } from "../controllers/inventory.movement.controller.js";
 
 import {
@@ -33,12 +34,12 @@ const router: Router = Router();
 /**
  * @swagger
  * tags:
- *   - name: Reservation
- *     description: Inventory reservation management
- *   - name: Movement
- *     description: Inventory stock movement management
  *   - name: Inventory
  *     description: Inventory query APIs
+ *   - name: Movement
+ *     description: Inventory stock movement management
+ *   - name: Reservation
+ *     description: Inventory reservation management
  */
 
 /**
@@ -51,11 +52,10 @@ const router: Router = Router();
  *       bearerFormat: JWT
  */
 
-/* All inventory routes require authentication */
+/* All routes require authentication */
 router.use(authenticate);
 
 
-/* INVENTORY QUERY ROUTES */
 
 /**
  * @swagger
@@ -68,8 +68,6 @@ router.use(authenticate);
  *     responses:
  *       200:
  *         description: List of inventory records
- *       401:
- *         description: Unauthorized
  */
 router.get(
     "/",
@@ -77,11 +75,13 @@ router.get(
     getAllInventoryController
 );
 
+
+
 /**
  * @swagger
  * /api/inventory/{productId}/{warehouseId}:
  *   get:
- *     summary: Get inventory for specific product and warehouse
+ *     summary: Get inventory for a specific product in a warehouse
  *     tags: [Inventory]
  *     security:
  *       - bearerAuth: []
@@ -91,35 +91,70 @@ router.get(
  *         required: true
  *         schema:
  *           type: string
- *           format: uuid
  *       - in: path
  *         name: warehouseId
  *         required: true
  *         schema:
  *           type: string
- *           format: uuid
  *     responses:
  *       200:
- *         description: Inventory record
+ *         description: Inventory record found
  *       404:
  *         description: Inventory not found
  */
 router.get(
-    "/:id/:id",
+    "/:productId/:warehouseId",
     authorizeRoles("ADMIN", "MANAGER","STAFF"),
     getInventoryController
 );
 
-/* RESERVATION ROUTES */
+
+
+/**
+ * @swagger
+ * /api/inventory/create:
+ *   post:
+ *     summary: Create inventory record manually
+ *     tags: [Inventory]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           example:
+ *             productId: "product-uuid"
+ *             warehouseId: "warehouse-uuid"
+ *             availableQty: 100
+ *             reservedQty: 0
+ *     responses:
+ *       201:
+ *         description: Inventory created successfully
+ */
+router.post(
+    "/create",
+    authorizeRoles("ADMIN", "MANAGER"),
+    createInventoryController
+);
+
+
 
 /**
  * @swagger
  * /api/inventory/reserve:
  *   post:
- *     summary: Reserve stock (Prevent overselling)
+ *     summary: Reserve stock to prevent overselling
  *     tags: [Reservation]
  *     security:
  *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           example:
+ *             productId: "product-uuid"
+ *             warehouseId: "warehouse-uuid"
+ *             quantity: 5
  */
 router.post(
     "/reserve",
@@ -127,6 +162,8 @@ router.post(
     validate(reserveStockSchema),
     reserveStockController
 );
+
+
 
 /**
  * @swagger
@@ -136,6 +173,14 @@ router.post(
  *     tags: [Reservation]
  *     security:
  *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           example:
+ *             productId: "product-uuid"
+ *             warehouseId: "warehouse-uuid"
+ *             quantity: 5
  */
 router.post(
     "/release",
@@ -144,8 +189,6 @@ router.post(
     releaseStockController
 );
 
-
-/* MOVEMENT ROUTES */
 
 
 /**
@@ -156,6 +199,18 @@ router.post(
  *     tags: [Movement]
  *     security:
  *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           example:
+ *             productId: "product-uuid"
+ *             warehouseId: "warehouse-uuid"
+ *             quantity: 20
+ *             referenceId: "PO-12345"
+ *     responses:
+ *       200:
+ *         description: Stock added successfully
  */
 router.post(
     "/add",
@@ -163,6 +218,8 @@ router.post(
     validate(addStockSchema),
     addStockController
 );
+
+
 
 /**
  * @swagger
@@ -172,6 +229,18 @@ router.post(
  *     tags: [Movement]
  *     security:
  *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           example:
+ *             productId: "product-uuid"
+ *             warehouseId: "warehouse-uuid"
+ *             quantity: 10
+ *             referenceId: "ORDER-001"
+ *     responses:
+ *       200:
+ *         description: Stock deducted successfully
  */
 router.post(
     "/deduct",

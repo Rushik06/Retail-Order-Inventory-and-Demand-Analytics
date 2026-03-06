@@ -67,16 +67,35 @@ export default inventoryAxios;
 /* INVENTORY APIs */
 
 
-// Get all inventory
-export const getAllInventory = () =>
-  inventoryAxios.get("/inventory");
+//Get all inventory 
 
+export const getAllInventory = (params: {
+  page?: number;
+  limit?: number;
+  search?: string;
+  sortField?: string;
+  sortOrder?: "ASC" | "DESC";
+}) =>
+  inventoryAxios.get("/inventory", {
+    params,
+  });
 // Get specific inventory
 export const getInventory = (
   productId: string,
   warehouseId: string
 ) =>
   inventoryAxios.get(`/inventory/${productId}/${warehouseId}`);
+
+
+// Create inventory
+export const createInventory = (data: {
+  productId: string;
+  warehouseId: string;
+  availableQty: number;
+  reservedQty?: number;
+}) =>
+  inventoryAxios.post("/inventory/create", data);
+
 
 // Add stock (Inbound)
 export const addStock = (data: {
@@ -87,6 +106,7 @@ export const addStock = (data: {
 }) =>
   inventoryAxios.post("/inventory/add", data);
 
+
 // Deduct stock (Outbound)
 export const deductStock = (data: {
   productId: string;
@@ -96,6 +116,7 @@ export const deductStock = (data: {
 }) =>
   inventoryAxios.post("/inventory/deduct", data);
 
+
 // Reserve stock
 export const reserveStock = (data: {
   productId: string;
@@ -103,6 +124,7 @@ export const reserveStock = (data: {
   quantity: number;
 }) =>
   inventoryAxios.post("/inventory/reserve", data);
+
 
 // Release reserved stock
 export const releaseStock = (data: {
@@ -113,7 +135,9 @@ export const releaseStock = (data: {
   inventoryAxios.post("/inventory/release", data);
 
 
+
 /* WAREHOUSE APIs */
+
 
 // Create warehouse
 export const createWarehouse = (data: {
@@ -121,6 +145,7 @@ export const createWarehouse = (data: {
   location: string;
 }) =>
   inventoryAxios.post("/warehouse", data);
+
 
 // Get all warehouses
 export const getWarehouses = (params: {
@@ -134,9 +159,11 @@ export const getWarehouses = (params: {
     params,
   });
 
+
 // Get warehouse by ID
 export const getWarehouseById = (id: string) =>
   inventoryAxios.get(`/warehouse/${id}`);
+
 
 // Update warehouse
 export const updateWarehouse = (
@@ -148,9 +175,12 @@ export const updateWarehouse = (
 ) =>
   inventoryAxios.patch(`/warehouse/${id}`, data);
 
+
 // Deactivate warehouse
 export const deactivateWarehouse = (id: string) =>
   inventoryAxios.patch(`/warehouse/${id}/deactivate`);
 
+
+// Activate warehouse
 export const activateWarehouse = (id: string) =>
   inventoryAxios.patch(`/warehouse/${id}/activate`);

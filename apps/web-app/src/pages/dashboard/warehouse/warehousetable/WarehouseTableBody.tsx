@@ -10,9 +10,7 @@ import {
 } from "@/components/ui/Table";
 
 import { Button } from "@/components/ui/Button";
-
 import type { WarehouseTableProps } from "@/types/warehouse.types";
-
 export default function WarehouseTableBody({
   warehouses,
   sortField,
@@ -37,9 +35,7 @@ export default function WarehouseTableBody({
   };
 
   return (
-
       <Table>
-
         <TableHeader className="sticky top-0 bg-white z-10">
 
           <TableRow>
@@ -150,12 +146,10 @@ export default function WarehouseTableBody({
               </TableRow>
 
             ))
-
           )}
-
         </TableBody>
-
-      </Table>
+        
+     </Table>
 
   );
 }

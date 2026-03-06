@@ -1,28 +1,132 @@
+/*eslint-disable*/
 import {
+
   getAllInventory,
   getInventoryByProductWarehouse
 } from "../repository/inventory.repository.js";
 
 class InventoryQueryService {
 
-  async getAllInventory() {
-    return getAllInventory();
+  /* GET ALL INVENTORY WITH PAGINATION SEARCH SORT */
+
+  async getAllInventory(params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    sortField?: string;
+    sortOrder?: "ASC" | "DESC";
+  }) {
+
+    const {
+      page = 1,
+      limit = 10,
+      search = "",
+      sortField = "createdAt",
+      sortOrder = "DESC"
+    } = params || {};
+
+    const allInventory = await getAllInventory();
+
+    const searchValue = search.toLowerCase();
+
+    /* SEARCH */
+
+    const filtered = allInventory.filter((item: any) => {
+
+      const sku =
+        item.product?.sku?.toLowerCase() || "";
+
+      const productName =
+        item.product?.name?.toLowerCase() || "";
+
+      const warehouseName =
+        item.warehouse?.name?.toLowerCase() || "";
+
+      const warehouseLocation =
+        item.warehouse?.location?.toLowerCase() || "";
+
+      return (
+        sku.includes(searchValue) ||
+        productName.includes(searchValue) ||
+        warehouseName.includes(searchValue) ||
+        warehouseLocation.includes(searchValue)
+      );
+
+    });
+
+    /* SORT */
+
+    const sorted = filtered.sort((a: any, b: any) => {
+
+      let aValue: any;
+      let bValue: any;
+
+      if (sortField === "product_id") {
+        aValue = a.product?.name || "";
+        bValue = b.product?.name || "";
+      }
+
+      else if (sortField === "warehouse_id") {
+        aValue = a.warehouse?.name || "";
+        bValue = b.warehouse?.name || "";
+      }
+
+      else {
+        aValue = a[sortField];
+        bValue = b[sortField];
+      }
+
+      if (typeof aValue === "string") {
+        aValue = aValue.toLowerCase();
+        bValue = bValue.toLowerCase();
+      }
+
+      if (sortOrder === "ASC") {
+        return aValue > bValue ? 1 : -1;
+      }
+
+      return aValue < bValue ? 1 : -1;
+
+    });
+
+    /* PAGINATION */
+
+    const start = (page - 1) * limit;
+    const end = start + limit;
+
+    const paginated = sorted.slice(start, end);
+
+    return {
+      data: paginated,
+      meta: {
+        page,
+        limit,
+        total: sorted.length,
+        totalPages: Math.ceil(sorted.length / limit)
+      }
+    };
+
   }
+
+  /* GET INVENTORY BY PRODUCT AND WAREHOUSE */
 
   async getInventory(
     productId: string,
     warehouseId: string
   ) {
-    const inventory = await getInventoryByProductWarehouse(
-      productId,
-      warehouseId
-    );
+
+    const inventory =
+      await getInventoryByProductWarehouse(
+        productId,
+        warehouseId
+      );
 
     if (!inventory) {
       throw new Error("Inventory not found");
     }
 
     return inventory;
+
   }
 
 }

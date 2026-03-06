@@ -1,176 +1,223 @@
 /* eslint-disable */
-
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 import {
   fetchInventory,
+  createNewInventory,
   addInventoryStock,
   reserveInventoryStock,
+  releaseInventoryStock,
   deductInventoryStock
 } from "@/app/inventory.logic";
 
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent
-} from "@/components/ui/Card";
-
-import {
-  Table,
-  TableHead,
-  TableRow,
-  TableHeader,
-  TableCell,
-  TableBody
-} from "@/components/ui/Table";
-
-import { Button } from "@/components/ui/Button";
-import { Badge } from "@/components/ui/Badge";
+import { getProducts } from "@/api/product-axios";
+import { getWarehouses } from "@/api/inventory-axios";
+import InventoryCreateCard from "./InventoryForm";
+import InventoryTable from "./inventorytable/InventoryTable";
 
 export default function InventoryPage() {
 
   const [inventory, setInventory] = useState<any[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
+  const [warehouses, setWarehouses] = useState<any[]>([]);
+  const [productId, setProductId] = useState("");
+  const [warehouseId, setWarehouseId] = useState("");
   const [loading, setLoading] = useState(true);
 
+  /* TABLE CONTROLS */
+
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(6);
+  const [search, setSearch] = useState("");
+  const [sortField, setSortField] = useState("createdAt");
+  const [sortOrder, setSortOrder] = useState<"ASC" | "DESC">("DESC");
+  const [totalPages, setTotalPages] = useState(1);
+
+  /* LOAD INVENTORY */
+
   const loadInventory = async () => {
-    const data = await fetchInventory();
-    setInventory(data.data || []);
+
+    setLoading(true);
+
+    try {
+
+      const res = await fetchInventory({
+        page,
+        limit,
+        search,
+        sortField,
+        sortOrder
+      });
+
+      setInventory(res.data || []);
+
+      if (res.meta) {
+        setTotalPages(res.meta.totalPages || 1);
+      }
+
+    } catch (err) {
+
+      console.error("Inventory load failed", err);
+      toast.error("Failed to load inventory");
+
+    }
+
     setLoading(false);
+
+  };
+
+  /* LOAD DROPDOWNS */
+
+  const loadDropdowns = async () => {
+
+    try {
+
+      const productRes = await getProducts();
+      const warehouseRes = await getWarehouses({});
+      setProducts(productRes.data || []);
+      setWarehouses(warehouseRes.data?.data || []);
+
+    } catch {
+
+      toast.error("Failed to load products or warehouses");
+
+    }
+
   };
 
   useEffect(() => {
+
     loadInventory();
+
+  }, [page, limit, search, sortField, sortOrder]);
+
+  useEffect(() => {
+
+    loadDropdowns();
+
   }, []);
 
-  const stockStatus = (available: number) => {
-    if (available <= 10) {
-      return <Badge variant="destructive">Low Stock</Badge>;
+  /* CREATE INVENTORY */
+
+  const createInventory = async () => {
+
+    if (!productId || !warehouseId) {
+      toast.warning("Please select product and warehouse");
+      return;
     }
 
-    if (available >= 100) {
-      return <Badge className="bg-green-600">High Stock</Badge>;
+    const exists = inventory.find(
+      (i) =>
+        i.product_id === productId &&
+        i.warehouse_id === warehouseId
+    );
+
+    if (exists) {
+      toast.error("Inventory already exists for this product and warehouse");
+      return;
     }
 
-    return <Badge variant="secondary">Normal</Badge>;
+    try {
+
+      await createNewInventory(productId, warehouseId, 0);
+
+      toast.success("Inventory created successfully");
+
+      setProductId("");
+      setWarehouseId("");
+
+      await loadInventory();
+
+    } catch {
+
+      toast.error("Failed to create inventory");
+
+    }
+
+  };
+
+  /* SORT HANDLER */
+
+  const handleSort = (field: string) => {
+
+    if (sortField === field) {
+      setSortOrder(sortOrder === "ASC" ? "DESC" : "ASC");
+    } else {
+      setSortField(field);
+      setSortOrder("ASC");
+    }
+
   };
 
   return (
+
     <div className="p-6 space-y-6">
+      <h1 className="text-3xl font-bold">
+        Inventory Management
+      </h1>
 
-      <h1 className="text-3xl font-bold">Inventory Management</h1>
+      {/* CREATE INVENTORY */}
 
-      <Card className="shadow rounded-xl">
+      <InventoryCreateCard
+        products={products}
+        warehouses={warehouses}
+        productId={productId}
+        warehouseId={warehouseId}
+        setProductId={setProductId}
+        setWarehouseId={setWarehouseId}
+        onCreate={createInventory}
+      />
 
-        <CardHeader>
-          <CardTitle>Inventory Stock</CardTitle>
-        </CardHeader>
+      {/* INVENTORY TABLE */}
 
-        <CardContent>
+      <InventoryTable
+        inventory={inventory}
+        products={products}
+        warehouses={warehouses}
+        loading={loading}
+        reload={loadInventory}
+        addInventoryStock={addInventoryStock}
+        reserveInventoryStock={reserveInventoryStock}
+        releaseInventoryStock={releaseInventoryStock}
+        deductInventoryStock={deductInventoryStock}
+        onSort={handleSort}
 
-          {loading ? (
-            <p>Loading...</p>
-          ) : (
+        search={search}
+        setSearch={setSearch}
 
-            <Table>
+        limit={limit}
+        setLimit={(value) => {
+          setPage(1);
+          setLimit(value);
+        }}
+      />
 
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Product</TableHead>
-                  <TableHead>Warehouse</TableHead>
-                  <TableHead>Available</TableHead>
-                  <TableHead>Reserved</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
+      {/* PAGINATION */}
 
-              <TableBody>
+      <div className="flex justify-center gap-4 items-center">
 
-                {inventory.map((item) => (
+        <button
+          className="border px-4 py-2 rounded"
+          disabled={page === 1}
+          onClick={() => setPage((p) => p - 1)}
+        >
+          Prev
+        </button>
 
-                  <TableRow key={item.inventory_id}>
+        <span>
+          Page {page} / {totalPages}
+        </span>
 
-                    <TableCell>
-                      {item.product_id}
-                    </TableCell>
-
-                    <TableCell>
-                      {item.warehouse_id}
-                    </TableCell>
-
-                    <TableCell>
-                      {item.available_qty}
-                    </TableCell>
-
-                    <TableCell>
-                      {item.reserved_qty}
-                    </TableCell>
-
-                    <TableCell>
-                      {stockStatus(item.available_qty)}
-                    </TableCell>
-
-                    <TableCell className="flex gap-2">
-
-                      <Button
-                        size="sm"
-                        onClick={() =>
-                          addInventoryStock(
-                            item.product_id,
-                            item.warehouse_id,
-                            10
-                          )
-                        }
-                      >
-                        Add
-                      </Button>
-
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={() =>
-                          reserveInventoryStock(
-                            item.product_id,
-                            item.warehouse_id,
-                            5
-                          )
-                        }
-                      >
-                        Reserve
-                      </Button>
-
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() =>
-                          deductInventoryStock(
-                            item.product_id,
-                            item.warehouse_id,
-                            2,
-                            "manual"
-                          )
-                        }
-                      >
-                        Deduct
-                      </Button>
-
-                    </TableCell>
-
-                  </TableRow>
-
-                ))}
-
-              </TableBody>
-
-            </Table>
-
-          )}
-
-        </CardContent>
-
-      </Card>
-
+        <button
+          className="border px-4 py-2 rounded"
+          disabled={page === totalPages}
+          onClick={() => setPage((p) => p + 1)}
+        >
+          Next
+        </button>
+      </div>
     </div>
+
   );
 }

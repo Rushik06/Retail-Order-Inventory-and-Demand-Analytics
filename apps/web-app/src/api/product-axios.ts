@@ -110,3 +110,7 @@ export const updateOrderStatus = (
   productAxios.patch(`/orders/${id}/status`, {
     status,
   });
+  /* GET ORDERS */
+
+export const getOrders = () =>
+  productAxios.get("/orders");

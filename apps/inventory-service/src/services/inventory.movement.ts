@@ -5,6 +5,59 @@ import { InventoryLog } from "../models/inventorylog.model.js";
 
 class InventoryMovementService {
 
+  /* CREATE INVENTORY */
+
+  async createInventory(
+    productId: string,
+    warehouseId: string,
+    availableQty: number,
+    reservedQty: number = 0
+  ): Promise<Inventory> {
+  console.log(productId)
+    return await sequelize.transaction(async (transaction: Transaction) => {
+
+      const existing = await Inventory.findOne({
+        where: {
+          product_id: productId,
+          warehouse_id: warehouseId,
+        },
+        transaction,
+        lock: transaction.LOCK.UPDATE,
+      });
+
+      if (existing) {
+        throw new Error("Inventory already exists for this product and warehouse");
+      }
+
+      const inventory = await Inventory.create(
+        {
+          product_id: productId,
+          warehouse_id: warehouseId,
+          available_qty: availableQty,
+          reserved_qty: reservedQty,
+        },
+        { transaction }
+      );
+
+      await InventoryLog.create(
+        {
+          product_id: productId,
+          warehouse_id: warehouseId,
+          action_type: "CREATE",
+          previous_available_qty: 0,
+          new_available_qty: availableQty,
+          reference_id: null,
+        },
+        { transaction }
+      );
+
+      return inventory;
+
+    });
+  }
+
+  /* ADD STOCK */
+
   async addStock(
     productId: string,
     warehouseId: string,
@@ -35,17 +88,23 @@ class InventoryMovementService {
 
       await inventory.save({ transaction });
 
-      await InventoryLog.create({
-        product_id: productId,
-        warehouse_id: warehouseId,
-        action_type: "INBOUND",
-        previous_available_qty: previous,
-        new_available_qty: previous + quantity,
-        reference_id: referenceId ?? null,
-      }, { transaction });
+      await InventoryLog.create(
+        {
+          product_id: productId,
+          warehouse_id: warehouseId,
+          action_type: "INBOUND",
+          previous_available_qty: previous,
+          new_available_qty: previous + quantity,
+          reference_id: referenceId ?? null,
+        },
+        { transaction }
+      );
 
     });
   }
+
+  /* DEDUCT STOCK */
+
   async deductStock(
     productId: string,
     warehouseId: string,
@@ -83,18 +142,21 @@ class InventoryMovementService {
 
       await inventory.save({ transaction });
 
-      await InventoryLog.create({
-        product_id: productId,
-        warehouse_id: warehouseId,
-        action_type: "OUTBOUND",
-        previous_available_qty: previous,
-        new_available_qty: previous - quantity,
-        reference_id: referenceId,
-      }, { transaction });
+      await InventoryLog.create(
+        {
+          product_id: productId,
+          warehouse_id: warehouseId,
+          action_type: "OUTBOUND",
+          previous_available_qty: previous,
+          new_available_qty: previous - quantity,
+          reference_id: referenceId,
+        },
+        { transaction }
+      );
 
     });
   }
+
 }
 
-export const inventoryMovementService =
-  new InventoryMovementService();
+export const inventoryMovementService = new InventoryMovementService();

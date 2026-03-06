@@ -2,6 +2,7 @@
 import {
   getAllInventory,
   getInventory,
+  createInventory,
   addStock,
   deductStock,
   reserveStock,
@@ -17,11 +18,18 @@ import {
 
 /* INVENTORY LOGIC */
 
-// Get all inventory
-export const fetchInventory = async () => {
-  const res = await getAllInventory();
+// Get all inventory (Pagination + Search + Sort)
+export const fetchInventory = async (params?: {
+  page?: number;
+  limit?: number;
+  search?: string;
+  sortField?: string;
+  sortOrder?: "ASC" | "DESC";
+}) => {
+  const res = await getAllInventory(params || {});
   return res.data;
 };
+
 
 // Get specific inventory
 export const fetchInventoryByProductWarehouse = async (
@@ -31,6 +39,25 @@ export const fetchInventoryByProductWarehouse = async (
   const res = await getInventory(productId, warehouseId);
   return res.data;
 };
+
+
+// Create Inventory
+export const createNewInventory = async (
+  productId: string,
+  warehouseId: string,
+  availableQty: number,
+  reservedQty?: number
+) => {
+  const res = await createInventory({
+    productId,
+    warehouseId,
+    availableQty,
+    reservedQty,
+  });
+
+  return res.data;
+};
+
 
 // Add stock (Inbound)
 export const addInventoryStock = async (
@@ -49,6 +76,7 @@ export const addInventoryStock = async (
   return res.data;
 };
 
+
 // Deduct stock (Outbound)
 export const deductInventoryStock = async (
   productId: string,
@@ -66,6 +94,7 @@ export const deductInventoryStock = async (
   return res.data;
 };
 
+
 // Reserve stock
 export const reserveInventoryStock = async (
   productId: string,
@@ -80,6 +109,7 @@ export const reserveInventoryStock = async (
 
   return res.data;
 };
+
 
 // Release reserved stock
 export const releaseInventoryStock = async (
@@ -97,7 +127,9 @@ export const releaseInventoryStock = async (
 };
 
 
+
 /* WAREHOUSE LOGIC */
+
 
 // Create warehouse
 export const createNewWarehouse = async (
@@ -112,6 +144,7 @@ export const createNewWarehouse = async (
   return res.data;
 };
 
+
 // Get all warehouses
 export const fetchWarehouses = async (params: {
   page?: number;
@@ -124,11 +157,13 @@ export const fetchWarehouses = async (params: {
   return res.data;
 };
 
+
 // Get warehouse by ID
 export const fetchWarehouseById = async (id: string) => {
   const res = await getWarehouseById(id);
   return res.data;
 };
+
 
 // Update warehouse
 export const updateExistingWarehouse = async (
@@ -142,12 +177,15 @@ export const updateExistingWarehouse = async (
   return res.data;
 };
 
+
 // Deactivate warehouse
 export const deactivateExistingWarehouse = async (id: string) => {
   const res = await deactivateWarehouse(id);
   return res.data;
 };
 
+
+// Activate warehouse
 export const activateExistingWarehouse = async (id: string) => {
   const res = await activateWarehouse(id);
   return res.data;
