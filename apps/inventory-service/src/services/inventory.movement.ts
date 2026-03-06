@@ -131,7 +131,6 @@ class InventoryMovementService {
 
       const previous = inventory.getDataValue("available_qty");
       const reserved = inventory.getDataValue("reserved_qty");
-
       const effectiveAvailable = previous - reserved;
 
       if (effectiveAvailable < quantity) {
@@ -156,7 +155,6 @@ class InventoryMovementService {
 
     });
   }
-
 }
 
 export const inventoryMovementService = new InventoryMovementService();

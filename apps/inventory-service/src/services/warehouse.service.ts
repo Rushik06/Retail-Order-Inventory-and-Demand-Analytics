@@ -27,7 +27,7 @@ class WarehouseService {
     }
 
 
-    /* GET ALL WAREHOUSES (WITH PAGINATION + SEARCH + SORT) */
+    /* GET ALL WAREHOUSES*/
 
     async getAllWarehouses(
         page: number = 1,
