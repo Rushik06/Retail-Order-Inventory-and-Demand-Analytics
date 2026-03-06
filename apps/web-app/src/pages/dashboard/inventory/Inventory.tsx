@@ -37,7 +37,6 @@ export default function InventoryPage() {
   /* LOAD INVENTORY */
 
   const loadInventory = async () => {
-
     setLoading(true);
 
     try {
@@ -87,7 +86,6 @@ export default function InventoryPage() {
   };
 
   useEffect(() => {
-
     loadInventory();
 
   }, [page, limit, search, sortField, sortOrder]);
@@ -121,12 +119,9 @@ export default function InventoryPage() {
     try {
 
       await createNewInventory(productId, warehouseId, 0);
-
       toast.success("Inventory created successfully");
-
       setProductId("");
       setWarehouseId("");
-
       await loadInventory();
 
     } catch {
@@ -204,7 +199,6 @@ export default function InventoryPage() {
         >
           Prev
         </button>
-
         <span>
           Page {page} / {totalPages}
         </span>

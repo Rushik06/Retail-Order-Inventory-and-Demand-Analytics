@@ -1,117 +1,152 @@
 /* eslint-disable */
 
 import {
-  TableRow,
-  TableCell
+TableRow,
+TableCell
 } from "@/components/ui/Table";
 
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 
+import {
+Plus,
+Lock,
+Unlock,
+Minus
+} from "lucide-react";
+
 interface Props {
-  inventory: any[];
-  products: any[];
-  warehouses: any[];
-  openAction: (type: string, item: any) => void;
+inventory: any[];
+products: any[];
+warehouses: any[];
+openAction: (type: string, item: any) => void;
 }
 
 export default function InventoryTableRows({
-  inventory,
-  products,
-  warehouses,
-  openAction
+inventory,
+products,
+warehouses,
+openAction
 }: Props) {
 
-  const stockStatus = (available: number) => {
+const stockStatus = (available: number) => {
 
-    if (available <= 10) {
-      return <Badge variant="destructive">Low</Badge>;
-    }
+if (available <= 10) {
+  return <Badge variant="destructive">Low</Badge>;
+}
 
-    if (available >= 100) {
-      return <Badge className="bg-green-600">High</Badge>;
-    }
+if (available >= 100) {
+  return <Badge className="bg-green-600">High</Badge>;
+}
 
-    return <Badge variant="secondary">Normal</Badge>;
-  };
+return <Badge variant="secondary">Normal</Badge>;
 
-  return (
+};
 
-    <>
-      {inventory.map((item) => {
+return (
 
-        const product = products.find(
-          (p: any) => p.id === item.product_id
-        );
+<>
+  {inventory.map((item) => {
 
-        const warehouse = warehouses.find(
-          (w: any) => w.warehouse_id === item.warehouse_id
-        );
+    const product = products.find(
+      (p: any) => p.id === item.product_id
+    );
 
-        return (
+    const warehouse = warehouses.find(
+      (w: any) => w.warehouse_id === item.warehouse_id
+    );
 
-          <TableRow key={item.inventory_id}>
+    return (
 
-            <TableCell>
-              {product
-                ? `${product.sku} - ${product.name}`
-                : item.product_id}
-            </TableCell>
+      <TableRow key={item.inventory_id}>
 
-            <TableCell>
-              {warehouse
-                ? `${warehouse.name} - ${warehouse.location}`
-                : item.warehouse_id}
-            </TableCell>
+        {/* PRODUCT */}
 
-            <TableCell>{item.available_qty}</TableCell>
+        <TableCell className="font-medium">
+          {product
+            ? `${product.sku} - ${product.name}`
+            : item.product_id}
+        </TableCell>
 
-            <TableCell>{item.reserved_qty}</TableCell>
+        {/* WAREHOUSE */}
 
-            <TableCell>
-              {stockStatus(item.available_qty)}
-            </TableCell>
+        <TableCell>
+          {warehouse
+            ? `${warehouse.name} - ${warehouse.location}`
+            : item.warehouse_id}
+        </TableCell>
 
-            <TableCell className="flex gap-2">
+        {/* AVAILABLE */}
 
-              <Button
-                size="sm"
-                onClick={() => openAction("add", item)}
-              >
-                Add
-              </Button>
+        <TableCell className="text-center">
+          {item.available_qty}
+        </TableCell>
 
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={() => openAction("reserve", item)}
-              >
-                Reserve
-              </Button>
+        {/* RESERVED */}
 
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => openAction("release", item)}
-              >
-                Release
-              </Button>
+        <TableCell className="text-center">
+          {item.reserved_qty}
+        </TableCell>
 
-              <Button
-                size="sm"
-                variant="destructive"
-                onClick={() => openAction("deduct", item)}
-              >
-                Deduct
-              </Button>
+        {/* STATUS */}
 
-            </TableCell>
+        <TableCell className="text-center">
+          {stockStatus(item.available_qty)}
+        </TableCell>
 
-          </TableRow>
+        {/* ADD STOCK */}
 
-        );
-      })}
-    </>
+        <TableCell className="text-center">
+          <Button
+            size="icon"
+            className="bg-blue-600 hover:bg-blue-700 text-white"
+            onClick={() => openAction("add", item)}
+          >
+            <Plus size={16} />
+          </Button>
+        </TableCell>
 
-  );
+        {/* RESERVE STOCK */}
+
+        <TableCell className="text-center">
+          <Button
+            size="icon"
+            variant="secondary"
+            onClick={() => openAction("reserve", item)}
+          >
+            <Lock size={16} />
+          </Button>
+        </TableCell>
+
+        {/* RELEASE STOCK */}
+
+        <TableCell className="text-center">
+          <Button
+            size="icon"
+            variant="outline"
+            onClick={() => openAction("release", item)}
+          >
+            <Unlock size={16} />
+          </Button>
+        </TableCell>
+
+        {/* DEDUCT STOCK */}
+
+        <TableCell className="text-center">
+          <Button
+            size="icon"
+            variant="destructive"
+            onClick={() => openAction("deduct", item)}
+          >
+            <Minus size={16} />
+          </Button>
+        </TableCell>
+
+      </TableRow>
+
+    );
+  })}
+</>
+
+);
 }
