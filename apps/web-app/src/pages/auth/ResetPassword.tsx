@@ -1,7 +1,8 @@
-/*eslint-disable*/ 
+/*eslint-disable*/
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import axios from "@/api/axios";
+import { toast } from "sonner";
 import { 
   isRequired, 
   isValidEmail, 
@@ -11,9 +12,12 @@ import {
 
 export default function ResetPassword() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  const emailFromUrl = searchParams.get("email") || "";
 
   const [form, setForm] = useState({
-    email: "",
+    email: emailFromUrl,
     otp: "",
     newPassword: "",
   });
@@ -37,21 +41,25 @@ export default function ResetPassword() {
       !isRequired(confirmPassword)
     ) {
       setError("All fields are required.");
+      toast.error("All fields are required");
       return;
     }
 
     if (!isValidEmail(form.email)) {
       setError("Please enter a valid email address.");
+      toast.warning("Please enter a valid email address");
       return;
     }
 
     if (!minLength(form.newPassword, 6)) {
       setError("Password must be at least 6 characters.");
+      toast.warning("Password must be at least 6 characters");
       return;
     }
 
     if (!passwordsMatch(form.newPassword, confirmPassword)) {
       setError("Passwords do not match.");
+      toast.error("Passwords do not match");
       return;
     }
 
@@ -61,13 +69,20 @@ export default function ResetPassword() {
       await axios.patch("/password/reset", form);
 
       setMessage("Password reset successfully");
+      toast.success("Password reset successfully");
 
       setTimeout(() => {
         navigate("/login");
       }, 1500);
 
     } catch (err: any) {
-      setError(err.response?.data?.error || "Reset failed");
+
+      const message =
+        err.response?.data?.error || "Reset failed";
+
+      setError(message);
+      toast.error(message);
+
     } finally {
       setLoading(false);
     }

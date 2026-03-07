@@ -7,6 +7,7 @@ import {
   isRequired,
   minLength,
 } from "../../utils/validators";
+import { toast } from "sonner";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -23,17 +24,23 @@ export default function Register() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // CLIENT SIDE VALIDATION 
+    // CLIENT SIDE VALIDATION
     if (!isRequired(form.name)) {
-      return setError("Full name is required");
+      setError("Full name is required");
+      toast.error("Full name is required");
+      return;
     }
 
     if (!isValidEmail(form.email)) {
-      return setError("Please enter a valid email address");
+      setError("Please enter a valid email address");
+      toast.warning("Please enter a valid email address");
+      return;
     }
 
     if (!minLength(form.password, 6)) {
-      return setError("Password must be at least 6 characters");
+      setError("Password must be at least 6 characters");
+      toast.warning("Password must be at least 6 characters");
+      return;
     }
 
     try {
@@ -42,9 +49,18 @@ export default function Register() {
 
       await registerUser(form.name, form.email, form.password);
 
+      toast.success("Account created successfully");
+
       navigate("/login");
+
     } catch (err: any) {
-      setError(err.response?.data?.error || "Registration failed");
+
+      const message =
+        err.response?.data?.error || "Registration failed";
+
+      setError(message);
+      toast.error(message);
+
     } finally {
       setLoading(false);
     }
@@ -52,6 +68,7 @@ export default function Register() {
 
   return (
     <div className="min-h-screen flex">
+
       {/* LEFT SIDE */}
       <div className="hidden lg:flex w-1/2 bg-blue-50 flex-col justify-center px-20">
         <h1 className="text-4xl font-bold text-gray-800">
@@ -118,6 +135,7 @@ export default function Register() {
             >
               {loading ? "Creating Account..." : "Create Account"}
             </button>
+
           </form>
 
           <div className="flex items-center gap-4 text-gray-400 text-sm">
@@ -125,8 +143,6 @@ export default function Register() {
             OR
             <div className="flex-1 h-px bg-gray-200" />
           </div>
-
-          
 
           <p className="text-sm text-center text-gray-600">
             Already have an account?{" "}

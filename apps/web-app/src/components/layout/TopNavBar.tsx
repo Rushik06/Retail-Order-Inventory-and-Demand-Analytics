@@ -2,13 +2,12 @@ import { useNavigate } from "react-router-dom";
 import { LogOut } from "lucide-react";
 import { useAuthStore } from "@/app/app.state";
 import api from "@/api/axios";
+import { toast } from "sonner";
 
 export default function Topbar() {
   const navigate = useNavigate();
   const logout = useAuthStore((s) => s.logout);
   const user = useAuthStore((s) => s.user);
-
-
 
   const handleLogout = async () => {
     try {
@@ -18,10 +17,13 @@ export default function Topbar() {
         refreshToken,
       });
 
+      toast.success("Logged out successfully");
+
     } catch (err) {
       console.error(err);
+      toast.error("Logout failed");
     } finally {
-      logout(); 
+      logout();
       navigate("/login");
     }
   };

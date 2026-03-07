@@ -4,6 +4,7 @@ import productApi from "@/api/product-axios";
 import OrderForm from "./OrderForm";
 import OrdersTable from "./OrderTable";
 import type { Product, OrderItem } from "@/types/order.types";
+import { toast } from "sonner";
 
 export interface Order {
   id: string;
@@ -29,14 +30,20 @@ export default function Orders() {
       setLoading(true);
       const res = await productApi.get("/orders");
       setOrders(res.data);
+    } catch (error) {
+      toast.error("Failed to load orders");
     } finally {
       setLoading(false);
     }
   };
 
   const loadProducts = async () => {
-    const res = await productApi.get("/products");
-    setProducts(res.data);
+    try {
+      const res = await productApi.get("/products");
+      setProducts(res.data);
+    } catch (error) {
+      toast.error("Failed to load products");
+    }
   };
 
   useEffect(() => {
@@ -45,25 +52,43 @@ export default function Orders() {
   }, []);
 
   const handleCreate = async () => {
-    if (!form.customerName || !form.productId) return;
+    if (!form.customerName || !form.productId) {
+      toast.warning("Customer name and product are required");
+      return;
+    }
 
-    await productApi.post("/orders", {
-      customerName: form.customerName,
-      items: [
-        {
-          productId: form.productId,
-          quantity: form.quantity,
-        },
-      ],
-    });
+    try {
+      await productApi.post("/orders", {
+        customerName: form.customerName,
+        items: [
+          {
+            productId: form.productId,
+            quantity: form.quantity,
+          },
+        ],
+      });
 
-    setForm({ customerName: "", productId: "", quantity: 1 });
-    loadOrders();
+      toast.success("Order created successfully");
+
+      setForm({ customerName: "", productId: "", quantity: 1 });
+      loadOrders();
+
+    } catch (error) {
+      toast.error("Failed to create order");
+    }
   };
 
   const updateStatus = async (id: string, status: string) => {
-    await productApi.patch(`/orders/${id}/status`, { status });
-    loadOrders();
+    try {
+      await productApi.patch(`/orders/${id}/status`, { status });
+
+      toast.success("Order status updated");
+
+      loadOrders();
+
+    } catch (error) {
+      toast.error("Failed to update order status");
+    }
   };
 
   return (

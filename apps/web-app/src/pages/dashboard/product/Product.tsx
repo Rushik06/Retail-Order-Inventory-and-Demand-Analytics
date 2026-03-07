@@ -1,10 +1,11 @@
-/*eslint-disable*/ 
+/*eslint-disable*/
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import productApi from "@/api/product-axios";
 import ProductForm from "./ProductForm";
 import ProductTable from "./ProductTable";
 import type { Product } from "@/types/product.types";
+import { toast } from "sonner";
 
 export default function Products() {
 
@@ -26,12 +27,22 @@ export default function Products() {
   const loadProducts = async () => {
     try {
       setLoading(true);
+
       const res = await productApi.get("/products");
+
       setProducts(res.data);
+
+      toast.success("Products loaded successfully");
+
     } catch (error) {
+
       console.error("Failed to load products");
+      toast.error("Failed to load products");
+
     } finally {
+
       setLoading(false);
+
     }
   };
 
@@ -41,6 +52,7 @@ export default function Products() {
 
   /* Submit */
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+
     e.preventDefault();
 
     const payload = {
@@ -51,10 +63,19 @@ export default function Products() {
     };
 
     try {
+
       if (editingId) {
+
         await productApi.patch(`/products/${editingId}`, payload);
+
+        toast.success("Product updated successfully");
+
       } else {
+
         await productApi.post("/products", payload);
+
+        toast.success("Product created successfully");
+
       }
 
       setEditingId(null);
@@ -70,22 +91,35 @@ export default function Products() {
       await loadProducts();
 
     } catch (error) {
+
       console.error("Product save failed");
+      toast.error("Product save failed");
+
     }
   };
 
   /* Delete */
   const handleDelete = async (id: string) => {
+
     try {
+
       await productApi.delete(`/products/${id}`);
+
+      toast.success("Product deleted successfully");
+
       await loadProducts();
+
     } catch (error) {
+
       console.error("Delete failed");
+      toast.error("Product delete failed");
+
     }
   };
 
   /* Edit */
   const handleEdit = (product: Product) => {
+
     setForm({
       name: product.name,
       sku: product.sku,
@@ -95,6 +129,9 @@ export default function Products() {
     });
 
     setEditingId(product.id);
+
+    toast.info("Editing product");
+
   };
 
   return (

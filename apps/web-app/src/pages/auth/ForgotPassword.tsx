@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../api/axios";
 import { isRequired, isValidEmail } from "@/utils/validators";
+import { toast } from "sonner";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
@@ -18,11 +19,13 @@ export default function ForgotPassword() {
     //CLIENT SIDE VALIDATION
     if (!isRequired(email)) {
       setError("Email is required");
+      toast.error("Email is required");
       return;
     }
 
     if (!isValidEmail(email)) {
       setError("Please enter a valid email address");
+      toast.warning("Please enter a valid email address");
       return;
     }
 
@@ -34,6 +37,7 @@ export default function ForgotPassword() {
       await api.post("/password/forgot", { email });
 
       setMessage("OTP sent successfully to your email");
+      toast.success("OTP sent successfully to your email");
 
       // Smooth redirect after success
       setTimeout(() => {
@@ -41,7 +45,13 @@ export default function ForgotPassword() {
       }, 1500);
 
     } catch (err: any) {
-      setError(err.response?.data?.error || "Something went wrong");
+
+      const message =
+        err.response?.data?.error || "Something went wrong";
+
+      setError(message);
+      toast.error(message);
+
     } finally {
       setLoading(false);
     }

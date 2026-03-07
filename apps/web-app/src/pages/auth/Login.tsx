@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "@/api/axios";
 import { useAuthStore } from "@/app/app.state";
 import { isRequired, isValidEmail } from "@/utils/validators";
+import { toast } from "sonner";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -23,11 +24,13 @@ export default function Login() {
     // Client-side validation
     if (!isRequired(form.email) || !isRequired(form.password)) {
       setError("All fields are required.");
+      toast.error("All fields are required.");
       return;
     }
 
     if (!isValidEmail(form.email)) {
       setError("Please enter a valid email address.");
+      toast.warning("Please enter a valid email address.");
       return;
     }
 
@@ -41,14 +44,19 @@ export default function Login() {
       localStorage.setItem("refreshToken", res.data.refreshToken);
 
       setUser(res.data.user);
+
+      toast.success("Login successful");
+
       navigate("/dashboard");
 
     } catch (err: any) {
 
       if (err.response?.status === 401) {
         setError("Invalid email or password.");
+        toast.error("Invalid email or password.");
       } else {
         setError("Something went wrong. Please try again.");
+        toast.error("Login failed. Please try again.");
       }
 
     } finally {
