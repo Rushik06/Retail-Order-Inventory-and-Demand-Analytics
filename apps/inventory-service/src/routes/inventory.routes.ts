@@ -71,7 +71,7 @@ router.use(authenticate);
  */
 router.get(
     "/",
-    authorizeRoles("ADMIN", "MANAGER","STAFF"),
+    authorizeRoles("admin", "manager","staff"),
     getAllInventoryController
 );
 
@@ -104,7 +104,7 @@ router.get(
  */
 router.get(
     "/:productId/:warehouseId",
-    authorizeRoles("ADMIN", "MANAGER","STAFF"),
+    authorizeRoles("admin", "manager","staff"),
     getInventoryController
 );
 
@@ -133,7 +133,7 @@ router.get(
  */
 router.post(
     "/create",
-    authorizeRoles("ADMIN", "MANAGER"),
+    authorizeRoles("admin", "manager"),
     createInventoryController
 );
 
@@ -158,7 +158,7 @@ router.post(
  */
 router.post(
     "/reserve",
-    authorizeRoles("MANAGER", "ADMIN"),
+    authorizeRoles("manager", "admin"),
     validate(reserveStockSchema),
     reserveStockController
 );
@@ -184,7 +184,7 @@ router.post(
  */
 router.post(
     "/release",
-    authorizeRoles("MANAGER", "ADMIN"),
+    authorizeRoles("manager", "admin"),
     validate(releaseStockSchema),
     releaseStockController
 );
@@ -214,7 +214,7 @@ router.post(
  */
 router.post(
     "/add",
-    authorizeRoles("ADMIN", "MANAGER"),
+    authorizeRoles("admin", "manager"),
     validate(addStockSchema),
     addStockController
 );
@@ -244,7 +244,7 @@ router.post(
  */
 router.post(
     "/deduct",
-    authorizeRoles("ADMIN", "MANAGER"),
+    authorizeRoles("admin", "manager"),
     validate(deductStockSchema),
     deductStockController
 );

@@ -92,7 +92,7 @@ router.use(authenticate);
  *       403:
  *         description: Forbidden
  */
-router.post("/", authorizeRoles("ADMIN"),validate(createWarehouseSchema), createWarehouseController);
+router.post("/", authorizeRoles("admin"),validate(createWarehouseSchema), createWarehouseController);
 
 /**
  * @swagger
@@ -108,7 +108,7 @@ router.post("/", authorizeRoles("ADMIN"),validate(createWarehouseSchema), create
  *       401:
  *         description: Unauthorized
  */
-router.get("/", authorizeRoles("ADMIN", "MANAGER", "STAFF"), getAllWarehousesController);
+router.get("/", authorizeRoles("admin", "manager", "staff"), getAllWarehousesController);
 
 /**
  * @swagger
@@ -131,7 +131,7 @@ router.get("/", authorizeRoles("ADMIN", "MANAGER", "STAFF"), getAllWarehousesCon
  *       404:
  *         description: Warehouse not found
  */
-router.get("/:id", authorizeRoles("ADMIN", "MANAGER", "STAFF"), getWarehouseByIdController);
+router.get("/:id", authorizeRoles("admin", "manager", "staff"), getWarehouseByIdController);
 
 /**
  * @swagger
@@ -160,7 +160,7 @@ router.get("/:id", authorizeRoles("ADMIN", "MANAGER", "STAFF"), getWarehouseById
  *       404:
  *         description: Warehouse not found
  */
-router.patch("/:id", authorizeRoles("ADMIN", "MANAGER"), validate(updateWarehouseSchema),updateWarehouseController);
+router.patch("/:id", authorizeRoles("admin", "manager"), validate(updateWarehouseSchema),updateWarehouseController);
 
 /**
  * @swagger
@@ -183,7 +183,7 @@ router.patch("/:id", authorizeRoles("ADMIN", "MANAGER"), validate(updateWarehous
  *       404:
  *         description: Warehouse not found
  */
-router.patch("/:id/deactivate", authorizeRoles("ADMIN"), deactivateWarehouseController);
-router.patch("/:id/activate",authorizeRoles("ADMIN"),activateWarehouseController);
+router.patch("/:id/deactivate", authorizeRoles("admin"), deactivateWarehouseController);
+router.patch("/:id/activate",authorizeRoles("admin"),activateWarehouseController);
 
 export default router;

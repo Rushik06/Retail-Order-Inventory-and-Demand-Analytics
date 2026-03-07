@@ -8,13 +8,16 @@ import type {
   LoginInput,
 } from "../types/auth.types.js";
 import { env } from "../config/index.js";
+import { UserRole } from "../models/userRole.model.js";
+import { Role } from "../models/role.model.js";
+
 
 export class AuthService {
-  constructor(private readonly repo: AuthRepository) {}
+  constructor(private readonly repo: AuthRepository) { }
 
-  
+
   // REGISTER
-  
+
   async register(input: RegisterUserInput) {
     const existingUser = await this.repo.findByEmail(input.email);
 
@@ -39,9 +42,9 @@ export class AuthService {
     };
   }
 
-  
+
   // LOGIN
-  
+
   async login(input: LoginInput) {
     const user = await this.repo.findByEmail(input.email);
 
@@ -58,9 +61,19 @@ export class AuthService {
       throw new Error("INVALID_CREDENTIALS");
     }
 
-    const role = user.role ?? "ADMIN"; 
+    //  Fetch role from UserRole table
+    const userRole = await UserRole.findOne({
+      where: { user_id: user.id },
+      include: [
+        {
+          model: Role,
+          attributes: ["role_name"],
+        },
+      ],
+    });
 
-    // Access token 
+    const role = (userRole as any)?.Role?.role_name || "staff";
+
     const accessToken = jwt.sign(
       {
         id: user.id,
@@ -70,7 +83,6 @@ export class AuthService {
       { expiresIn: env.ACCESS_TOKEN_EXPIRY } as SignOptions
     );
 
-    // Refresh token 
     const refreshToken = jwt.sign(
       { id: user.id },
       env.JWT_REFRESH_SECRET,
@@ -95,12 +107,10 @@ export class AuthService {
 
 
   // REFRESH TOKEN
-  
+
   async refresh(refreshToken: string) {
     try {
-      console.log(" REFRESH DEBUG START");
-    console.log("Refresh Secret:", env.JWT_REFRESH_SECRET);
-    console.log("Incoming Token:", refreshToken);
+
       const payload = jwt.verify(
         refreshToken,
         env.JWT_REFRESH_SECRET
@@ -112,27 +122,33 @@ export class AuthService {
         throw new Error("INVALID_REFRESH");
       }
 
-      const role = user.role ?? "ADMIN";
+      const userRole = await UserRole.findOne({
+        where: { user_id: user.id },
+        include: [{ model: Role, attributes: ["role_name"] }],
+      });
+
+      const role = (userRole as any)?.Role?.role_name || "staff";
+
       const newAccessToken = jwt.sign(
         {
           id: user.id,
-          role: user.role,
+          role: role,
         },
         env.JWT_ACCESS_SECRET,
         { expiresIn: env.ACCESS_TOKEN_EXPIRY } as SignOptions
       );
-      console.log("New Access Token Generated:", newAccessToken);
+
       return {
         accessToken: newAccessToken,
       };
+
     } catch (error) {
       console.error("Error refreshing token:", error);
       throw new Error("INVALID_REFRESH");
     }
   }
-
   // LOGOUT
-  
+
   async logout(refreshToken: string) {
     if (this.repo.verifyRefreshToken) {
       await this.repo.verifyRefreshToken(refreshToken);

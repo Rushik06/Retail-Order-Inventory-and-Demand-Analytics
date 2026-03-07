@@ -77,7 +77,7 @@ const router: Router = Router();
  */
 router.post(
   "/",
-  authorize("ADMIN", "MANAGER", "STAFF"),
+  authorize("admin", "manager","staff"),
   controller.createOrder
 );
 
@@ -114,12 +114,12 @@ router.post(
  */
 router.patch(
   "/:id/status",
-  authorize("ADMIN", "MANAGER"),
+  authorize("admin", "manager"),
   controller.updateOrderStatus
 );
 router.get(
   "/",
-  authorize("ADMIN", "MANAGER", "STAFF"),
+  authorize("admin", "manager", "staff"),
   controller.getOrders
 );
 export default router;

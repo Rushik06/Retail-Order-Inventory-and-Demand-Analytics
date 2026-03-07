@@ -71,7 +71,7 @@ const router: Router = Router();
  *       403:
  *         description: Unauthorized
  */
-router.post("/", authorize("ADMIN", "MANAGER"), controller.createProduct);
+router.post("/", authorize("admin", "manager"), controller.createProduct);
 
 /**
  * @swagger
@@ -110,7 +110,7 @@ router.post("/", authorize("ADMIN", "MANAGER"), controller.createProduct);
  *       403:
  *         description: Unauthorized
  */
-router.get("/", authorize("ADMIN", "MANAGER", "STAFF"), controller.getProducts);
+router.get("/", authorize("admin", "manager", "staff"), controller.getProducts);
 
 /**
  * @swagger
@@ -143,7 +143,7 @@ router.get("/", authorize("ADMIN", "MANAGER", "STAFF"), controller.getProducts);
  *       403:
  *         description: Unauthorized
  */
-router.patch("/:id", authorize("ADMIN", "MANAGER"), controller.updateProduct);
+router.patch("/:id", authorize("admin", "manager"), controller.updateProduct);
 
 /**
  * @swagger
@@ -169,6 +169,6 @@ router.patch("/:id", authorize("ADMIN", "MANAGER"), controller.updateProduct);
  *       403:
  *         description: Unauthorized
  */
-router.delete("/:id", authorize("ADMIN"), controller.deleteProduct);
+router.delete("/:id", authorize("admin"), controller.deleteProduct);
 
 export default router;

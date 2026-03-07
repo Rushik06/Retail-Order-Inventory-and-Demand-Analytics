@@ -2,7 +2,7 @@ import type { Request, Response } from 'express';
 import { AuthService } from '../services/auth.service.js';
 
 export class AuthController {
-  constructor(private readonly service: AuthService) {}
+  constructor(private readonly service: AuthService) { }
 
   register = async (req: Request, res: Response): Promise<Response> => {
     try {
@@ -23,12 +23,15 @@ export class AuthController {
       const result = await this.service.login(req.body);
       return res.status(200).json(result);
     } catch (error: unknown) {
-    
+      console.error("LOGIN ERROR:", error);
+
       if (error instanceof Error && error.message === 'INVALID_CREDENTIALS') {
         return res.status(401).json({ error: 'Invalid credentials' });
       }
 
-      return res.status(500).json({ error: 'Internal server error' });
+      return res.status(500).json({
+        error: error instanceof Error ? error.message : "Internal server error"
+      });
     }
   };
 
