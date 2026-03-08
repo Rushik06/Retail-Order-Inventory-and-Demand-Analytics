@@ -75,7 +75,9 @@ export default function InventoryTable({
             placeholder="Search product or warehouse..."
             className="border rounded-md px-3 py-2 w-[260px]"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+            }}
           />
 
           <select

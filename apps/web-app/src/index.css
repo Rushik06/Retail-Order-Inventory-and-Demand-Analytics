@@ -122,3 +122,6 @@
     @apply bg-background text-foreground;
     }
 }
+input[list]::-webkit-calendar-picker-indicator {
+  display: none !important;
+}

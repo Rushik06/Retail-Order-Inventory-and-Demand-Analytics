@@ -61,10 +61,9 @@ export default function Sidebar() {
             end={link.to === "/dashboard"}
             className={({ isActive }) =>
               `flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium transition
-              ${
-                isActive
-                  ? "bg-blue-50 text-blue-600"
-                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+              ${isActive
+                ? "bg-blue-50 text-blue-600"
+                : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
               }`
             }
           >
@@ -80,14 +79,15 @@ export default function Sidebar() {
       {/* Bottom User */}
       <div className="border-t border-slate-200 p-4">
         <div
-          className={`relative group flex items-center ${
-            collapsed ? "justify-center" : "gap-3"
-          }`}
+          className={`relative group flex items-center ${collapsed ? "justify-center" : "gap-3"
+            }`}
         >
-          <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold cursor-pointer">
+          <NavLink
+            to="/dashboard/profile"
+            className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold cursor-pointer hover:bg-blue-200 transition"
+          >
             {user?.name?.charAt(0).toUpperCase()}
-          </div>
-
+          </NavLink>
           {!collapsed && (
             <div className="text-sm">
               <p className="font-medium text-slate-800">

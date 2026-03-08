@@ -36,7 +36,7 @@ export default function Topbar() {
 
       <button
         onClick={handleLogout}
-        className="flex items-center gap-2 bg-red-50 text-red-600 px-4 py-2 rounded-lg hover:bg-red-100 transition font-medium text-sm"
+        className="flex items-center gap-2 h-9 px-3 text-sm bg-red-50 text-red-600 rounded-md hover:bg-red-100 transition font-medium"
       >
         <LogOut size={16} />
         Logout

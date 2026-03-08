@@ -13,8 +13,14 @@ import {
 
 import { getProducts } from "@/api/product-axios";
 import { getWarehouses } from "@/api/inventory-axios";
+
 import InventoryCreateCard from "./InventoryForm";
 import InventoryTable from "./inventorytable/InventoryTable";
+
+import {
+  filterInventory,
+  sortInventory
+} from "@/utils/inventory.helpers";
 
 export default function InventoryPage() {
 
@@ -32,8 +38,8 @@ export default function InventoryPage() {
   const [sortOrder, setSortOrder] = useState<"ASC" | "DESC">("DESC");
   const [totalPages, setTotalPages] = useState(1);
 
+  /* LOAD INVENTORY */
   const loadInventory = async () => {
-
     setLoading(true);
 
     try {
@@ -47,44 +53,38 @@ export default function InventoryPage() {
       });
 
       setInventory(res.data || []);
-
       if (res.meta) {
         setTotalPages(res.meta.totalPages || 1);
       }
 
     } catch (err) {
-
       console.error("Inventory load failed", err);
       toast.error("Failed to load inventory");
 
     }
-
     setLoading(false);
 
   };
 
+  /* LOAD PRODUCTS + WAREHOUSES */
+
   const loadDropdowns = async () => {
 
     try {
-
       const productRes = await getProducts();
       setProducts(productRes.data || []);
-
       const warehouseRes = await getWarehouses({
         page: 1,
         limit: 1000
       });
 
       setWarehouses(warehouseRes.data?.data || []);
-
     } catch {
-
       toast.error("Failed to load products or warehouses");
 
     }
 
   };
-
   useEffect(() => {
     loadInventory();
   }, [page, limit, search, sortField, sortOrder]);
@@ -93,8 +93,8 @@ export default function InventoryPage() {
     loadDropdowns();
   }, []);
 
+  /* CREATE INVENTORY */
   const createInventory = async () => {
-
     if (!productId || !warehouseId) {
       toast.warning("Please select product and warehouse");
       return;
@@ -105,7 +105,6 @@ export default function InventoryPage() {
         i.product_id === productId &&
         i.warehouse_id === warehouseId
     );
-
     if (exists) {
       toast.error("Inventory already exists for this product and warehouse");
       return;
@@ -114,41 +113,53 @@ export default function InventoryPage() {
     try {
 
       await createNewInventory(productId, warehouseId, 0);
-
       toast.success("Inventory created successfully");
-
       setProductId("");
       setWarehouseId("");
 
       await loadInventory();
 
     } catch {
-
       toast.error("Failed to create inventory");
-
     }
 
   };
 
+  /* SORT HANDLER */
   const handleSort = (field: string) => {
+    if (field === "product_id" || field === "warehouse_id") {
+      const sorted = sortInventory(
+        inventory,
+        products,
+        warehouses,
+        field
+      );
 
+      setInventory(sorted);
+      return;
+    }
     if (sortField === field) {
       setSortOrder(sortOrder === "ASC" ? "DESC" : "ASC");
     } else {
       setSortField(field);
       setSortOrder("ASC");
     }
-
   };
 
+  /* SEARCH FILTER */
+  const filteredInventory = filterInventory(
+    inventory,
+    products,
+    warehouses,
+    search
+  );
   return (
-
     <div className="p-6 space-y-6">
-
       <h1 className="text-3xl font-bold">
         Inventory Management
       </h1>
 
+      {/* CREATE INVENTORY */}
       <InventoryCreateCard
         products={products}
         warehouses={warehouses}
@@ -159,8 +170,10 @@ export default function InventoryPage() {
         onCreate={createInventory}
       />
 
+      {/* INVENTORY TABLE */}
+
       <InventoryTable
-        inventory={inventory}
+        inventory={filteredInventory}
         products={products}
         warehouses={warehouses}
         loading={loading}
@@ -177,13 +190,11 @@ export default function InventoryPage() {
           setPage(1);
           setLimit(value);
         }}
-
         page={page}
         setPage={setPage}
         totalPages={totalPages}
       />
 
     </div>
-
   );
 }

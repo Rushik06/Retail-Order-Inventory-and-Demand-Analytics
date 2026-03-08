@@ -1,7 +1,7 @@
 import { Inventory } from "../models/inventory.model.js";
 import type { Transaction, FindOptions } from "sequelize";
 
-/* EXISTING CODE */
+/*REPO*/
 
 export const findInventory = async (
   productId: string,

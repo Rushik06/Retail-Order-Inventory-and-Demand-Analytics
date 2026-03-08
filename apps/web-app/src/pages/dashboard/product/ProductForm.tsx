@@ -1,16 +1,10 @@
 /* eslint-disable */
 import { useMemo } from "react";
+import { ChevronDown } from "lucide-react";
 import type { Props } from "@/types/product.types";
 
-const CATEGORY_OPTIONS = [
-  "Electronics",
-  "Fashion",
-  "Groceries",
-  "Books",
-  "Home & Kitchen",
-  "Sports",
-  "Beauty",
-];
+const CATEGORY_OPTIONS = 
+  ["Electronics", "Fashion", "Groceries","Books","Home & Kitchen","Sports",  "Beauty",  ];
 
 export default function ProductForm({
   form,
@@ -26,14 +20,12 @@ export default function ProductForm({
     form.stock !== "" && Number(form.stock) < 0;
 
   const disabled =
-    !form.name?.trim() ||
-    !form.category?.trim() ||
-    form.price === "" ||
-    Number(form.price) <= 0 ||
-    form.stock === "" ||
-    Number(form.stock) < 0;
+    !form.name?.trim() ||!form.category?.trim() || form.price === "" || Number(form.price) <= 0 ||
+    form.stock === "" || Number(form.stock) < 0; 
+   
 
   /* SKU Preview */
+
   const previewSku = useMemo(() => {
     if (!form.category) return "SKU ";
 
@@ -42,9 +34,11 @@ export default function ProductForm({
       .toUpperCase();
 
     return `${prefix}-AUTO`;
+
   }, [form.category]);
 
   return (
+
     <form
       id="product-form"
       onSubmit={(e) => {
@@ -58,6 +52,7 @@ export default function ProductForm({
     >
 
       {/* Name */}
+
       <input
         placeholder="Product Name"
         value={form.name}
@@ -67,7 +62,8 @@ export default function ProductForm({
         className="h-11 border border-slate-200 rounded-lg px-4 focus:ring-2 focus:ring-blue-500 focus:outline-none"
       />
 
-      {/* SKU (Auto Generated) */}
+      {/* SKU */}
+
       <input
         placeholder="SKU"
         value={editingId ? form.sku : previewSku}
@@ -75,23 +71,35 @@ export default function ProductForm({
         className="h-11 bg-slate-100 text-slate-500 border border-slate-200 rounded-lg px-4 cursor-not-allowed"
       />
 
-      {/* Category Dropdown */}
-      <select
-        value={form.category}
-        onChange={(e) =>
-          setForm({ ...form, category: e.target.value })
-        }
-        className="h-11 border border-slate-200 rounded-lg px-4 bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
-      >
-        <option value="">Select Category</option>
-        {CATEGORY_OPTIONS.map((cat) => (
-          <option key={cat} value={cat}>
-            {cat}
-          </option>
-        ))}
-      </select>
+      {/* CATEGORY TYPEAHEAD */}
+
+      <div className="relative">
+        <input
+          list="categories"
+          value={form.category}
+          placeholder="Select Category"
+          onChange={(e) =>
+            setForm({ ...form, category: e.target.value })
+          }
+          className="h-11 border border-slate-200 rounded-lg px-4 pr-8 appearance-none bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none w-full"
+        />
+
+        <ChevronDown
+          size={16}
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"
+        />
+
+        <datalist id="categories">
+          {CATEGORY_OPTIONS.map((cat) => (
+            <option key={cat} value={cat} />
+          ))}
+
+        </datalist>
+      </div>
+
 
       {/* Price */}
+
       <div className="flex flex-col">
         <input
           type="number"
@@ -106,6 +114,7 @@ export default function ProductForm({
               : "border-slate-200 focus:ring-blue-500"
           }`}
         />
+
         <div className="h-4 mt-1 text-xs">
           {priceInvalid && (
             <span className="text-red-500">
@@ -130,6 +139,7 @@ export default function ProductForm({
               : "border-slate-200 focus:ring-blue-500"
           }`}
         />
+
         <div className="h-4 mt-1 text-xs">
           {stockInvalid && (
             <span className="text-red-500">
@@ -137,7 +147,9 @@ export default function ProductForm({
             </span>
           )}
         </div>
+
       </div>
+
 
       {/* Submit Button */}
       <button
@@ -152,5 +164,6 @@ export default function ProductForm({
         {editingId ? "Update Product" : "Add Product"}
       </button>
     </form>
+
   );
 }

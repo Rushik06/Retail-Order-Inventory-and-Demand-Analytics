@@ -6,6 +6,7 @@ import {
   CardContent
 } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { ChevronDown } from "lucide-react";
 interface Props {
   products: any[];
   warehouses: any[];
@@ -26,6 +27,17 @@ export default function InventoryCreateCard({
   onCreate
 }: Props) {
 
+  const productLabel =
+    products.find((p) => p.id === productId)
+      ? `${products.find((p) => p.id === productId)?.sku} - ${products.find((p) => p.id === productId)?.name}`
+      : "";
+
+  const warehouseLabel =
+    warehouses.find((w) => w.warehouse_id === warehouseId)
+      ? `${warehouses.find((w) => w.warehouse_id === warehouseId)?.name} - ${warehouses.find((w) => w.warehouse_id === warehouseId)?.location}`
+      : "";
+
+  const disabled = !productId || !warehouseId;
   return (
 
     <Card>
@@ -34,7 +46,7 @@ export default function InventoryCreateCard({
         <CardTitle>Create Inventory</CardTitle>
       </CardHeader>
 
-      <CardContent className="grid grid-cols-3 gap-6 items-end">
+      <CardContent className="grid grid-cols-[1fr_1fr_200px] gap-6 items-end">
 
         {/* PRODUCT */}
 
@@ -43,32 +55,47 @@ export default function InventoryCreateCard({
             Product
           </label>
 
-          <select
-            className="border border-gray-300 rounded-lg px-3 py-2 h-[40px] w-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-            value={productId}
-            onChange={(e) => setProductId(e.target.value)}
-          >
+          <div className="relative">
+            <input
+              list="products"
+              className="h-11 w-full border border-gray-300 rounded-lg px-4 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={productLabel}
+              placeholder="Search product..."
+              onChange={(e) => {
 
-            <option value="">
-              Select Product
-            </option>
+                const selected = products.find(
+                  (p) => `${p.sku} - ${p.name}` === e.target.value
+                );
+
+                if (selected) {
+                  setProductId(selected.id);
+                }
+
+              }}
+            />
+
+            <ChevronDown
+              size={16}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"
+            />
+
+          </div>
+
+          <datalist id="products">
 
             {products.map((p: any) => (
-
               <option
                 key={p.id}
-                value={p.id}
+                value={`${p.sku} - ${p.name}`}
                 disabled={p.stock === 0}
-              >
-                {p.sku} - {p.name}
-                {p.stock === 0 ? " (Out of stock)" : ""}
-              </option>
+              />
 
             ))}
 
-          </select>
+          </datalist>
 
         </div>
+
 
         {/* WAREHOUSE */}
 
@@ -77,41 +104,59 @@ export default function InventoryCreateCard({
             Warehouse
           </label>
 
-          <select
-            className="border border-gray-300 rounded-lg px-3 py-2 h-[40px] w-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-            value={warehouseId}
-            onChange={(e) => setWarehouseId(e.target.value)}
-          >
-            <option value="">
-              Select Warehouse
-            </option>
+          <div className="relative">
+
+            <input
+              list="warehouses"
+              className="h-11 w-full border border-gray-300 rounded-lg px-4 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={warehouseLabel}
+              placeholder="Search warehouse..."
+              onChange={(e) => {
+
+                const selected = warehouses.find(
+                  (w) => `${w.name} - ${w.location}` === e.target.value
+                );
+
+                if (selected) {
+                  setWarehouseId(selected.warehouse_id);
+                }
+
+              }}
+            />
+            <ChevronDown
+              size={16}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"
+            />
+
+          </div>
+
+          <datalist id="warehouses">
 
             {warehouses.map((w: any) => (
               <option
                 key={w.warehouse_id}
-                value={w.warehouse_id}
+                value={`${w.name} - ${w.location}`}
                 disabled={!w.is_active}
-              >
-                {w.name} - {w.location}
-                {!w.is_active ? " (Inactive)" : ""}
-              </option>
+              />
 
             ))}
 
-          </select>
+          </datalist>
         </div>
+
 
         {/* CREATE BUTTON */}
+        <Button
+          onClick={onCreate}
+          disabled={disabled}
+          className={`h-11 w-full rounded-lg ${disabled
+              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+              : "bg-blue-600 hover:bg-blue-700 text-white"
+            }`}
+        >
+          Create
+        </Button>
 
-        <div className="flex items-end">
-          <Button
-            onClick={onCreate}
-            className="bg-blue-600 hover:bg-blue-700 text-white h-[40px] w-full rounded-lg transition"
-          >
-            Create
-          </Button>
-
-        </div>
       </CardContent>
     </Card>
 

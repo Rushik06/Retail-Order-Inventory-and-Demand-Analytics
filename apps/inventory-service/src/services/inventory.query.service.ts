@@ -33,27 +33,18 @@ class InventoryQueryService {
 
     const filtered = allInventory.filter((item: any) => {
 
-      const sku =
-        item.product?.sku?.toLowerCase() || "";
+      const productId =
+        item.product_id?.toLowerCase?.() || "";
 
-      const productName =
-        item.product?.name?.toLowerCase() || "";
-
-      const warehouseName =
-        item.warehouse?.name?.toLowerCase() || "";
-
-      const warehouseLocation =
-        item.warehouse?.location?.toLowerCase() || "";
+      const warehouseId =
+        item.warehouse_id?.toLowerCase?.() || "";
 
       return (
-        sku.includes(searchValue) ||
-        productName.includes(searchValue) ||
-        warehouseName.includes(searchValue) ||
-        warehouseLocation.includes(searchValue)
+        productId.includes(searchValue) ||
+        warehouseId.includes(searchValue)
       );
 
     });
-
     /* SORT */
 
     const sorted = filtered.sort((a: any, b: any) => {
