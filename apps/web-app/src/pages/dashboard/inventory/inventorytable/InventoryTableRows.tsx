@@ -1,152 +1,157 @@
 /* eslint-disable */
-
 import {
-TableRow,
-TableCell
+  TableRow,
+  TableCell
 } from "@/components/ui/Table";
-
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
-
 import {
-Plus,
-Lock,
-Unlock,
-Minus
+  Plus,
+  Lock,
+  Unlock,
+  Minus,
+  MoreVertical
 } from "lucide-react";
 
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem
+} from "@/components/ui/DropdownMenu";
+
 interface Props {
-inventory: any[];
-products: any[];
-warehouses: any[];
-openAction: (type: string, item: any) => void;
+  inventory: any[];
+  products: any[];
+  warehouses: any[];
+  openAction: (type: string, item: any) => void;
 }
 
 export default function InventoryTableRows({
-inventory,
-products,
-warehouses,
-openAction
+  inventory,
+  products,
+  warehouses,
+  openAction
 }: Props) {
 
-const stockStatus = (available: number) => {
+  const stockStatus = (available: number) => {
 
-if (available <= 10) {
-  return <Badge variant="destructive">Low</Badge>;
-}
+    if (available <= 10) {
+      return <Badge variant="destructive">Low</Badge>;
+    }
+    if (available >= 100) {
+      return <Badge className="bg-green-600">High</Badge>;
+    }
+    return <Badge variant="secondary">Normal</Badge>;
 
-if (available >= 100) {
-  return <Badge className="bg-green-600">High</Badge>;
-}
+  };
 
-return <Badge variant="secondary">Normal</Badge>;
+  return (
 
-};
+    <>
+      {inventory.map((item) => {
+        const product = products.find(
+          (p: any) => p.id === item.product_id
+        );
 
-return (
+        const warehouse = warehouses.find(
+          (w: any) => w.warehouse_id === item.warehouse_id
+        );
 
-<>
-  {inventory.map((item) => {
+        return (
 
-    const product = products.find(
-      (p: any) => p.id === item.product_id
-    );
+          <TableRow key={item.inventory_id}>
 
-    const warehouse = warehouses.find(
-      (w: any) => w.warehouse_id === item.warehouse_id
-    );
+            {/* PRODUCT */}
 
-    return (
+            <TableCell className="font-medium">
+              {product
+                ? `${product.sku} - ${product.name}`
+                : item.product_id}
+            </TableCell>
 
-      <TableRow key={item.inventory_id}>
+            {/* WAREHOUSE */}
 
-        {/* PRODUCT */}
+            <TableCell>
+              {warehouse
+                ? `${warehouse.name} - ${warehouse.location}`
+                : item.warehouse_id}
+            </TableCell>
 
-        <TableCell className="font-medium">
-          {product
-            ? `${product.sku} - ${product.name}`
-            : item.product_id}
-        </TableCell>
+            {/* AVAILABLE */}
 
-        {/* WAREHOUSE */}
+            <TableCell className="text-center">
+              {item.available_qty}
+            </TableCell>
 
-        <TableCell>
-          {warehouse
-            ? `${warehouse.name} - ${warehouse.location}`
-            : item.warehouse_id}
-        </TableCell>
+            {/* RESERVED */}
 
-        {/* AVAILABLE */}
+            <TableCell className="text-center">
+              {item.reserved_qty}
+            </TableCell>
 
-        <TableCell className="text-center">
-          {item.available_qty}
-        </TableCell>
+            {/* STATUS */}
 
-        {/* RESERVED */}
+            <TableCell className="text-center">
+              {stockStatus(item.available_qty)}
+            </TableCell>
 
-        <TableCell className="text-center">
-          {item.reserved_qty}
-        </TableCell>
+            {/* ACTION MENU */}
 
-        {/* STATUS */}
+            <TableCell className="text-center">
 
-        <TableCell className="text-center">
-          {stockStatus(item.available_qty)}
-        </TableCell>
+              <DropdownMenu>
 
-        {/* ADD STOCK */}
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <MoreVertical size={18} />
+                  </Button>
+                </DropdownMenuTrigger>
 
-        <TableCell className="text-center">
-          <Button
-            size="icon"
-            className="bg-blue-600 hover:bg-blue-700 text-white"
-            onClick={() => openAction("add", item)}
-          >
-            <Plus size={16} />
-          </Button>
-        </TableCell>
+                <DropdownMenuContent align="end">
 
-        {/* RESERVE STOCK */}
+                  <DropdownMenuItem
+                    onClick={() => openAction("add", item)}
+                    className="flex items-center gap-2"
+                  >
+                    <Plus size={16} />
+                    Add Stock
+                  </DropdownMenuItem>
 
-        <TableCell className="text-center">
-          <Button
-            size="icon"
-            variant="secondary"
-            onClick={() => openAction("reserve", item)}
-          >
-            <Lock size={16} />
-          </Button>
-        </TableCell>
+                  <DropdownMenuItem
+                    onClick={() => openAction("reserve", item)}
+                    className="flex items-center gap-2"
+                  >
+                    <Lock size={16} />
+                    Reserve Stock
+                  </DropdownMenuItem>
 
-        {/* RELEASE STOCK */}
+                  <DropdownMenuItem
+                    onClick={() => openAction("release", item)}
+                    className="flex items-center gap-2"
+                  >
+                    <Unlock size={16} />
+                    Release Stock
+                  </DropdownMenuItem>
 
-        <TableCell className="text-center">
-          <Button
-            size="icon"
-            variant="outline"
-            onClick={() => openAction("release", item)}
-          >
-            <Unlock size={16} />
-          </Button>
-        </TableCell>
+                  <DropdownMenuItem
+                    onClick={() => openAction("deduct", item)}
+                    className="flex items-center gap-2 text-red-600"
+                  >
+                    <Minus size={16} />
+                    Deduct Stock
+                  </DropdownMenuItem>
 
-        {/* DEDUCT STOCK */}
+                </DropdownMenuContent>
 
-        <TableCell className="text-center">
-          <Button
-            size="icon"
-            variant="destructive"
-            onClick={() => openAction("deduct", item)}
-          >
-            <Minus size={16} />
-          </Button>
-        </TableCell>
+              </DropdownMenu>
 
-      </TableRow>
+            </TableCell>
+          </TableRow>
+        );
 
-    );
-  })}
-</>
+      })}
+    </>
 
-);
+  );
 }

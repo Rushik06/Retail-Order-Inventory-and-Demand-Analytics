@@ -25,8 +25,6 @@ export default function InventoryPage() {
   const [warehouseId, setWarehouseId] = useState("");
   const [loading, setLoading] = useState(true);
 
-  /* TABLE CONTROLS */
-
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(6);
   const [search, setSearch] = useState("");
@@ -34,9 +32,8 @@ export default function InventoryPage() {
   const [sortOrder, setSortOrder] = useState<"ASC" | "DESC">("DESC");
   const [totalPages, setTotalPages] = useState(1);
 
-  /* LOAD INVENTORY */
-
   const loadInventory = async () => {
+
     setLoading(true);
 
     try {
@@ -66,15 +63,18 @@ export default function InventoryPage() {
 
   };
 
-  /* LOAD DROPDOWNS */
-
   const loadDropdowns = async () => {
 
     try {
 
       const productRes = await getProducts();
-      const warehouseRes = await getWarehouses({});
       setProducts(productRes.data || []);
+
+      const warehouseRes = await getWarehouses({
+        page: 1,
+        limit: 1000
+      });
+
       setWarehouses(warehouseRes.data?.data || []);
 
     } catch {
@@ -87,16 +87,11 @@ export default function InventoryPage() {
 
   useEffect(() => {
     loadInventory();
-
   }, [page, limit, search, sortField, sortOrder]);
 
   useEffect(() => {
-
     loadDropdowns();
-
   }, []);
-
-  /* CREATE INVENTORY */
 
   const createInventory = async () => {
 
@@ -119,9 +114,12 @@ export default function InventoryPage() {
     try {
 
       await createNewInventory(productId, warehouseId, 0);
+
       toast.success("Inventory created successfully");
+
       setProductId("");
       setWarehouseId("");
+
       await loadInventory();
 
     } catch {
@@ -131,8 +129,6 @@ export default function InventoryPage() {
     }
 
   };
-
-  /* SORT HANDLER */
 
   const handleSort = (field: string) => {
 
@@ -148,11 +144,10 @@ export default function InventoryPage() {
   return (
 
     <div className="p-6 space-y-6">
+
       <h1 className="text-3xl font-bold">
         Inventory Management
       </h1>
-
-      {/* CREATE INVENTORY */}
 
       <InventoryCreateCard
         products={products}
@@ -163,8 +158,6 @@ export default function InventoryPage() {
         setWarehouseId={setWarehouseId}
         onCreate={createInventory}
       />
-
-      {/* INVENTORY TABLE */}
 
       <InventoryTable
         inventory={inventory}
@@ -177,40 +170,19 @@ export default function InventoryPage() {
         releaseInventoryStock={releaseInventoryStock}
         deductInventoryStock={deductInventoryStock}
         onSort={handleSort}
-
         search={search}
         setSearch={setSearch}
-
         limit={limit}
         setLimit={(value) => {
           setPage(1);
           setLimit(value);
         }}
+
+        page={page}
+        setPage={setPage}
+        totalPages={totalPages}
       />
 
-      {/* PAGINATION */}
-
-      <div className="flex justify-center gap-4 items-center">
-
-        <button
-          className="border px-4 py-2 rounded"
-          disabled={page === 1}
-          onClick={() => setPage((p) => p - 1)}
-        >
-          Prev
-        </button>
-        <span>
-          Page {page} / {totalPages}
-        </span>
-
-        <button
-          className="border px-4 py-2 rounded"
-          disabled={page === totalPages}
-          onClick={() => setPage((p) => p + 1)}
-        >
-          Next
-        </button>
-      </div>
     </div>
 
   );
