@@ -5,6 +5,8 @@ import {
   CardContent,
 } from "@/components/ui/Card";
 
+import { TooltipProvider } from "@/components/ui/tooltip";
+
 import type { WarehouseTableProps } from "@/types/warehouse.types";
 
 import WarehouseTableHeader from "./WarehouseTableHeader";
@@ -14,29 +16,63 @@ import WarehousePagination from "./WarehousePagination";
 export default function WarehouseTable(props: WarehouseTableProps) {
 
   return (
-    <Card className="shadow-sm">
 
-      <CardHeader className="flex flex-row justify-between items-center">
-        <CardTitle className="text-xl font-semibold">
-          Warehouses
-        </CardTitle>
+    <TooltipProvider delayDuration={200}>
 
-        <WarehouseTableHeader {...props} />
-      </CardHeader>
+      <Card className="shadow-sm border bg-white">
 
-      <CardContent className="space-y-4">
+        {/* HEADER */}
 
-        {/* SCROLLABLE TABLE CONTAINER */}
-        <div className="border rounded-lg max-h-[420px] overflow-y-auto">
+        <CardHeader className="flex flex-row justify-between items-center">
 
-          <WarehouseTableBody {...props} />
+          <CardTitle className="text-xl font-semibold tracking-tight">
+            Warehouses
+          </CardTitle>
 
-        </div>
+          <WarehouseTableHeader {...props} />
 
-        <WarehousePagination {...props} />
+        </CardHeader>
 
-      </CardContent>
 
-    </Card>
+        {/* CONTENT */}
+
+        <CardContent className="space-y-4">
+
+          {/* TABLE CONTAINER */}
+
+          <div
+            className="
+              border
+              rounded-lg
+              max-h-[420px]
+              overflow-y-auto
+              scrollbar-thin
+              scrollbar-thumb-gray-300
+              scrollbar-track-transparent
+            "
+          >
+
+            {/* TABLE BODY */}
+
+            <div className="min-w-full">
+
+              <WarehouseTableBody {...props} />
+
+            </div>
+
+          </div>
+
+
+          {/* PAGINATION */}
+
+          <WarehousePagination {...props} />
+
+        </CardContent>
+
+      </Card>
+
+    </TooltipProvider>
+
   );
+
 }
