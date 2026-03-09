@@ -1,4 +1,3 @@
-/*eslint-disable*/ 
 import { useState } from "react";
 import api from "@/api/axios";
 import { useAuthStore } from "@/app/app.state";
@@ -7,6 +6,7 @@ import ProfileActions from "./ProfileActions";
 import ProfileEditButtons from "./ProfileEditButtons";
 import StatusMessage from "./StatusMessage";
 import DeleteConfirmation from "./DeleteConfirmation";
+import RequestAccess from "./RequestAccess"; 
 
 export default function Profile() {
   const user = useAuthStore((s) => s.user);
@@ -23,9 +23,8 @@ export default function Profile() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
-  // ----------------------------
   // UPDATE PROFILE
-  // ----------------------------
+
   const handleUpdate = async () => {
     try {
       setLoading(true);
@@ -37,24 +36,24 @@ export default function Profile() {
       setEditMode(false);
 
       setMessage("Profile updated successfully");
-    } catch (err: any) {
-      setMessage(err.response?.data?.error || "Update failed");
+    } catch  {
+      setMessage( "Update failed");
     } finally {
       setLoading(false);
     }
   };
 
-  // ----------------------------
+  
   // DELETE PROFILE
-  // ----------------------------
+  
   const handleDelete = async () => {
     try {
       await api.delete("/profile");
 
       localStorage.clear();
       window.location.href = "/login";
-    } catch (err: any) {
-      setMessage(err.response?.data?.error || "Failed to delete account");
+    } catch {
+      setMessage( "Failed to delete account");
     }
   };
 
@@ -100,6 +99,9 @@ export default function Profile() {
 
         {/* Divider */}
         <div className="my-6 border-t border-slate-200" />
+
+        {/* Request Access Buttons */}
+        <RequestAccess />
 
         {/* Editable Form */}
         <div className="space-y-6 max-w-md">

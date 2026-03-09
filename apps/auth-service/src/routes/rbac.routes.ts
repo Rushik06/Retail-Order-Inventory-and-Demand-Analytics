@@ -4,6 +4,7 @@ import { RbacService } from '../services/rbac.service.js';
 import { RbacController } from '../controller/rbac.controller.js';
 import { assignRole } from '../controller/role.controller.js';
 import { authorizeRole } from '../middleware/rbac.middleware.js';
+import { requestRoleAccess } from '../controller/request-role.controller.js';
 
 const router: Router = Router();
 
@@ -24,7 +25,7 @@ router.get(
   controller.checkAccess(['super_admin'])
 );
 
-
+//Assign Role
 router.post(
   '/assign-role',
   authenticate,
@@ -32,4 +33,10 @@ router.post(
   assignRole
 );
 
+//Request access
+router.post(
+  "/request-role",
+  authenticate,
+  requestRoleAccess
+);
 export default router;

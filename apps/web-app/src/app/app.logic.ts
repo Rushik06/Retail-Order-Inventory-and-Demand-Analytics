@@ -46,3 +46,14 @@ export const fetchUsers = async () => {
   const res = await api.get("/auth/users");
   return res.data;
 };
+
+/*EMAIL-REQUEST ACCESS */
+export const requestRoleAccess = async (roleName: string) => {
+
+  const res = await api.post("/rbac/request-role", {
+    roleName
+  });
+
+  return res.data;
+
+};
