@@ -1,4 +1,3 @@
-/* eslint-disable */
 import type { Request, Response } from "express";
 import * as service from "../services/product.service.js";
 import {
