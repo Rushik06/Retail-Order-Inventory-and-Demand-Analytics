@@ -5,6 +5,7 @@ import { env } from '../config/index.js';
 export interface AuthenticatedRequest extends Request {
   user?: {
     id: string;
+    role?:string;
   };
 }
 

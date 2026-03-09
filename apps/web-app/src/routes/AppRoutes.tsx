@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuthStore } from "../app/app.state";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
 import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
@@ -14,6 +15,7 @@ import Orders from "@/pages/dashboard/order/Order";
 
 import Inventory from "@/pages/dashboard/inventory/Inventory";
 import Warehouse from "@/pages/dashboard/warehouse/Warehouse";
+import Users from "../pages/dashboard/users/Users";
 
 import DashboardLayout from "../components/layout/DashboardLayout";
 
@@ -60,7 +62,9 @@ function AppRoutes() {
         path="/dashboard"
         element={
           user ? (
-            <DashboardLayout />
+            <ProtectedRoute>
+              <DashboardLayout />
+            </ProtectedRoute>
           ) : (
             <Navigate to="/login" replace />
           )
@@ -71,14 +75,54 @@ function AppRoutes() {
         <Route path="profile" element={<Profile />} />
         <Route path="security" element={<Security />} />
 
-        {/* Product */}
-        <Route path="products" element={<Products />} />
-        <Route path="orders" element={<Orders />} />
+        {/* Product - manager + admin */}
+        <Route
+          path="products"
+          element={
+            <ProtectedRoute allowedRoles={["manager", "admin", "super_admin"]}>
+              <Products />
+            </ProtectedRoute>
+          }
+        />
 
-        {/* Inventory */}
-        <Route path="inventory" element={<Inventory />} />
-        <Route path="warehouses" element={<Warehouse />} />
+        <Route
+          path="orders"
+          element={
+            <ProtectedRoute allowedRoles={["staff", "manager", "admin", "super_admin"]}>
+              <Orders />
+            </ProtectedRoute>
+          }
+        />
 
+        {/* Inventory - manager + admin */}
+        <Route
+          path="inventory"
+          element={
+            <ProtectedRoute allowedRoles={["manager", "admin", "super_admin"]}>
+              <Inventory />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Warehouse - admin only */}
+        <Route
+          path="warehouses"
+          element={
+            <ProtectedRoute allowedRoles={["admin", "super_admin"]}>
+              <Warehouse />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Users - admin only */}
+        <Route
+          path="users"
+          element={
+            <ProtectedRoute allowedRoles={["admin", "super_admin"]}>
+              <Users />
+            </ProtectedRoute>
+          }
+        />
       </Route>
 
       {/* Fallback */}

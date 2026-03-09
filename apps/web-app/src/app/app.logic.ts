@@ -6,7 +6,7 @@ export const loginUser = async (email: string, password: string) => {
   const res = await api.post("/auth/login", { email, password });
 
   setTokens(res.data.accessToken, res.data.refreshToken);
-                                                          
+
   useAuthStore.getState().setUser(res.data.user);
 
   return res.data;
@@ -23,5 +23,26 @@ export const registerUser = async (
     password,
   });
 
+  return res.data;
+};
+
+/* RBAC LOGIC */
+
+export const assignUserRole = async (
+  userId: string,
+  roleName: string
+) => {
+  const res = await api.post("/rbac/assign-role", {
+    userId,
+    roleName,
+  });
+
+  return res.data;
+};
+
+/* GET ALL USERS */
+
+export const fetchUsers = async () => {
+  const res = await api.get("/auth/users");
   return res.data;
 };

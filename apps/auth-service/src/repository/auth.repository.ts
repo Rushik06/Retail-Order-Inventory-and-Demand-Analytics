@@ -63,7 +63,36 @@ export class AuthRepository {
     };
   }
 
-  
+  // GET ALL USERS
+
+async getAllUsers(): Promise<User[]> {
+
+  const users = await UserModel.findAll({
+    include: [
+      {
+        model: Role,
+        through: { attributes: [] },
+      },
+    ],
+  });
+
+  return users.map((user) => {
+
+    const roles = user.getDataValue("Roles");
+    const roleName = roles?.[0]?.role_name;
+
+    return {
+      id: user.getDataValue("user_id"),
+      name: user.getDataValue("name"),
+      email: user.getDataValue("email"),
+      password: user.getDataValue("password"),
+      isActive: user.getDataValue("isActive"),
+      role: roleName,
+    };
+
+  });
+
+}
   // CREATE USER
   
   async create(user: User): Promise<User> {

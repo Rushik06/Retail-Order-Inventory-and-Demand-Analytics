@@ -1,4 +1,3 @@
-/*eslint-disable*/ 
 import { UserRole } from '../models/userRole.model.js';
 import { Role } from '../models/role.model.js';
 
@@ -23,7 +22,8 @@ export class RbacService {
     });
 
     if (!userRole) return null;
-
+    /*eslint-disable */
+  
     const roleName = (userRole as any).Role?.name;
     return roleName ?? null;
   }

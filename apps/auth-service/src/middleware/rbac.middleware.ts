@@ -23,7 +23,7 @@ export const authorizeRole =
       include: [
         {
           model: Role,
-          attributes: ['name'],
+          attributes: ['role_name'],
         },
       ],
     });
@@ -34,7 +34,7 @@ export const authorizeRole =
       });
     }
 
-    const roleName = (userRole as any).Role?.name;
+    const roleName = (userRole as any).Role?.role_name;
 
     if (!allowedRoles.includes(roleName)) {
       return res.status(403).json({

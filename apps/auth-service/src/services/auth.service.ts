@@ -158,4 +158,12 @@ export class AuthService {
       message: "Logged out successfully",
     };
   }
+
+  async getUsers() {
+
+  const users = await this.repo.getAllUsers();
+
+   return users;
+
+}
 }

@@ -48,4 +48,21 @@ export class AuthController {
     await this.service.logout(req.body.refreshToken);
     return res.status(200).json({ message: 'Logged out successfully' });
   };
+  getUsers = async (_req: Request, res: Response): Promise<Response> => {
+    try {
+
+      const users = await this.service.getUsers();
+
+      return res.status(200).json(users);
+
+    } catch (error) {
+
+      console.error("GET USERS ERROR:", error);
+
+      return res.status(500).json({
+        error: "Failed to fetch users"
+      });
+
+    }
+  };
 }

@@ -3,6 +3,8 @@ import { AuthRepository } from '../repository/auth.repository.js';
 import { AuthService } from '../services/auth.service.js';
 import { AuthController } from '../controller/auth.controller.js';
 import { validate } from '../middleware/validate.middleware.js';
+import { authorizeRole } from '../middleware/rbac.middleware.js';
+import { authenticate } from '../middleware/auth.middleware.js';
 import {
   registerSchema,
   loginSchema,
@@ -156,6 +158,24 @@ router.post(
   '/logout',
   validate(refreshSchema),
   controller.logout
+);
+/**
+ * @swagger
+ * /api/auth/users:
+ *   get:
+ *     summary: Get all users (Admin only)
+ *     tags: [Auth]
+ *     responses:
+ *       200:
+ *         description: List of users
+ *       403:
+ *         description: Forbidden
+ */
+router.get(
+  '/users',
+  authenticate,
+  authorizeRole('admin', 'super_admin'),
+  controller.getUsers
 );
 
 export default router;
