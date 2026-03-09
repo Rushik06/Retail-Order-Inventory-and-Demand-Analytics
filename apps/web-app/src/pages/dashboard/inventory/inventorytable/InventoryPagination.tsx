@@ -1,5 +1,3 @@
-/* eslint-disable */
-
 interface Props {
   page: number;
   totalPages: number;

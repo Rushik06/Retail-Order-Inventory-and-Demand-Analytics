@@ -1,4 +1,3 @@
-/*eslint-disable*/
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import productApi from "@/api/product-axios";
@@ -34,7 +33,7 @@ export default function Products() {
 
       toast.success("Products loaded successfully");
 
-    } catch (error) {
+    } catch {
 
       console.error("Failed to load products");
       toast.error("Failed to load products");
@@ -90,7 +89,7 @@ export default function Products() {
 
       await loadProducts();
 
-    } catch (error) {
+    } catch {
 
       console.error("Product save failed");
       toast.error("Product save failed");
@@ -109,7 +108,7 @@ export default function Products() {
 
       await loadProducts();
 
-    } catch (error) {
+    } catch {
 
       console.error("Delete failed");
       toast.error("Product delete failed");

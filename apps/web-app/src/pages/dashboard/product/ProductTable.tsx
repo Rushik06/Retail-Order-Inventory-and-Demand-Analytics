@@ -1,4 +1,3 @@
-/* eslint-disable */
 import type { Product } from "@/types/product.types";
 import ProductsTableContent from "@/components/ui/products/ProductsTable";
 import { useProductsTable } from "@/hooks/Productshooks";

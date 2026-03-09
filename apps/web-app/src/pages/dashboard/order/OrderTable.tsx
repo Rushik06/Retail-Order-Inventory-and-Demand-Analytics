@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { useMemo, useState } from "react";
 import type { Order } from "./Order";
 import OrdersTableContent from "@/components/ui/orders/OrderTable";

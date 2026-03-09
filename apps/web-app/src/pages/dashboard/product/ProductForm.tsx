@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { useMemo } from "react";
 import { ChevronDown } from "lucide-react";
 import type { Props } from "@/types/product.types";

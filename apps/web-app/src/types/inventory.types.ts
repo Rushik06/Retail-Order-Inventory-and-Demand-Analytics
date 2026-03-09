@@ -18,5 +18,9 @@ page: number;
 setPage: any;
 totalPages: number;
 }
-
-
+ export type props = {
+  inventory: any[];
+  products: any[];
+  warehouses: any[];
+  openAction: (type: string, item: any) => void;
+}

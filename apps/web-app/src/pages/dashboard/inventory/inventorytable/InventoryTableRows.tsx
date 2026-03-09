@@ -20,19 +20,14 @@ import {
   DropdownMenuItem
 } from "@/components/ui/DropdownMenu";
 
-interface Props {
-  inventory: any[];
-  products: any[];
-  warehouses: any[];
-  openAction: (type: string, item: any) => void;
-}
+import type { props } from "@/types/inventory.types";
 
 export default function InventoryTableRows({
   inventory,
   products,
   warehouses,
   openAction
-}: Props) {
+}: props) {
 
   const stockStatus = (available: number) => {
 

@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { useEffect, useState } from "react";
 import productApi from "@/api/product-axios";
 import OrderForm from "./OrderForm";
@@ -30,7 +29,7 @@ export default function Orders() {
       setLoading(true);
       const res = await productApi.get("/orders");
       setOrders(res.data);
-    } catch (error) {
+    } catch  {
       toast.error("Failed to load orders");
     } finally {
       setLoading(false);
@@ -41,7 +40,7 @@ export default function Orders() {
     try {
       const res = await productApi.get("/products");
       setProducts(res.data);
-    } catch (error) {
+    } catch {
       toast.error("Failed to load products");
     }
   };
@@ -73,7 +72,7 @@ export default function Orders() {
       setForm({ customerName: "", productId: "", quantity: 1 });
       loadOrders();
 
-    } catch (error) {
+    } catch  {
       toast.error("Failed to create order");
     }
   };
@@ -86,7 +85,7 @@ export default function Orders() {
 
       loadOrders();
 
-    } catch (error) {
+    } catch {
       toast.error("Failed to update order status");
     }
   };
