@@ -12,7 +12,6 @@ import {
 
 import { getProducts } from "@/api/product-axios";
 import { getWarehouses } from "@/api/inventory-axios";
-
 import {
   filterInventory,
   sortInventory
@@ -45,9 +44,7 @@ export default function useInventoryPageLogic() {
     const product = products.find((p) => p.id === pid);
 
     if (!product) return 0;
-
     const allocated = getAllocatedStock(pid);
-
     return Math.max(product.stock - allocated, 0);
   };
 
@@ -97,9 +94,7 @@ export default function useInventoryPageLogic() {
       setWarehouses(warehouseRes.data?.data || []);
 
     } catch {
-
       toast.error("Failed to load products or warehouses");
-
     }
 
   };
@@ -128,35 +123,27 @@ export default function useInventoryPageLogic() {
     );
 
     if (exists) {
-
       toast.error("Inventory already exists for this product and warehouse");
       return;
-
     }
 
     const remaining = getRemainingStock(productId);
 
     if (remaining <= 0) {
-
       toast.error("All product stock already allocated across warehouses");
       return;
-
     }
 
     try {
-
       await createNewInventory(productId, warehouseId, 0);
-
       toast.success("Inventory created successfully");
 
       setProductId("");
       setWarehouseId("");
-
       await loadInventory();
 
     } catch {
       toast.error("Failed to create inventory");
-
     }
 
   };
@@ -169,23 +156,20 @@ export default function useInventoryPageLogic() {
   ) => {
 
     const remaining = getRemainingStock(productId);
-
     if (quantity > remaining) {
-
       toast.error(`Only ${remaining} stock remaining to allocate`);
-      return;
+      return false;
 
     }
 
     await addInventoryStock(productId, warehouseId, quantity, referenceId ?? null);
     await loadInventory();
-
+       return true;
   };
 
   const handleSort = (field: string) => {
 
     if (field === "product_id" || field === "warehouse_id") {
-
       const sorted = sortInventory(
         inventory,
         products,
@@ -203,7 +187,6 @@ export default function useInventoryPageLogic() {
       setSortOrder(sortOrder === "ASC" ? "DESC" : "ASC");
 
     } else {
-
       setSortField(field);
       setSortOrder("ASC");
 
@@ -242,5 +225,4 @@ export default function useInventoryPageLogic() {
     deductInventoryStock,
     handleSort
   };
-
 }

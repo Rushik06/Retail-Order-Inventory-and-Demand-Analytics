@@ -104,11 +104,11 @@ function AppRoutes() {
           }
         />
 
-        {/* Warehouse - admin only */}
+        {/* Warehouse - admin + manager */}
         <Route
           path="warehouses"
           element={
-            <ProtectedRoute allowedRoles={["admin", "super_admin"]}>
+            <ProtectedRoute allowedRoles={["admin", "super_admin","manager"]}>
               <Warehouse />
             </ProtectedRoute>
           }

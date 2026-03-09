@@ -70,8 +70,17 @@ export default function useInventoryActions({
     try {
 
       if (action === "add") {
-        await addInventoryStock(product_id, warehouse_id, quantity);
-        toast.success("Stock added successfully");
+
+        const success = await addInventoryStock(
+          product_id,
+          warehouse_id,
+          quantity
+        );
+
+        if (success !== false) {
+          toast.success("Stock added successfully");
+        }
+
       }
 
       if (action === "reserve") {

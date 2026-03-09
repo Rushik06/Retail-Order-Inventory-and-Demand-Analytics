@@ -2,7 +2,9 @@ import { StockAlert } from "../models/stockalert.model.js";
 import { findInventory } from "../repository/inventory.repository.js";
 import { publishEvent } from "../utils/rabbitmq.js";
 import type { Transaction } from "sequelize";
+
 class InventoryAlertService {
+
   async checkLowStock(
     productId: string,
     warehouseId: string,
@@ -23,6 +25,8 @@ class InventoryAlertService {
 
     const effectiveQty = available - reserved;
 
+    /* LOW STOCK */
+
     if (effectiveQty <= threshold) {
 
       const existingAlert = await StockAlert.findOne({
@@ -37,27 +41,47 @@ class InventoryAlertService {
 
       if (!existingAlert) {
 
-        await StockAlert.create({
-          product_id: productId,
-          warehouse_id: warehouseId,
-          alert_type: "LOW_STOCK",
-          threshold_qty: threshold,
-          current_qty: effectiveQty,
-        }, { transaction });
+        await StockAlert.create(
+          {
+            product_id: productId,
+            warehouse_id: warehouseId,
+            alert_type: "LOW_STOCK",
+            threshold_qty: threshold,
+            current_qty: effectiveQty,
+          },
+          { transaction }
+        );
 
-        // Publish RabbitMQ Event
-        await publishEvent("inventory.low_stock", {
-          event: "LOW_STOCK",
-          productId,
-          warehouseId,
-          currentQty: effectiveQty,
-          threshold,
-          occurredAt: new Date().toISOString(),
-        });
+      } else {
+
+        /* Update quantity if alert already exists */
+
+        await existingAlert.update(
+          {
+            current_qty: effectiveQty
+          },
+          { transaction }
+        );
+
       }
 
-    } else {
-      // Auto resolve if stock recovered
+      /* Always publish event for UI */
+
+      await publishEvent("inventory.low_stock", {
+        event: "LOW_STOCK",
+        productId,
+        warehouseId,
+        currentQty: effectiveQty,
+        threshold,
+        occurredAt: new Date().toISOString(),
+      });
+
+    }
+
+    /* STOCK RECOVERED */
+
+    else {
+
       await StockAlert.update(
         { is_resolved: true },
         {
@@ -70,8 +94,22 @@ class InventoryAlertService {
           transaction,
         }
       );
+
+      /* Publish recovery event */
+
+      await publishEvent("inventory.low_stock", {
+        event: "STOCK_RECOVERED",
+        productId,
+        warehouseId,
+        currentQty: effectiveQty,
+        threshold,
+        occurredAt: new Date().toISOString(),
+      });
+
     }
+
   }
+
 }
 
 export const inventoryAlertService =

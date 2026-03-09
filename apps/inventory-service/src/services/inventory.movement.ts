@@ -2,6 +2,7 @@ import { sequelize } from "../config/index.js";
 import type { Transaction } from "sequelize";
 import { Inventory } from "../models/inventory.model.js";
 import { InventoryLog } from "../models/inventorylog.model.js";
+import { inventoryAlertService } from "../services/inventory.alert.js";
 
 class InventoryMovementService {
 
@@ -51,6 +52,13 @@ class InventoryMovementService {
         { transaction }
       );
 
+      await inventoryAlertService.checkLowStock(
+        productId,
+        warehouseId,
+        10,
+        transaction
+      );
+
       return inventory;
 
     });
@@ -87,6 +95,13 @@ class InventoryMovementService {
       inventory.set("available_qty", previous + quantity);
 
       await inventory.save({ transaction });
+
+      await inventoryAlertService.checkLowStock(
+        productId,
+        warehouseId,
+        10,
+        transaction
+      );
 
       await InventoryLog.create(
         {
@@ -140,6 +155,13 @@ class InventoryMovementService {
       inventory.set("available_qty", previous - quantity);
 
       await inventory.save({ transaction });
+
+      await inventoryAlertService.checkLowStock(
+        productId,
+        warehouseId,
+        10,
+        transaction
+      );
 
       await InventoryLog.create(
         {
