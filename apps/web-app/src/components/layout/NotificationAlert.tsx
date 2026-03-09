@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { useState } from "react";
 import { BellRing, AlertTriangle } from "lucide-react";
 import useInventoryAlerts from "@/hooks/InventoryAlerthooks";
