@@ -1,170 +1,192 @@
-import { Sequelize } from "sequelize";
-import { ProductSummary } from "../models/product-summary.model.js";
-import { WarehouseSummary } from "../models/warehouse-summary.model.js";
-import { InventorySummary } from "../models/inventory-summary.model.js";
-import { InventoryActivity } from "../models/inventory-activity.model.js";
-import { OrderSummary } from "../models/order-summary.model.js";
+/*eslint-disable*/
+import { sequelize } from "../config/sequilize.js";
 class ReportRepository {
 
-    /* COUNTERS */
-    async getTotalProducts(): Promise<number> {
-        return await ProductSummary.count();
+  /* COUNTERS */
 
-    }
+  async getTotalProducts(): Promise<number> {
 
-    async getTotalWarehouses(): Promise<number> {
-        return await WarehouseSummary.count();
+    const [rows]: any = await sequelize.query(
+      `SELECT COUNT(*) as count FROM products`
+    );
 
-    }
-    async getTotalOrders(): Promise<number> {
-        return await OrderSummary.count();
-    }
+    return Number(rows[0].count);
 
-    async getLowStockCount(): Promise<number> {
-        return await InventorySummary.count({
-            where: {
-                status: "LOW"
-            }
-        });
+  }
 
-    }
-    async getTotalRevenue() {
-        const result = await OrderSummary.findAll({
-            attributes: [
-                [Sequelize.fn("SUM", Sequelize.col("total_amount")), "total"]
-            ]
-        });
+  async getTotalWarehouses(): Promise<number> {
 
-        return result[0]?.get("total") || 0;
+    const [rows]: any = await sequelize.query(
+      `SELECT COUNT(*) as count FROM warehouses`
+    );
 
-    }
+    return Number(rows[0].count);
 
-    /* BAR CHART */
+  }
 
-    async getWarehouseStockChart() {
-        return await InventorySummary.findAll({
+  async getTotalOrders(): Promise<number> {
 
-            attributes: [
-                "warehouse_id",
-                [Sequelize.fn("SUM", Sequelize.col("available_qty")), "total_stock"]
-            ],
+    const [rows]: any = await sequelize.query(
+      `SELECT COUNT(*) as count FROM orders`
+    );
 
-            group: ["warehouse_id"]
+    return Number(rows[0].count);
 
-        });
+  }
 
-    }
-    async getTopSellingProducts() {
+  async getLowStockCount(): Promise<number> {
 
-        return await OrderSummary.findAll({
+    const [rows]: any = await sequelize.query(`
+      SELECT COUNT(*) as count
+      FROM stock_alerts
+      WHERE is_resolved = false
+    `);
 
-            attributes: [
-                "product_id",
-                [Sequelize.fn("SUM", Sequelize.col("quantity")), "total_sold"]
-            ],
+    return Number(rows[0].count);
 
-            group: ["product_id"],
-            order: [[Sequelize.literal("total_sold"), "DESC"]],
-            limit: 5
+  }
 
-        });
+  async getTotalRevenue(): Promise<number> {
 
-    }
+    const [rows]: any = await sequelize.query(`
+      SELECT SUM(price * quantity) as revenue
+      FROM order_items
+    `);
 
-    /* PIE CHART  */
+    return Number(rows[0].revenue || 0);
 
-    async getCategoryDistributionChart() {
+  }
 
-        return await ProductSummary.findAll({
+  /* BAR CHART — WAREHOUSE STOCK */
 
-            attributes: [
-                "category",
-                [Sequelize.fn("COUNT", Sequelize.col("id")), "total_products"]
-            ],
+  async getWarehouseStockChart() {
 
-            group: ["category"]
+    const [rows] = await sequelize.query(`
+      SELECT
+        w.name as warehouse,
+        SUM(i.available_qty) as total_stock
+      FROM inventory i
+      JOIN warehouses w
+        ON w.id = i.warehouse_id
+      GROUP BY w.name
+    `);
 
-        });
+    return rows;
 
-    }
-    async getOrdersByStatus() {
+  }
 
-        return await OrderSummary.findAll({
+  /* BAR CHART — TOP SELLING PRODUCTS */
 
-            attributes: [
-                "status",
-                [Sequelize.fn("COUNT", Sequelize.col("id")), "count"]
-            ],
+  async getTopSellingProducts() {
 
-            group: ["status"]
+    const [rows] = await sequelize.query(`
+      SELECT
+        p.name as product,
+        SUM(oi.quantity) as total_sold
+      FROM order_items oi
+      JOIN products p
+        ON p.id = oi.product_id
+      GROUP BY p.name
+      ORDER BY total_sold DESC
+      LIMIT 5
+    `);
 
-        });
+    return rows;
 
-    }
+  }
 
-    /* TABLE FOR LOW STOCK PRODUCTS */
+  /* PIE CHART — PRODUCT CATEGORY DISTRIBUTION */
 
-    async getLowStockProducts() {
-        return await InventorySummary.findAll({
+  async getCategoryDistributionChart() {
 
-            where: {
-                status: "LOW"
-            },
+    const [rows] = await sequelize.query(`
+      SELECT
+        category,
+        COUNT(*) as total_products
+      FROM products
+      GROUP BY category
+    `);
 
-            attributes: [
-                "product_id",
-                "warehouse_id",
-                "available_qty",
-                "threshold"
-            ],
+    return rows;
 
-            order: [
-                ["available_qty", "ASC"]
-            ]
+  }
 
-        });
+  /* PIE CHART — ORDERS BY STATUS */
 
-    }
+  async getOrdersByStatus() {
 
-    /* TABLE FOR RECENT INVENTORY ACTIVITY */
+    const [rows] = await sequelize.query(`
+      SELECT
+        status,
+        COUNT(*) as count
+      FROM orders
+      GROUP BY status
+    `);
 
-    async getRecentInventoryActivity() {
-        return await InventoryActivity.findAll({
+    return rows;
 
-            attributes: [
-                "product_id",
-                "warehouse_id",
-                "action_type",
-                "quantity",
-                "created_at"
-            ],
+  }
 
-            order: [
-                ["created_at", "DESC"]
-            ],
-            limit: 10
+  /* TABLE — LOW STOCK PRODUCTS */
 
-        });
-    }
+  async getLowStockProducts() {
 
-     /* TABLE FOR RECENT ORDERS */
-    async getRecentOrders() {
+    const [rows] = await sequelize.query(`
+      SELECT
+        p.name as product,
+        w.name as warehouse,
+        i.available_qty
+      FROM inventory i
+      JOIN products p
+        ON p.id = i.product_id
+      JOIN warehouses w
+        ON w.id = i.warehouse_id
+      WHERE i.available_qty < 10
+      ORDER BY i.available_qty ASC
+    `);
 
-        return await OrderSummary.findAll({
+    return rows;
 
-            attributes: [
-                "id",
-                "product_id",
-                "quantity",
-                "total_amount",
-                "status",
-                "created_at"
-            ],
+  }
 
-            order: [["created_at", "DESC"]], limit: 10
+  /* TABLE — RECENT INVENTORY ACTIVITY */
 
-        });
-    }
+  async getRecentInventoryActivity() {
+
+    const [rows] = await sequelize.query(`
+      SELECT
+        product_id,
+        warehouse_id,
+        action_type,
+        new_available_qty,
+        created_at
+      FROM inventory_logs
+      ORDER BY created_at DESC
+      LIMIT 10
+    `);
+
+    return rows;
+
+  }
+
+  /* TABLE — RECENT ORDERS */
+
+  async getRecentOrders() {
+
+    const [rows] = await sequelize.query(`
+      SELECT
+        id,
+        status,
+        created_at
+      FROM orders
+      ORDER BY created_at DESC
+      LIMIT 10
+    `);
+
+    return rows;
+
+  }
+
 }
 
 export const reportRepository = new ReportRepository();
