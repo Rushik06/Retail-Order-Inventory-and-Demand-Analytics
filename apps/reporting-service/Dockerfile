@@ -9,6 +9,6 @@ COPY . .
 
 RUN pnpm install
 
-EXPOSE 3002
+EXPOSE 3003
 
 CMD ["pnpm", "--filter", "reporting-service", "dev"]

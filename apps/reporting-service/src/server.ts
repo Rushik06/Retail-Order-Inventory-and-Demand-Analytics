@@ -1,5 +1,5 @@
 import app from "./app.js";
-import { sequelize ,env } from "./src/config/index.js";
+import { sequelize ,env } from "./config/index.js";
 
 
 async function startServer(): Promise<void> {

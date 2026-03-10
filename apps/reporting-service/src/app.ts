@@ -1,11 +1,11 @@
-import express from "express";
+import express ,{type Express} from "express";
 import cors from "cors";
 
-import reportRoutes from "./src/routes/reporting.routes.js";
-import exportRoutes from "./src/routes/export.routes.js";
-import { errorHandler } from "./src/middleware/error-handler.js";
+import reportRoutes from "./routes/reporting.routes.js";
+import exportRoutes from "./routes/export.routes.js";
+import { errorHandler } from "./middleware/error-handler.js";
 
-const app = express();
+const app : Express = express();
 
 /* MIDDLEWARE */
 
