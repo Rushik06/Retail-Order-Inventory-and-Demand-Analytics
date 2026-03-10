@@ -1,5 +1,7 @@
 import { Router } from "express";
 import { reportController } from "../controllers/reporting.controller.js";
+import { authenticate } from "../middleware/authenticate.js";
+import { authorizeRoles } from "../middleware/authorize.js";
 
 const router : Router = Router();
 
@@ -33,6 +35,8 @@ const router : Router = Router();
  */
 router.get(
   "/dashboard",
+  authenticate,
+  authorizeRoles("manager" ,"staff","admin" ,"super-admin"),
   reportController.getDashboard.bind(reportController)
 );
 
@@ -48,6 +52,8 @@ router.get(
  */
 router.get(
   "/counters",
+  authenticate,
+  authorizeRoles("manager" ,"staff","admin" ,"super-admin"),
   reportController.getCounters.bind(reportController)
 );
 
@@ -63,6 +69,8 @@ router.get(
  */
 router.get(
   "/charts",
+  authenticate,
+  authorizeRoles("manager" ,"staff","admin" ,"super-admin"),
   reportController.getCharts.bind(reportController)
 );
 
@@ -78,6 +86,8 @@ router.get(
  */
 router.get(
   "/tables",
+  authenticate,
+  authorizeRoles("manager" ,"staff","admin" ,"super-admin"),
   reportController.getTables.bind(reportController)
 );
 
