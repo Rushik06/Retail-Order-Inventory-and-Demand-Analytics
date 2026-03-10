@@ -9,7 +9,6 @@ class ReportRepository {
     const [rows]: any = await sequelize.query(
       `SELECT COUNT(*) as count FROM products`
     );
-
     return Number(rows[0].count);
 
   }
@@ -19,7 +18,6 @@ class ReportRepository {
     const [rows]: any = await sequelize.query(
       `SELECT COUNT(*) as count FROM warehouses`
     );
-
     return Number(rows[0].count);
 
   }
@@ -29,7 +27,6 @@ class ReportRepository {
     const [rows]: any = await sequelize.query(
       `SELECT COUNT(*) as count FROM orders`
     );
-
     return Number(rows[0].count);
 
   }
@@ -90,7 +87,6 @@ class ReportRepository {
       ORDER BY total_sold DESC
       LIMIT 5
     `);
-
     return rows;
 
   }
@@ -106,7 +102,6 @@ class ReportRepository {
       FROM products
       GROUP BY category
     `);
-
     return rows;
 
   }
@@ -122,7 +117,6 @@ class ReportRepository {
       FROM orders
       GROUP BY status
     `);
-
     return rows;
 
   }
@@ -144,7 +138,6 @@ class ReportRepository {
       WHERE i.available_qty < 10
       ORDER BY i.available_qty ASC
     `);
-
     return rows;
 
   }
@@ -164,7 +157,6 @@ class ReportRepository {
       ORDER BY created_at DESC
       LIMIT 10
     `);
-
     return rows;
 
   }
@@ -182,11 +174,9 @@ class ReportRepository {
       ORDER BY created_at DESC
       LIMIT 10
     `);
-
     return rows;
 
   }
 
 }
-
 export const reportRepository = new ReportRepository();
