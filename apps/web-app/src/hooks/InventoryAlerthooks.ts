@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import { getProducts } from "@/api/product-axios";
 import { getWarehouses } from "@/api/inventory-axios";
+import { useAuthStore } from "@/app/app.state";
 
 interface Alert {
   id: string;
@@ -15,6 +16,7 @@ interface Alert {
 
 export default function useInventoryAlerts() {
 
+  const user = useAuthStore((s) => s.user);
   const STORAGE_KEY = "inventory_alerts";
 
   const [alerts, setAlerts] = useState<Alert[]>(() => {
@@ -35,10 +37,11 @@ export default function useInventoryAlerts() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(alerts));
   }, [alerts]);
 
-  /* LOAD PRODUCTS + WAREHOUSES */
+  /* LOAD PRODUCTS + WAREHOUSES ONLY IF USER LOGGED IN */
 
   useEffect(() => {
 
+    if (!user) return;
     const loadData = async () => {
 
       try {
@@ -54,21 +57,20 @@ export default function useInventoryAlerts() {
         setWarehouses(warehouseRes.data?.data || []);
 
       } catch (err) {
-
         console.error("Failed loading alert metadata", err);
-
       }
 
     };
 
     loadData();
 
-  }, []);
+  }, [user]);
 
   /* SOCKET CONNECTION */
 
   useEffect(() => {
 
+    if (!user) return;
     if (!products.length || !warehouses.length) return;
 
     const socket = io("http://localhost:3002", {
@@ -82,7 +84,6 @@ export default function useInventoryAlerts() {
     socket.on("inventory.low_stock", (event) => {
 
       const product = products.find((p) => p.id === event.productId);
-
       const warehouse = warehouses.find(
         (w) => w.warehouse_id === event.warehouseId
       );
@@ -116,7 +117,6 @@ export default function useInventoryAlerts() {
           : event.warehouseId,
 
         location: warehouse?.location || "",
-
         qty: event.currentQty
 
       };
@@ -137,9 +137,11 @@ export default function useInventoryAlerts() {
 
     });
 
-    return () => {socket.disconnect()};
+    return () => {
+      socket.disconnect();
+    };
 
-  }, [products, warehouses]);
+  }, [user, products, warehouses]);
 
   return alerts;
 
