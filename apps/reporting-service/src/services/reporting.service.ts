@@ -10,21 +10,37 @@ class ReportService {
       totalProducts,
       totalWarehouses,
       lowStockCount,
+      totalOrders,
+      totalRevenue,
+
       warehouseStock,
       categoryDistribution,
+      ordersByStatus,
+      topSellingProducts,
+
       lowStockProducts,
-      recentActivity
+      recentActivity,
+      recentOrders
+
     ] = await Promise.all([
 
+     /* COUNTERS */
       reportRepository.getTotalProducts(),
       reportRepository.getTotalWarehouses(),
       reportRepository.getLowStockCount(),
+      reportRepository.getTotalOrders(),
+      reportRepository.getTotalRevenue(),
 
+      /* CHARTS */
       reportRepository.getWarehouseStockChart(),
       reportRepository.getCategoryDistributionChart(),
+      reportRepository.getOrdersByStatus(),
+      reportRepository.getTopSellingProducts(),
 
+      /* TABLES */
       reportRepository.getLowStockProducts(),
-      reportRepository.getRecentInventoryActivity()
+      reportRepository.getRecentInventoryActivity(),
+      reportRepository.getRecentOrders()
 
     ]);
 
@@ -33,21 +49,25 @@ class ReportService {
       counters: {
         totalProducts,
         totalWarehouses,
-        lowStockItems: lowStockCount
+        lowStockItems: lowStockCount,
+        totalOrders,
+        totalRevenue
       },
 
       charts: {
         warehouseStock,
-        categoryDistribution
+        categoryDistribution,
+        ordersByStatus,
+        topSellingProducts
       },
 
       tables: {
         lowStockProducts,
-        recentActivity
+        recentActivity,
+        recentOrders
       }
 
     };
-
   }
 
   /* COUNTERS ONLY */
@@ -57,19 +77,25 @@ class ReportService {
     const [
       totalProducts,
       totalWarehouses,
-      lowStockCount
+      lowStockCount,
+      totalOrders,
+      totalRevenue
     ] = await Promise.all([
 
       reportRepository.getTotalProducts(),
       reportRepository.getTotalWarehouses(),
-      reportRepository.getLowStockCount()
+      reportRepository.getLowStockCount(),
+      reportRepository.getTotalOrders(),
+      reportRepository.getTotalRevenue()
 
     ]);
 
     return {
       totalProducts,
       totalWarehouses,
-      lowStockItems: lowStockCount
+      lowStockItems: lowStockCount,
+      totalOrders,
+      totalRevenue
     };
 
   }
@@ -80,17 +106,23 @@ class ReportService {
 
     const [
       warehouseStock,
-      categoryDistribution
+      categoryDistribution,
+      ordersByStatus,
+      topSellingProducts
     ] = await Promise.all([
 
       reportRepository.getWarehouseStockChart(),
-      reportRepository.getCategoryDistributionChart()
+      reportRepository.getCategoryDistributionChart(),
+      reportRepository.getOrdersByStatus(),
+      reportRepository.getTopSellingProducts()
 
     ]);
 
     return {
       warehouseStock,
-      categoryDistribution
+      categoryDistribution,
+      ordersByStatus,
+      topSellingProducts
     };
 
   }
@@ -101,17 +133,20 @@ class ReportService {
 
     const [
       lowStockProducts,
-      recentActivity
+      recentActivity,
+      recentOrders
     ] = await Promise.all([
 
       reportRepository.getLowStockProducts(),
-      reportRepository.getRecentInventoryActivity()
+      reportRepository.getRecentInventoryActivity(),
+      reportRepository.getRecentOrders()
 
     ]);
 
     return {
       lowStockProducts,
-      recentActivity
+      recentActivity,
+      recentOrders
     };
 
   }
