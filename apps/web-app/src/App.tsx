@@ -7,7 +7,7 @@ function App() {
    useInventoryAlerts();
 
   return (
-    <div className="min-h-screen w-full max-w-[1400px] mx-auto px-4 md:px-6">
+    <div className="min-h-screen w-full ">
       <Toaster position="top-right" richColors />
       <AppRoutes />
     </div>
