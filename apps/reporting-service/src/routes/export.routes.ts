@@ -2,6 +2,8 @@ import { Router } from "express";
 import { exportController } from "../controllers/export.controller.js";
 import { authenticate } from "../middleware/authenticate.js";
 import { authorizeRoles } from "../middleware/authorize.js";
+import { validate } from "../middleware/validate-schema.js";
+import { exportEmailSchema } from "../validations/export.schema.js";
 
 const router: Router = Router();
 
@@ -97,6 +99,7 @@ router.get(
 router.post("/email",
   authenticate,
   authorizeRoles("manager", "admin", "super_admin"),
+  validate(exportEmailSchema),
   exportController.exportEmail.bind(exportController));
 
 
