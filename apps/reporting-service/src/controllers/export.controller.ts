@@ -79,16 +79,18 @@ class ExportController {
         return;
       }
 
-      const result = await exportService.exportEmail(email);
+      await exportService.exportEmail(email);
 
-      res.status(200).json(result);
+      res.status(200).json({
+        success: true,
+        message: "Email sent successfully"
+      });
 
     } catch (error) {
       next(error);
     }
 
   }
-
 }
 
 export const exportController = new ExportController();
