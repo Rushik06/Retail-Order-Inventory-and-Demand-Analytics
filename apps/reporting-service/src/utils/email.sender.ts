@@ -7,16 +7,16 @@ export const sendReportEmail = async (
 ) => {
 
   const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: 587,
+    host: process.env.EMAIL_HOST,
+    port: Number(process.env.EMAIL_PORT),
     auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS
     }
   });
 
   await transporter.sendMail({
-    from: process.env.SMTP_USER,
+    from: process.env.EMAIL_USER,
     to: email,
     subject: "Dashboard Report",
     text: "Please find attached dashboard report",

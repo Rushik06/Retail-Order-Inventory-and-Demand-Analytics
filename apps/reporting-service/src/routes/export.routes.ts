@@ -34,7 +34,7 @@ const router: Router = Router();
  *         description: Forbidden
  */
 router.get(
-  "/export/pdf",
+  "/pdf",
   authenticate,
   authorizeRoles("manager", "admin", "super_admin"),
   exportController.exportPDF.bind(exportController)
@@ -62,10 +62,42 @@ router.get(
  *         description: Forbidden
  */
 router.get(
-  "/export/excel",
+  "/excel",
   authenticate,
   authorizeRoles("manager", "admin", "super_admin"),
   exportController.exportExcel.bind(exportController)
 );
+/**
+ * @swagger
+ * /reports/export/email:
+ *   get:
+ *     summary: Export dashboard report in Email
+ *     tags: [Report Export]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Email sent successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               required:
+ *                  -email
+ *                properties:
+ *                   email:
+ *                     type: string
+ *                     example:your@gmail.com             
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ */
+
+router.post("/email",
+  authenticate,
+  authorizeRoles("manager", "admin", "super_admin"),
+  exportController.exportEmail.bind(exportController));
+
 
 export default router;

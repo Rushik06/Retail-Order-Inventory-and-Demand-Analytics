@@ -60,6 +60,35 @@ class ExportController {
 
   }
 
+  /* EXPORT REPORT VIA EMAIL */
+
+  async exportEmail(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+
+    try {
+
+      const { email } = req.body;
+
+      if (!email) {
+        res.status(400).json({
+          message: "Email is required"
+        });
+        return;
+      }
+
+      const result = await exportService.exportEmail(email);
+
+      res.status(200).json(result);
+
+    } catch (error) {
+      next(error);
+    }
+
+  }
+
 }
 
 export const exportController = new ExportController();
