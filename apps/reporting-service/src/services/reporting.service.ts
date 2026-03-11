@@ -1,4 +1,6 @@
-import { reportRepository } from "../repository/report.repository.js";
+import { counterreportRepository } from "../repository/counter-report.repository.js";
+import { chartreportRepository } from "../repository/chart-report.repository.js";
+import { tablereportRepository } from "../repository/aggregate-tablereport.repository.js";
 
 class ReportService {
 
@@ -25,22 +27,22 @@ class ReportService {
     ] = await Promise.all([
 
      /* COUNTERS */
-      reportRepository.getTotalProducts(),
-      reportRepository.getTotalWarehouses(),
-      reportRepository.getLowStockCount(),
-      reportRepository.getTotalOrders(),
-      reportRepository.getTotalRevenue(),
+      counterreportRepository.getTotalProducts(),
+      counterreportRepository.getTotalWarehouses(),
+      counterreportRepository.getLowStockCount(),
+      counterreportRepository.getTotalOrders(),
+      counterreportRepository.getTotalRevenue(),
 
       /* CHARTS */
-      reportRepository.getWarehouseStockChart(),
-      reportRepository.getCategoryDistributionChart(),
-      reportRepository.getOrdersByStatus(),
-      reportRepository.getTopSellingProducts(),
+      chartreportRepository.getWarehouseStockChart(),
+      chartreportRepository.getCategoryDistributionChart(),
+      chartreportRepository.getOrdersByStatus(),
+      chartreportRepository.getTopSellingProducts(),
 
       /* TABLES */
-      reportRepository.getLowStockProducts(),
-      reportRepository.getRecentInventoryActivity(),
-      reportRepository.getRecentOrders()
+      tablereportRepository.getLowStockProducts(),
+      tablereportRepository.getRecentInventoryActivity(),
+      tablereportRepository.getRecentOrders()
 
     ]);
 
@@ -82,11 +84,11 @@ class ReportService {
       totalRevenue
     ] = await Promise.all([
 
-      reportRepository.getTotalProducts(),
-      reportRepository.getTotalWarehouses(),
-      reportRepository.getLowStockCount(),
-      reportRepository.getTotalOrders(),
-      reportRepository.getTotalRevenue()
+      counterreportRepository.getTotalProducts(),
+      counterreportRepository.getTotalWarehouses(),
+      counterreportRepository.getLowStockCount(),
+      counterreportRepository.getTotalOrders(),
+      counterreportRepository.getTotalRevenue()
 
     ]);
 
@@ -111,10 +113,10 @@ class ReportService {
       topSellingProducts
     ] = await Promise.all([
 
-      reportRepository.getWarehouseStockChart(),
-      reportRepository.getCategoryDistributionChart(),
-      reportRepository.getOrdersByStatus(),
-      reportRepository.getTopSellingProducts()
+      chartreportRepository.getWarehouseStockChart(),
+      chartreportRepository.getCategoryDistributionChart(),
+      chartreportRepository.getOrdersByStatus(),
+      chartreportRepository.getTopSellingProducts()
 
     ]);
 
@@ -137,9 +139,9 @@ class ReportService {
       recentOrders
     ] = await Promise.all([
 
-      reportRepository.getLowStockProducts(),
-      reportRepository.getRecentInventoryActivity(),
-      reportRepository.getRecentOrders()
+      tablereportRepository.getLowStockProducts(),
+      tablereportRepository.getRecentInventoryActivity(),
+      tablereportRepository.getRecentOrders()
 
     ]);
 

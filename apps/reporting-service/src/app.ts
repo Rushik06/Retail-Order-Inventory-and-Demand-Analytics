@@ -1,6 +1,7 @@
 import express ,{type Express} from "express";
 import cors from "cors";
-
+import morgan from "morgan";
+import { setupSwagger } from "./swagger/swagger.js";
 import reportRoutes from "./routes/reporting.routes.js";
 import exportRoutes from "./routes/export.routes.js";
 import { errorHandler } from "./middleware/error-handler.js";
@@ -11,6 +12,9 @@ const app : Express = express();
 
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+setupSwagger(app);//swagger setup
+
 
 /* ROUTES */
 
@@ -25,6 +29,10 @@ app.get("/health", (_req, res) => {
     status: "running"
   });
 });
+
+/*MORGAN-LOGGER*/
+app.use(morgan("dev"));
+
 
 /* GLOBAL ERROR HANDLER */
 
