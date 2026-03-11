@@ -1,7 +1,7 @@
-/*eslint-disable*/
 import PDFDocument from "pdfkit";
+import type { DashboardData } from "../types/generator.types.js";
 
-export const generateDashboardPDF = (data: any): Promise<Buffer> => {
+export const generateDashboardPDF = (data: DashboardData): Promise<Buffer> => {
 
   return new Promise((resolve) => {
 

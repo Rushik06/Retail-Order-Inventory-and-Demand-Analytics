@@ -1,4 +1,3 @@
-/*eslint-disable*/
 import { sequelize } from "../config/sequilize.js";
 
 

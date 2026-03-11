@@ -1,7 +1,7 @@
-/*eslint-disable*/
 import ExcelJS from "exceljs";
+import type { DashboardData } from "../types/generator.types.js";
 
-export const generateDashboardExcel = async (data: any): Promise<Buffer> => {
+export const generateDashboardExcel = async (data: DashboardData): Promise<Buffer> => {
 
   const workbook = new ExcelJS.Workbook();
 
