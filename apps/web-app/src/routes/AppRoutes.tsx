@@ -8,7 +8,7 @@ import ForgotPassword from "../pages/auth/ForgotPassword";
 import ResetPassword from "../pages/auth/ResetPassword";
 
 import Profile from "../pages/dashboard/profile/Profile";
-import Home from "@/pages/dashboard/Home";
+import Home from "@/pages/dashboard/homepage/Home";
 import Security from "@/pages/dashboard/Security";
 import Products from "@/pages/dashboard/product/Product";
 import Orders from "@/pages/dashboard/order/Order";

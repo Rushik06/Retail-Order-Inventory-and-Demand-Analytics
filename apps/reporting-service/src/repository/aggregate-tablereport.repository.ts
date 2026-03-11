@@ -4,7 +4,7 @@ class ReportRepository{
     
   /*TABLE-LOW STOCK PRODUCTS*/
 
-  async getLowStockProducts() {
+ /* async getLowStockProducts() {
 
     const [rows] = await sequelize.query(`
       SELECT
@@ -21,7 +21,7 @@ class ReportRepository{
     `);
     return rows;
 
-  }
+  }*/
 
   /* TABLE — RECENT INVENTORY ACTIVITY */
 

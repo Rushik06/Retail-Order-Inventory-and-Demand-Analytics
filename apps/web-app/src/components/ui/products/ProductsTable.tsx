@@ -85,12 +85,14 @@ export default function ProductsTableContent({
                   </td>
                   <td className="px-6 py-4 flex gap-3">
                     <button
+                      title="Edit Product Details"
                       onClick={() => handleEdit(product)}
                       className="p-2 rounded-lg hover:bg-blue-100 text-blue-600"
                     >
                       <Pencil size={16} />
                     </button>
                     <button
+                      title="Delete Product Details"
                       onClick={() => setConfirmId(product.id)}
                       className="p-2 rounded-lg hover:bg-red-100 text-red-600"
                     >

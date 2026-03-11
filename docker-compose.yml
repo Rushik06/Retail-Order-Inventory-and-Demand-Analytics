@@ -89,6 +89,7 @@ services:
       - auth-service
       - product-service
       - inventory-service
+      - reporting-service
       
 
 
