@@ -4,112 +4,127 @@ import { Button } from "@/components/ui/Button";
 import { toast } from "sonner";
 
 import {
-  exportDashboardPDF,
-  exportDashboardExcel,
-  sendDashboardReportEmail
+    exportDashboardPDF,
+    exportDashboardExcel,
+    sendDashboardReportEmail
 } from "@/app/reporting.logic";
 
 import type { User } from "@/types/dashboard.types";
 
 export default function DashboardHeader({ user }: { user: User }) {
 
-  const [sendingEmail, setSendingEmail] = useState(false);
+    const [sendingEmail, setSendingEmail] = useState(false);
 
-  const canExport =
-    user?.role === "admin" ||
-    user?.role === "manager" ||
-    user?.role === "super_admin";
+    const canExport =
+        user?.role === "admin" ||
+        user?.role === "manager" ||
+        user?.role === "super_admin";
 
-  const handlePDF = async () => {
-    try {
-      toast.loading("Generating PDF...");
-      await exportDashboardPDF();
-      toast.success("PDF exported successfully");
-    } catch {
-      toast.error("Failed to export PDF");
-    }
-  };
+    const handlePDF = async () => {
+        try {
 
-  const handleExcel = async () => {
-    try {
-      toast.loading("Generating Excel...");
-      await exportDashboardExcel();
-      toast.success("Excel exported successfully");
-    } catch {
-      toast.error("Failed to export Excel");
-    }
-  };
+            await exportDashboardPDF();
+            toast.success("PDF exported successfully");
 
-  const handleEmail = async () => {
-    try {
-      setSendingEmail(true);
-      toast.loading("Sending report email...");
+        } catch {
 
-      await sendDashboardReportEmail(user.email);
+            toast.error("Failed to export PDF");
 
-      toast.success("Report sent to your email");
-    } catch {
-      toast.error("Failed to send report email");
-    } finally {
-      setSendingEmail(false);
-    }
-  };
+        }
+    };
 
-  return (
+    const handleExcel = async () => {
+        try {
 
-    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            await exportDashboardExcel();
+            toast.success("Excel exported successfully");
 
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">
-          Retail Analytics Dashboard
-        </h1>
+        } catch {
 
-        <p className="text-muted-foreground text-sm mt-1">
-          Inventory, sales and demand insights
-        </p>
-      </div>
+            toast.error("Failed to export Excel");
 
-      {canExport && (
+        }
+    };
 
-        <div className="flex gap-3">
+    const handleEmail = async () => {
 
-          <Button
-            variant="outline"
-            onClick={handlePDF}
-          >
-            <Download className="mr-2 h-4 w-4"/>
-            PDF
-          </Button>
+        try {
 
-          <Button
-            variant="outline"
-            onClick={handleExcel}
-          >
-            <Download className="mr-2 h-4 w-4"/>
-            Excel
-          </Button>
+            setSendingEmail(true);
+            await sendDashboardReportEmail(user.email);
+            toast.success("Report sent to your email");
 
-          <Button
-            onClick={handleEmail}
-            disabled={sendingEmail}
-          >
-            {sendingEmail ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Sending...
-              </>
-            ) : (
-              <>
-                <Mail className="mr-2 h-4 w-4"/>
-                Email Report
-              </>
+        } catch {
+
+            toast.error("Failed to send report email");
+
+        } finally {
+
+            setSendingEmail(false);
+
+        }
+
+    };
+
+    return (
+
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+
+            <div>
+
+                <h1 className="text-3xl font-bold tracking-tight">
+                    Retail Analytics Dashboard
+                </h1>
+
+                <p className="text-muted-foreground text-sm mt-1">
+                    Inventory, sales and demand insights
+                </p>
+
+            </div>
+
+            {canExport && (
+
+                <div className="flex gap-3">
+
+                    <Button
+                        variant="outline"
+                        onClick={handlePDF}
+                    >
+                        <Download className="mr-2 h-4 w-4" />
+                        PDF
+                    </Button>
+
+                    <Button
+                        variant="outline"
+                        onClick={handleExcel}
+                    >
+                        <Download className="mr-2 h-4 w-4" />
+                        Excel
+                    </Button>
+
+                    <Button
+                        onClick={handleEmail}
+                        disabled={sendingEmail}
+                    >
+
+                        {sendingEmail ? (
+                            <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Sending...
+                            </>
+                        ) : (
+                            <>
+                                <Mail className="mr-2 h-4 w-4" />
+                                Email Report
+                            </>
+                        )}
+
+                    </Button>
+                </div>
+
             )}
-          </Button>
-
         </div>
 
-      )}
+   );
 
-    </div>
-  );
 }
