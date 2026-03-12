@@ -4,7 +4,7 @@ import { useAuthStore } from "@/app/app.state"
 
 import DashboardHeader from "@/pages/dashboard/homepage/DashboardHeader";
 import DashboardCounters from "@/pages/dashboard/homepage/DashboardCounters";
-import DashboardCharts from "@/pages/dashboard/homepage/DashboardCharts";
+import DashboardCharts from "@/pages/dashboard/homepage/dashboardcharts/DashboardCharts";
 import InventoryActivityTable from "@/pages/dashboard/homepage/ActivityTable";
 import RecentOrdersTable from "@/pages/dashboard/homepage/RecentOrdersTable";
 
