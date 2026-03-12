@@ -1,27 +1,7 @@
 import { sequelize } from "../config/sequilize.js";
 
 class ReportRepository{
-    
-  /*TABLE-LOW STOCK PRODUCTS*/
-
- /* async getLowStockProducts() {
-
-    const [rows] = await sequelize.query(`
-      SELECT
-        p.name as product,
-        w.name as warehouse,
-        i.available_qty
-      FROM inventory i
-      JOIN products p
-        ON p.id = i.product_id
-      JOIN warehouses w
-        ON w.warehouse_id = i.warehouse_id
-      WHERE i.available_qty < 10
-      ORDER BY i.available_qty ASC
-    `);
-    return rows;
-
-  }*/
+  
 
   /* TABLE — RECENT INVENTORY ACTIVITY */
 

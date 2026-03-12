@@ -40,7 +40,6 @@ class ReportService {
       chartreportRepository.getTopSellingProducts(),
 
       /* TABLES */
-      //tablereportRepository.getLowStockProducts(),
       tablereportRepository.getRecentInventoryActivity(),
       tablereportRepository.getRecentOrders()
 
@@ -64,7 +63,7 @@ class ReportService {
       },
 
       tables: {
-        //lowStockProducts,
+        
         recentActivity,
         recentOrders
       }
@@ -134,12 +133,11 @@ class ReportService {
   async getTables() {
 
     const [
-      //lowStockProducts,
+      
       recentActivity,
       recentOrders
     ] = await Promise.all([
 
-      //tablereportRepository.getLowStockProducts(),
       tablereportRepository.getRecentInventoryActivity(),
       tablereportRepository.getRecentOrders()
 

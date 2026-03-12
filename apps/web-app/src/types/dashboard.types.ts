@@ -35,4 +35,3 @@ type OrderStatus = {
 export type Props = {
   charts: ChartsData;
 };
-

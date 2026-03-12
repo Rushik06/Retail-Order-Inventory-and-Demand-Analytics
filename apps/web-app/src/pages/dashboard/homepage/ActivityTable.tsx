@@ -1,62 +1,106 @@
 import {
-Card,
-CardHeader,
-CardTitle,
-CardContent
+    Card,
+    CardHeader,
+    CardTitle,
+    CardContent
 } from "@/components/ui/Card";
+
 /*eslint-disable @typescript-eslint/no-explicit-any */
-export default function InventoryActivityTable({ data }: any){
 
-return(
+export default function InventoryActivityTable({
+    data,
+    products,
+    warehouses
+}: any) {
 
-<Card>
+    const getProductName = (id: string) =>
+        products?.find((p: any) => p.id === id)?.name || "Unknown";
 
-<CardHeader>
-<CardTitle>Inventory Activity</CardTitle>
-</CardHeader>
+    const getWarehouse = (warehouseId: string) => {
+        const warehouse = warehouses?.find(
+            (w: any) => w.warehouse_id === warehouseId
+        );
 
-<CardContent>
+        return warehouse || {};
+    };
+    return (
 
-<div className="max-h-[320px] overflow-y-auto">
+        <Card className="shadow-sm">
 
-<table className="w-full text-sm">
+            <CardHeader>
+                <CardTitle className="text-base font-semibold text-slate-700">
+                    Inventory Activity
+                </CardTitle>
+            </CardHeader>
 
-<thead className="border-b sticky top-0 bg-white">
-<tr>
-<th className="text-left py-2">Product</th>
-<th className="text-left py-2">Warehouse</th>
-<th className="text-left py-2">Location</th>
-<th className="text-left py-2">Action</th>
-<th className="text-right py-2">Qty</th>
-</tr>
-</thead>
+            <CardContent>
 
-<tbody>
+                <div className="max-h-[320px] overflow-y-auto">
 
-{data?.map((item:any,index:number)=>(
+                    <table className="w-full text-sm">
 
-<tr key={index} className="border-b">
+                        <thead className="border-b sticky top-0 bg-white">
+                            <tr className="text-slate-600 font-medium">
 
-<td className="py-2">{item.product}</td>
-<td className="py-2 text-muted-foreground">{item.warehouse}</td>
-<td className="py-2 text-muted-foreground">{item.location}</td>
-<td className="py-2 capitalize">{item.action_type}</td>
-<td className="py-2 text-right font-semibold">{item.quantity}</td>
+                                <th className="text-left py-3">Product</th>
+                                <th className="text-left py-3">Warehouse</th>
+                                <th className="text-left py-3">Location</th>
+                                <th className="text-left py-3">Action</th>
+                                <th className="text-right py-3">Qty</th>
 
-</tr>
+                            </tr>
+                        </thead>
 
-))}
+                        <tbody>
 
-</tbody>
+                            {data?.map((item: any, index: number) => {
 
-</table>
+                                const productName = getProductName(item.product_id);
+                                const warehouse = getWarehouse(item.warehouse_id);
 
-</div>
+                                return (
 
-</CardContent>
+                                    <tr
+                                        key={index}
+                                        className="border-b hover:bg-slate-50 transition"
+                                    >
 
-</Card>
+                                        <td className="py-3 font-medium text-slate-800">
+                                            {productName}
+                                        </td>
 
-);
+                                        <td className="py-3 text-slate-600">
+                                            {warehouse?.name || "Unknown"}
+                                        </td>
+
+                                        <td className="py-3 text-slate-500">
+                                            {warehouse?.location || "-"}
+                                        </td>
+
+                                        <td className="py-3 capitalize text-slate-700">
+                                            {item.action_type.toLowerCase()}
+                                        </td>
+
+                                        <td className="py-3 text-right font-semibold text-slate-900">
+                                            {item.new_available_qty}
+                                        </td>
+
+                                    </tr>
+
+                                );
+
+                            })}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </CardContent>
+
+        </Card>
+
+    );
 
 }

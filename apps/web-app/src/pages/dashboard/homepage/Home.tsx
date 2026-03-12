@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { fetchDashboard } from "@/app/reporting.logic";
-import { useAuthStore } from "@/app/app.state"
+import { getProducts } from "@/api/product-axios";
+import { getWarehouses } from "@/api/inventory-axios";
+import { useAuthStore } from "@/app/app.state";
 
 import DashboardHeader from "@/pages/dashboard/homepage/DashboardHeader";
 import DashboardCounters from "@/pages/dashboard/homepage/DashboardCounters";
@@ -9,17 +11,25 @@ import InventoryActivityTable from "@/pages/dashboard/homepage/ActivityTable";
 import RecentOrdersTable from "@/pages/dashboard/homepage/RecentOrdersTable";
 
 export default function Home() {
-/*eslint-disable @typescript-eslint/no-explicit-any */
-  const [dashboard, setDashboard] = useState<any>(null);
+  /*eslint-disable @typescript-eslint/no-explicit-any */
 
-  /* GET USER FROM ZUSTAND */
+  const [dashboard, setDashboard] = useState<any>(null);
   const user = useAuthStore((state) => state.user);
 
   useEffect(() => {
 
     const loadDashboard = async () => {
-      const data = await fetchDashboard();
-      setDashboard(data);
+
+      const dashboardData = await fetchDashboard();
+      const productsRes = await getProducts();
+      const warehousesRes = await getWarehouses({limit:100});
+
+      setDashboard({
+        ...dashboardData,
+        products: productsRes.data,
+        warehouses: warehousesRes.data.data
+      });
+
     };
 
     loadDashboard();
@@ -28,19 +38,50 @@ export default function Home() {
 
   if (!dashboard) {
     return (
-      <div className="flex justify-center items-center h-[60vh] text-muted-foreground">
-        Loading dashboard...
+
+      <div className="max-w-[1400px] mx-auto px-6 space-y-10 animate-pulse">
+
+        {/* Header Skeleton */}
+        <div className="h-10 w-64 bg-slate-200 rounded"></div>
+
+        {/* Counters Skeleton */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          {[...Array(4)].map((_, i) => (
+            <div
+              key={i}
+              className="h-24 bg-slate-200 rounded-lg"
+            />
+          ))}
+        </div>
+
+        {/* Charts Skeleton */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+          <div className="h-[340px] bg-slate-200 rounded-lg"></div>
+
+          <div className="h-[340px] bg-slate-200 rounded-lg"></div>
+
+        </div>
+
+        {/* Tables Skeleton */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+          <div className="h-[320px] bg-slate-200 rounded-lg"></div>
+
+          <div className="h-[320px] bg-slate-200 rounded-lg"></div>
+
+        </div>
+
       </div>
+
     );
   }
-
-  const { counters, charts, tables } = dashboard;
+  const { counters, charts, tables, products, warehouses } = dashboard;
 
   return (
 
     <div className="max-w-[1400px] mx-auto px-6 space-y-10">
 
-      {/* PASS USER FROM STORE */}
       {user && <DashboardHeader user={user} />}
 
       <DashboardCounters counters={counters} />
@@ -48,8 +89,15 @@ export default function Home() {
       <DashboardCharts charts={charts} />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <InventoryActivityTable data={tables.recentActivity} />
+
+        <InventoryActivityTable
+          data={tables.recentActivity}
+          products={products}
+          warehouses={warehouses}
+        />
+
         <RecentOrdersTable data={tables.recentOrders} />
+
       </div>
 
     </div>
