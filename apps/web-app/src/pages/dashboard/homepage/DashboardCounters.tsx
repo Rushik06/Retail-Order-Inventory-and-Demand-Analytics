@@ -40,9 +40,7 @@ export default function DashboardCounters({ counters }: any) {
         <div className="grid grid-cols-5 gap-6">
 
             {/* Total Products */}
-
             <Card className="shadow-sm">
-
                 <CardHeader className="flex flex-row items-center gap-2 pb-2">
 
                     <Package className="h-5 w-5 text-blue-500" />
@@ -59,15 +57,13 @@ export default function DashboardCounters({ counters }: any) {
                         {counters.totalProducts}
                     </p>
 
-                </CardContent>
-
+               </CardContent>
             </Card>
 
 
             {/* Warehouses */}
 
             <Card className="shadow-sm">
-
                 <CardHeader className="flex flex-row items-center gap-2 pb-2">
 
                     <Warehouse className="h-5 w-5 text-purple-500" />
@@ -85,14 +81,12 @@ export default function DashboardCounters({ counters }: any) {
                     </p>
 
                 </CardContent>
-
             </Card>
 
 
             {/* Orders */}
 
             <Card className="flex-1 min-w-0 shadow-sm">
-
                 <CardHeader className="flex flex-row items-center gap-2 pb-2">
 
                     <ShoppingCart className="h-5 w-5 text-green-500" />
@@ -110,7 +104,7 @@ export default function DashboardCounters({ counters }: any) {
                     </p>
 
                 </CardContent>
-
+                
             </Card>
 
 
