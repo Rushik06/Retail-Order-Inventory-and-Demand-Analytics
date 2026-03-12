@@ -3,12 +3,15 @@
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { useAuthStore } from "@/app/app.state";
 
 export default function WarehouseUpdateForm({
   selectedWarehouse,
   setSelectedWarehouse,
   handleUpdate,
 }: any) {
+
+  const user = useAuthStore((state) => state.user);
 
   if (!selectedWarehouse) return null;
 
@@ -46,12 +49,18 @@ export default function WarehouseUpdateForm({
 
         <div className="flex gap-3">
 
-          <Button
-            className="bg-blue-600 hover:bg-blue-700 text-white"
-            onClick={handleUpdate}
-          >
-            Update Warehouse
-          </Button>
+          {(user?.role === "admin" ||
+            user?.role === "manager" ||
+            user?.role === "super_admin") && (
+
+            <Button
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+              onClick={handleUpdate}
+            >
+              Update Warehouse
+            </Button>
+
+          )}
 
           <Button
             variant="outline"
@@ -65,5 +74,6 @@ export default function WarehouseUpdateForm({
       </CardContent>
 
     </Card>
+
   );
 }

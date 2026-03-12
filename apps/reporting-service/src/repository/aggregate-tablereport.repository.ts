@@ -26,7 +26,7 @@ class ReportRepository {
 
   async getRecentOrders() {
 
-     const [rows] = await sequelize.query(`
+    const [rows] = await sequelize.query(`
       SELECT
         o.id,
         o.customer_name,
@@ -40,8 +40,6 @@ class ReportRepository {
       ORDER BY o.created_at DESC
       LIMIT 10
 `);
-
-return rows;
 
     return rows;
   }

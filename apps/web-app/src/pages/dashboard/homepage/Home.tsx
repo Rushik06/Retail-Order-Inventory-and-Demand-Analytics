@@ -3,17 +3,18 @@ import { fetchDashboard } from "@/app/reporting.logic";
 import { getProducts } from "@/api/product-axios";
 import { getWarehouses } from "@/api/inventory-axios";
 import { useAuthStore } from "@/app/app.state";
-
 import DashboardHeader from "@/pages/dashboard/homepage/DashboardHeader";
 import DashboardCounters from "@/pages/dashboard/homepage/DashboardCounters";
 import DashboardCharts from "@/pages/dashboard/homepage/dashboardcharts/DashboardCharts";
 import InventoryActivityTable from "@/pages/dashboard/homepage/ActivityTable";
 import RecentOrdersTable from "@/pages/dashboard/homepage/RecentOrdersTable";
+import type { DashboardData } from "@/types/dashboard.types";
+import type { Order } from "@/utils/recentorder-table.helpers";
+import type { InventoryActivity } from "@/utils/activity-table.helpers";
 
 export default function Home() {
-  /*eslint-disable @typescript-eslint/no-explicit-any */
 
-  const [dashboard, setDashboard] = useState<any>(null);
+  const [dashboard, setDashboard] = useState<DashboardData | null>(null);
   const user = useAuthStore((state) => state.user);
 
   useEffect(() => {
@@ -22,7 +23,7 @@ export default function Home() {
 
       const dashboardData = await fetchDashboard();
       const productsRes = await getProducts();
-      const warehousesRes = await getWarehouses({limit:100});
+      const warehousesRes = await getWarehouses({ limit: 100 });
 
       setDashboard({
         ...dashboardData,
@@ -58,7 +59,6 @@ export default function Home() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
           <div className="h-[340px] bg-slate-200 rounded-lg"></div>
-
           <div className="h-[340px] bg-slate-200 rounded-lg"></div>
 
         </div>
@@ -67,7 +67,6 @@ export default function Home() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
           <div className="h-[320px] bg-slate-200 rounded-lg"></div>
-
           <div className="h-[320px] bg-slate-200 rounded-lg"></div>
 
         </div>
@@ -76,6 +75,7 @@ export default function Home() {
 
     );
   }
+
   const { counters, charts, tables, products, warehouses } = dashboard;
 
   return (
@@ -91,13 +91,15 @@ export default function Home() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
         <InventoryActivityTable
-          data={tables.recentActivity}
+          data={tables.recentActivity as InventoryActivity[]}
           products={products}
           warehouses={warehouses}
         />
 
-        <RecentOrdersTable data={tables.recentOrders}
-        products={products} />
+        <RecentOrdersTable
+          data={tables.recentOrders as Order[]}
+          products={products}
+        />
 
       </div>
 

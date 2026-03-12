@@ -1,4 +1,5 @@
 /* eslint-disable */
+import { useAuthStore } from "@/app/app.state";
 import type { Order } from "@/pages/dashboard/order/Order";
 
 interface Props {
@@ -23,6 +24,13 @@ export default function OrdersTableContent({
   onStatusChange,
 }: Props) {
 
+  const user = useAuthStore((state) => state.user);
+
+  const canUpdate =
+    user?.role === "admin" ||
+    user?.role === "manager" ||
+    user?.role === "super_admin";
+
   return (
     <>
       <div className="max-h-[420px] overflow-y-auto">
@@ -34,7 +42,11 @@ export default function OrdersTableContent({
               <th className="px-6 py-4 text-left">Items</th>
               <th className="px-6 py-4 text-left">Total</th>
               <th className="px-6 py-4 text-left">Status</th>
-              <th className="px-6 py-4 text-left">Update</th>
+
+              {canUpdate && (
+                <th className="px-6 py-4 text-left">Update</th>
+              )}
+
             </tr>
           </thead>
 
@@ -42,7 +54,7 @@ export default function OrdersTableContent({
             {loading ? (
               [...Array(entries)].map((_, i) => (
                 <tr key={i} className="border-t">
-                  {[...Array(6)].map((_, j) => (
+                  {[...Array(canUpdate ? 6 : 5)].map((_, j) => (
                     <td key={j} className="px-6 py-4">
                       <div className="h-4 bg-slate-200 rounded animate-pulse" />
                     </td>
@@ -51,12 +63,13 @@ export default function OrdersTableContent({
               ))
             ) : paginated.length === 0 ? (
               <tr>
-                <td colSpan={6} className="py-10 text-center text-slate-400">
+                <td colSpan={canUpdate ? 6 : 5} className="py-10 text-center text-slate-400">
                   No orders found
                 </td>
               </tr>
             ) : (
               paginated.map((order, index) => {
+
                 const orderNumber = `ORD-${String(
                   (page - 1) * entries + index + 1
                 ).padStart(4, "0")}`;
@@ -86,21 +99,24 @@ export default function OrdersTableContent({
                       </span>
                     </td>
 
-                    <td className="px-6 py-4">
-                      <select
-                        value={order.status}
-                        onChange={(e) =>
-                          onStatusChange(order.id, e.target.value)
-                        }
-                        className="border rounded-lg px-2 py-1 text-xs"
-                      >
-                        <option value="PENDING">PENDING</option>
-                        <option value="PROCESSING">PROCESSING</option>
-                        <option value="SHIPPED">SHIPPED</option>
-                        <option value="DELIVERED">DELIVERED</option>
-                        <option value="CANCELLED">CANCELLED</option>
-                      </select>
-                    </td>
+                    {canUpdate && (
+                      <td className="px-6 py-4">
+                        <select
+                          value={order.status}
+                          onChange={(e) =>
+                            onStatusChange(order.id, e.target.value)
+                          }
+                          className="border rounded-lg px-2 py-1 text-xs"
+                        >
+                          <option value="PENDING">PENDING</option>
+                          <option value="PROCESSING">PROCESSING</option>
+                          <option value="SHIPPED">SHIPPED</option>
+                          <option value="DELIVERED">DELIVERED</option>
+                          <option value="CANCELLED">CANCELLED</option>
+                        </select>
+                      </td>
+                    )}
+
                   </tr>
                 );
               })

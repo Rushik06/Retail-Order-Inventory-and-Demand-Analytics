@@ -1,5 +1,6 @@
 /* eslint-disable */
 import { Pencil, Trash2 } from "lucide-react";
+import { useAuthStore } from "@/app/app.state";
 import type { Product } from "@/types/product.types";
 
 interface Props {
@@ -32,6 +33,15 @@ export default function ProductsTableContent({
   setPage,
   toast,
 }: Props) {
+
+  const user = useAuthStore((state) => state.user);
+
+  const isStaff = user?.role === "staff";
+  const isManager = user?.role === "manager";
+
+  const showActions = !isStaff;
+  const canDelete = !isManager;
+
   return (
     <>
       {/* Table */}
@@ -44,7 +54,11 @@ export default function ProductsTableContent({
               <th className="px-6 py-4 text-left">Category</th>
               <th className="px-6 py-4 text-left">Price</th>
               <th className="px-6 py-4 text-left">Stock</th>
-              <th className="px-6 py-4 text-left">Actions</th>
+
+              {showActions && (
+                <th className="px-6 py-4 text-left">Actions</th>
+              )}
+
             </tr>
           </thead>
 
@@ -52,7 +66,7 @@ export default function ProductsTableContent({
             {loading ? (
               [...Array(entries)].map((_, i) => (
                 <tr key={i} className="border-t">
-                  {[...Array(6)].map((_, j) => (
+                  {[...Array(showActions ? 6 : 5)].map((_, j) => (
                     <td key={j} className="px-6 py-4">
                       <div className="h-4 bg-slate-200 rounded animate-pulse" />
                     </td>
@@ -61,7 +75,7 @@ export default function ProductsTableContent({
               ))
             ) : paginated.length === 0 ? (
               <tr>
-                <td colSpan={6} className="py-12 text-center text-slate-400">
+                <td colSpan={showActions ? 6 : 5} className="py-12 text-center text-slate-400">
                   No products found
                 </td>
               </tr>
@@ -83,22 +97,31 @@ export default function ProductsTableContent({
                       {product.stock} in stock
                     </span>
                   </td>
-                  <td className="px-6 py-4 flex gap-3">
-                    <button
-                      title="Edit Product Details"
-                      onClick={() => handleEdit(product)}
-                      className="p-2 rounded-lg hover:bg-blue-100 text-blue-600"
-                    >
-                      <Pencil size={16} />
-                    </button>
-                    <button
-                      title="Delete Product Details"
-                      onClick={() => setConfirmId(product.id)}
-                      className="p-2 rounded-lg hover:bg-red-100 text-red-600"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </td>
+
+                  {showActions && (
+                    <td className="px-6 py-4 flex gap-3">
+
+                      <button
+                        title="Edit Product Details"
+                        onClick={() => handleEdit(product)}
+                        className="p-2 rounded-lg hover:bg-blue-100 text-blue-600"
+                      >
+                        <Pencil size={16} />
+                      </button>
+
+                      {canDelete && (
+                        <button
+                          title="Delete Product Details"
+                          onClick={() => setConfirmId(product.id)}
+                          className="p-2 rounded-lg hover:bg-red-100 text-red-600"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      )}
+
+                    </td>
+                  )}
+
                 </tr>
               ))
             )}

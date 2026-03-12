@@ -79,7 +79,7 @@ function AppRoutes() {
         <Route
           path="products"
           element={
-            <ProtectedRoute allowedRoles={["manager", "admin", "super_admin"]}>
+            <ProtectedRoute allowedRoles={["manager", "admin", "super_admin","staff"]}>
               <Products />
             </ProtectedRoute>
           }
@@ -98,7 +98,7 @@ function AppRoutes() {
         <Route
           path="inventory"
           element={
-            <ProtectedRoute allowedRoles={["manager", "admin", "super_admin"]}>
+            <ProtectedRoute allowedRoles={["manager", "admin", "super_admin","staff"]}>
               <Inventory />
             </ProtectedRoute>
           }

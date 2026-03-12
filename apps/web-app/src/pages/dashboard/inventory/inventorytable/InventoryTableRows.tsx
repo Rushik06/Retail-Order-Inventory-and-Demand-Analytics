@@ -20,6 +20,8 @@ import {
   DropdownMenuItem
 } from "@/components/ui/DropdownMenu";
 
+import { useAuthStore } from "@/app/app.state";
+
 import type { props } from "@/types/inventory.types";
 
 export default function InventoryTableRows({
@@ -28,6 +30,17 @@ export default function InventoryTableRows({
   warehouses,
   openAction
 }: props) {
+
+  const user = useAuthStore((state) => state.user);
+
+  const canSeeActions =
+    user?.role === "admin" ||
+    user?.role === "manager" ||
+    user?.role === "super_admin";
+
+  const canDeduct =
+    user?.role === "admin" ||
+    user?.role === "super_admin";
 
   const stockStatus = (available: number) => {
 
@@ -45,6 +58,7 @@ export default function InventoryTableRows({
 
     <>
       {inventory.map((item) => {
+
         const product = products.find(
           (p: any) => p.id === item.product_id
         );
@@ -93,60 +107,72 @@ export default function InventoryTableRows({
 
             {/* ACTION MENU */}
 
-            <TableCell className="text-center">
+            {canSeeActions && (
 
-              <DropdownMenu>
+              <TableCell className="text-center">
 
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                    <MoreVertical size={18} />
-                  </Button>
-                </DropdownMenuTrigger>
+                <DropdownMenu>
 
-                <DropdownMenuContent align="end">
+                  <DropdownMenuTrigger asChild>
 
-                  <DropdownMenuItem
-                    onClick={() => openAction("add", item)}
-                    className="flex items-center gap-2"
-                  >
-                    <Plus size={16} />
-                    Add Stock
-                  </DropdownMenuItem>
+                    <Button variant="ghost" size="icon">
+                      <MoreVertical size={18} />
+                    </Button>
 
-                  <DropdownMenuItem
-                    onClick={() => openAction("reserve", item)}
-                    className="flex items-center gap-2"
-                  >
-                    <Lock size={16} />
-                    Reserve Stock
-                  </DropdownMenuItem>
+                  </DropdownMenuTrigger>
 
-                  <DropdownMenuItem
-                    onClick={() => openAction("release", item)}
-                    className="flex items-center gap-2"
-                  >
-                    <Unlock size={16} />
-                    Release Stock
-                  </DropdownMenuItem>
+                  <DropdownMenuContent align="end">
 
-                  <DropdownMenuItem
-                    onClick={() => openAction("deduct", item)}
-                    className="flex items-center gap-2 text-red-600"
-                  >
-                    <Minus size={16} />
-                    Deduct Stock
-                  </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => openAction("add", item)}
+                      className="flex items-center gap-2"
+                    >
+                      <Plus size={16} />
+                      Add Stock
+                    </DropdownMenuItem>
 
-                </DropdownMenuContent>
+                    <DropdownMenuItem
+                      onClick={() => openAction("reserve", item)}
+                      className="flex items-center gap-2"
+                    >
+                      <Lock size={16} />
+                      Reserve Stock
+                    </DropdownMenuItem>
 
-              </DropdownMenu>
+                    <DropdownMenuItem
+                      onClick={() => openAction("release", item)}
+                      className="flex items-center gap-2"
+                    >
+                      <Unlock size={16} />
+                      Release Stock
+                    </DropdownMenuItem>
 
-            </TableCell>
+                    {canDeduct && (
+
+                      <DropdownMenuItem
+                        onClick={() => openAction("deduct", item)}
+                        className="flex items-center gap-2 text-red-600"
+                      >
+                        <Minus size={16} />
+                        Deduct Stock
+                      </DropdownMenuItem>
+
+                    )}
+
+                  </DropdownMenuContent>
+
+                </DropdownMenu>
+
+              </TableCell>
+
+            )}
           </TableRow>
+
         );
 
       })}
     </>
 
   );
+
 }

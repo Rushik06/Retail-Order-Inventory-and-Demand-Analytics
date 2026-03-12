@@ -36,7 +36,7 @@ export default function Products() {
     } catch {
 
       console.error("Failed to load products");
-      toast.error("Failed to load products");
+      
 
     } finally {
 

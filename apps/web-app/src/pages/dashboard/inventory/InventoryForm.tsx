@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { ChevronDown } from "lucide-react";
+import { useAuthStore } from "@/app/app.state";
 interface Props {
   products: any[];
   warehouses: any[];
@@ -27,6 +28,14 @@ export default function InventoryCreateCard({
   onCreate
 }: Props) {
 
+  const user = useAuthStore((state) => state.user);
+  const canCreate =
+    user?.role === "admin" ||
+    user?.role === "manager" ||
+    user?.role === "super_admin";
+
+  if (!canCreate) return null;
+
   const productLabel =
     products.find((p) => p.id === productId)
       ? `${products.find((p) => p.id === productId)?.sku} - ${products.find((p) => p.id === productId)?.name}`
@@ -38,6 +47,7 @@ export default function InventoryCreateCard({
       : "";
 
   const disabled = !productId || !warehouseId;
+
   return (
 
     <Card>
@@ -123,6 +133,7 @@ export default function InventoryCreateCard({
 
               }}
             />
+
             <ChevronDown
               size={16}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"
@@ -146,13 +157,15 @@ export default function InventoryCreateCard({
 
 
         {/* CREATE BUTTON */}
+
         <Button
           onClick={onCreate}
           disabled={disabled}
-          className={`h-11 w-full rounded-lg ${disabled
+          className={`h-11 w-full rounded-lg ${
+            disabled
               ? "bg-gray-300 text-gray-500 cursor-not-allowed"
               : "bg-blue-600 hover:bg-blue-700 text-white"
-            }`}
+          }`}
         >
           Create
         </Button>

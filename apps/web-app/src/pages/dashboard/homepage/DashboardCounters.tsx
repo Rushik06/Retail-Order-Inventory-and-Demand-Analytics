@@ -13,27 +13,10 @@ import {
     CardContent
 } from "@/components/ui/Card";
 
-/*eslint-disable @typescript-eslint/no-explicit-any */
+import { formatCurrency,formatFullCurrency } from "@/utils/currency.formatter";
+import type { DashboardCountersProps } from "@/types/dashboard.types";
 
-export default function DashboardCounters({ counters }: any) {
-    const formatCurrency = (value: number) => {
-        if (value >= 1000000) {
-            return `₹${(value / 1000000).toFixed(1)}M`;
-        }
-
-        if (value >= 1000) {
-            return `₹${(value / 1000).toFixed(1)}K`;
-        }
-
-        return `₹${value}`;
-    };
-
-    const formatFullCurrency = (value: number) =>
-        new Intl.NumberFormat("en-IN", {
-            style: "currency",
-            currency: "INR",
-            maximumFractionDigits: 0
-        }).format(value);
+export default function DashboardCounters({ counters }: DashboardCountersProps) {
 
     return (
 
@@ -41,105 +24,97 @@ export default function DashboardCounters({ counters }: any) {
 
             {/* Total Products */}
             <Card className="shadow-sm">
-                <CardHeader className="flex flex-row items-center gap-2 pb-2">
+                <CardHeader className="flex flex-row items-center gap-2 pb-2 min-w-0">
 
-                    <Package className="h-5 w-5 text-blue-500" />
+                    <Package className="h-5 w-4 text-blue-500 flex-shrink-0" />
 
-                    <CardTitle className="text-sm font-medium">
+                    <CardTitle className="text-sm font-medium whitespace-nowrap">
                         Total Products
                     </CardTitle>
 
                 </CardHeader>
 
                 <CardContent>
-
                     <p className="text-3xl font-bold">
                         {counters.totalProducts}
                     </p>
-
-               </CardContent>
+                </CardContent>
             </Card>
 
 
             {/* Warehouses */}
-
             <Card className="shadow-sm">
-                <CardHeader className="flex flex-row items-center gap-2 pb-2">
+                <CardHeader className="flex flex-row items-center gap-2 pb-2 min-w-0">
 
-                    <Warehouse className="h-5 w-5 text-purple-500" />
+                    <Warehouse className="h-5 w-4 text-purple-500 flex-shrink-0" />
 
-                    <CardTitle className="text-sm font-medium">
+                    <CardTitle className="text-sm font-medium whitespace-nowrap">
                         Total Warehouses
                     </CardTitle>
 
                 </CardHeader>
 
                 <CardContent>
-
                     <p className="text-3xl font-bold">
                         {counters.totalWarehouses}
                     </p>
-
                 </CardContent>
             </Card>
 
 
             {/* Orders */}
+            <Card className="shadow-sm">
+                <CardHeader className="flex flex-row items-center gap-2 pb-2 min-w-0">
 
-            <Card className="flex-1 min-w-0 shadow-sm">
-                <CardHeader className="flex flex-row items-center gap-2 pb-2">
+                    <ShoppingCart className="h-5 w-4 text-green-500 flex-shrink-0" />
 
-                    <ShoppingCart className="h-5 w-5 text-green-500" />
-
-                    <CardTitle className="text-sm font-medium">
+                    <CardTitle className="text-sm font-medium whitespace-nowrap">
                         Total Orders
                     </CardTitle>
 
                 </CardHeader>
 
                 <CardContent>
-
                     <p className="text-3xl font-bold">
                         {counters.totalOrders}
                     </p>
-
                 </CardContent>
-                
             </Card>
 
 
             {/* Low Stock */}
-
             <Card className="shadow-sm">
 
-                <CardHeader className="flex flex-row items-center gap-2 pb-2">
+                <CardHeader className="flex flex-row items-center gap-2 pb-2 min-w-0">
 
-                    <AlertTriangle className="h-5 w-5 text-red-500" />
+                    <AlertTriangle className="h-5 w-4 text-red-500 flex-shrink-0" />
 
-                    <CardTitle className="text-sm font-medium">
+                    <CardTitle className="text-sm font-medium whitespace-nowrap">
                         Low Stock
                     </CardTitle>
 
                 </CardHeader>
 
                 <CardContent>
-
                     <p className="text-3xl font-bold text-red-500">
                         {counters.lowStockItems}
                     </p>
-
                 </CardContent>
 
             </Card>
 
 
+            {/* Revenue */}
             <Card className="shadow-sm hover:shadow-md transition">
 
-                <CardHeader className="flex flex-row items-center gap-2 pb-2">
-                    <TrendingUp className="h-5 w-5 text-indigo-500" />
-                    <CardTitle className="text-sm font-medium">
+                <CardHeader className="flex flex-row items-center gap-2 pb-2 min-w-0">
+
+                    <TrendingUp className="h-5 w-4 text-indigo-500 flex-shrink-0" />
+
+                    <CardTitle className="text-sm font-medium whitespace-nowrap">
                         Total Revenue
                     </CardTitle>
+
                 </CardHeader>
 
                 <CardContent>
@@ -152,8 +127,10 @@ export default function DashboardCounters({ counters }: any) {
                     </p>
 
                 </CardContent>
+
             </Card>
-     </div>
+
+        </div>
 
     );
 

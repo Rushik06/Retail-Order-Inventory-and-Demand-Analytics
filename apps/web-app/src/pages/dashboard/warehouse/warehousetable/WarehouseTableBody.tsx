@@ -14,6 +14,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
+import { useAuthStore } from "@/app/app.state";
 import type { WarehouseTableProps } from "@/types/warehouse.types";
 
 export default function WarehouseTableBody({
@@ -27,9 +28,9 @@ export default function WarehouseTableBody({
   handleActivate,
 }: WarehouseTableProps) {
 
+  const user = useAuthStore((state) => state.user);
   const actionBtn =
     "h-9 w-9 p-0 flex items-center justify-center";
-
   const handleSort = (field: "name" | "location") => {
 
     if (sortField === field) {
@@ -41,13 +42,16 @@ export default function WarehouseTableBody({
 
   };
 
+  const canManage =
+    user?.role === "admin" ||
+    user?.role === "manager" ||
+    user?.role === "super_admin";
+
   return (
     <Table>
       <TableHeader className="sticky top-0 bg-white z-10">
 
         <TableRow>
-
-          {/* NAME */}
 
           <TableHead
             className="cursor-pointer text-base font-semibold"
@@ -58,8 +62,6 @@ export default function WarehouseTableBody({
             </div>
           </TableHead>
 
-          {/* LOCATION */}
-
           <TableHead
             className="cursor-pointer text-base font-semibold"
             onClick={() => handleSort("location")}
@@ -69,38 +71,44 @@ export default function WarehouseTableBody({
             </div>
           </TableHead>
 
-          {/* STATUS */}
           <TableHead>Status</TableHead>
 
-          {/* ACTIONS */}
-
           <TableHead>Actions</TableHead>
+
         </TableRow>
       </TableHeader>
+
       <TableBody>
+
         {warehouses.length === 0 ? (
+
           <TableRow>
+
             <TableCell
               colSpan={4}
               className="text-center py-8 text-gray-500"
             >
               No warehouses found
             </TableCell>
+
           </TableRow>
 
         ) : (
+
           warehouses.map((w) => (
+
             <TableRow key={w.warehouse_id}>
-              {/* NAME */}
+
               <TableCell className="font-medium">
                 {w.name}
               </TableCell>
-              {/* LOCATION */}
+
               <TableCell>
                 {w.location}
               </TableCell>
-              {/* STATUS */}
+
               <TableCell>
+
                 {w.is_active ? (
 
                   <span className="text-green-600 font-medium">
@@ -117,14 +125,14 @@ export default function WarehouseTableBody({
 
               </TableCell>
 
-              {/* ACTIONS */}
-
               <TableCell>
+
                 <div className="flex items-center gap-3">
 
                   {/* VIEW */}
 
                   <Tooltip>
+
                     <TooltipTrigger asChild>
 
                       <Button
@@ -147,68 +155,74 @@ export default function WarehouseTableBody({
                   </Tooltip>
 
 
-                  {/* ACTIVE to DEACTIVATE */}
+                  {/* ACTIVATE / DEACTIVATE only for admin roles */}
 
-                  {w.is_active ? (
+                  {canManage && (
 
-                    <Tooltip>
+                    w.is_active ? (
 
-                      <TooltipTrigger asChild>
+                      <Tooltip>
 
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className={`${actionBtn} border-green-500 text-green-600 hover:bg-green-50`}
-                          onClick={() =>
-                            handleDeactivate(w.warehouse_id)
-                          }
-                        >
-                          <Power size={18} />
-                        </Button>
+                        <TooltipTrigger asChild>
 
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        Deactivate warehouse
-                      </TooltipContent>
-                    </Tooltip>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className={`${actionBtn} border-green-500 text-green-600 hover:bg-green-50`}
+                            onClick={() =>
+                              handleDeactivate(w.warehouse_id)
+                            }
+                          >
+                            <Power size={18} />
+                          </Button>
 
-                  ) : (
+                        </TooltipTrigger>
 
-                    /* INACTIVE to ACTIVATE */
+                        <TooltipContent>
+                          Deactivate warehouse
+                        </TooltipContent>
 
-                    <Tooltip>
+                      </Tooltip>
 
-                      <TooltipTrigger asChild>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className={`${actionBtn} border-red-500 text-red-600 hover:bg-red-50`}
-                          onClick={() =>
-                            handleActivate(w.warehouse_id)
-                          }
-                        >
-                          <Power size={18} />
-                        </Button>
+                    ) : (
 
-                      </TooltipTrigger>
+                      <Tooltip>
 
-                      <TooltipContent>
-                        Activate warehouse
-                      </TooltipContent>
+                        <TooltipTrigger asChild>
 
-                    </Tooltip>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className={`${actionBtn} border-red-500 text-red-600 hover:bg-red-50`}
+                            onClick={() =>
+                              handleActivate(w.warehouse_id)
+                            }
+                          >
+                            <Power size={18} />
+                          </Button>
+
+                        </TooltipTrigger>
+
+                        <TooltipContent>
+                          Activate warehouse
+                        </TooltipContent>
+
+                      </Tooltip>
+
+                    )
 
                   )}
 
                 </div>
-              </TableCell>
-            </TableRow>
 
+              </TableCell>
+
+            </TableRow>
           ))
+
         )}
+
       </TableBody>
     </Table>
-
   );
-
 }

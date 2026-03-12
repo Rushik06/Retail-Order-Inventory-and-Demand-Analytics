@@ -1,9 +1,10 @@
 import { useMemo } from "react";
 import { ChevronDown } from "lucide-react";
+import { useAuthStore } from "@/app/app.state";  
 import type { Props } from "@/types/product.types";
 
-const CATEGORY_OPTIONS = 
-  ["Electronics", "Fashion", "Groceries","Books","Home & Kitchen","Sports",  "Beauty",  ];
+const CATEGORY_OPTIONS =
+  ["Electronics","Fashion","Groceries","Books","Home & Kitchen","Sports","Beauty"];
 
 export default function ProductForm({
   form,
@@ -12,6 +13,15 @@ export default function ProductForm({
   onSubmit,
 }: Props) {
 
+  const user = useAuthStore((state) => state.user);   
+
+  const canCreate =
+    user?.role === "admin" ||
+    user?.role === "manager" ||
+    user?.role === "super_admin";
+
+  if (!canCreate) return null;  
+
   const priceInvalid =
     form.price !== "" && Number(form.price) <= 0;
 
@@ -19,9 +29,12 @@ export default function ProductForm({
     form.stock !== "" && Number(form.stock) < 0;
 
   const disabled =
-    !form.name?.trim() ||!form.category?.trim() || form.price === "" || Number(form.price) <= 0 ||
-    form.stock === "" || Number(form.stock) < 0; 
-   
+    !form.name?.trim() ||
+    !form.category?.trim() ||
+    form.price === "" ||
+    Number(form.price) <= 0 ||
+    form.stock === "" ||
+    Number(form.stock) < 0;
 
   /* SKU Preview */
 
@@ -92,10 +105,8 @@ export default function ProductForm({
           {CATEGORY_OPTIONS.map((cat) => (
             <option key={cat} value={cat} />
           ))}
-
         </datalist>
       </div>
-
 
       {/* Price */}
 
@@ -124,6 +135,7 @@ export default function ProductForm({
       </div>
 
       {/* Stock */}
+
       <div className="flex flex-col">
         <input
           type="number"
@@ -146,11 +158,10 @@ export default function ProductForm({
             </span>
           )}
         </div>
-
       </div>
 
-
       {/* Submit Button */}
+
       <button
         type="submit"
         disabled={disabled}
@@ -162,7 +173,7 @@ export default function ProductForm({
       >
         {editingId ? "Update Product" : "Add Product"}
       </button>
-    </form>
 
+    </form>
   );
 }

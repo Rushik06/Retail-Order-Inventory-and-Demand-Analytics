@@ -1,106 +1,105 @@
 import {
-    Card,
-    CardHeader,
-    CardTitle,
-    CardContent
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent
 } from "@/components/ui/Card";
 
-/*eslint-disable @typescript-eslint/no-explicit-any */
+import {
+  type InventoryActivityProps,
+  getProductName,
+  getWarehouse
+} from "@/utils/activity-table.helpers";
 
 export default function InventoryActivityTable({
-    data,
-    products,
-    warehouses
-}: any) {
+  data,
+  products,
+  warehouses
+}: InventoryActivityProps) {
 
-    const getProductName = (id: string) =>
-        products?.find((p: any) => p.id === id)?.name || "Unknown";
+  return (
 
-    const getWarehouse = (warehouseId: string) => {
-        const warehouse = warehouses?.find(
-            (w: any) => w.warehouse_id === warehouseId
-        );
+    <Card className="shadow-sm">
 
-        return warehouse || {};
-    };
-    return (
+      <CardHeader>
+        <CardTitle className="text-base font-semibold text-slate-700">
+          Inventory Activity
+        </CardTitle>
+      </CardHeader>
 
-        <Card className="shadow-sm">
+      <CardContent>
 
-            <CardHeader>
-                <CardTitle className="text-base font-semibold text-slate-700">
-                    Inventory Activity
-                </CardTitle>
-            </CardHeader>
+        <div className="max-h-[320px] overflow-y-auto">
 
-            <CardContent>
+          <table className="w-full text-sm">
 
-                <div className="max-h-[320px] overflow-y-auto">
+            <thead className="border-b sticky top-0 bg-white">
 
-                    <table className="w-full text-sm">
+              <tr className="text-slate-600 font-medium">
 
-                        <thead className="border-b sticky top-0 bg-white">
-                            <tr className="text-slate-600 font-medium">
+                <th className="text-left py-3">Product</th>
+                <th className="text-left py-3">Warehouse</th>
+                <th className="text-left py-3">Location</th>
+                <th className="text-left py-3">Action</th>
+                <th className="text-right py-3">Qty</th>
 
-                                <th className="text-left py-3">Product</th>
-                                <th className="text-left py-3">Warehouse</th>
-                                <th className="text-left py-3">Location</th>
-                                <th className="text-left py-3">Action</th>
-                                <th className="text-right py-3">Qty</th>
+              </tr>
 
-                            </tr>
-                        </thead>
+            </thead>
 
-                        <tbody>
+            <tbody>
 
-                            {data?.map((item: any, index: number) => {
+              {data?.map((item, index) => {
 
-                                const productName = getProductName(item.product_id);
-                                const warehouse = getWarehouse(item.warehouse_id);
+                const productName =
+                  getProductName(products, item.product_id);
 
-                                return (
+                const warehouse =
+                  getWarehouse(warehouses, item.warehouse_id);
 
-                                    <tr
-                                        key={index}
-                                        className="border-b hover:bg-slate-50 transition"
-                                    >
+                return (
 
-                                        <td className="py-3 font-medium text-slate-800">
-                                            {productName}
-                                        </td>
+                  <tr
+                    key={index}
+                    className="border-b hover:bg-slate-50 transition"
+                  >
 
-                                        <td className="py-3 text-slate-600">
-                                            {warehouse?.name || "Unknown"}
-                                        </td>
+                    <td className="py-3 font-medium text-slate-800">
+                      {productName}
+                    </td>
 
-                                        <td className="py-3 text-slate-500">
-                                            {warehouse?.location || "-"}
-                                        </td>
+                    <td className="py-3 text-slate-600">
+                      {warehouse?.name || "Unknown"}
+                    </td>
 
-                                        <td className="py-3 capitalize text-slate-700">
-                                            {item.action_type.toLowerCase()}
-                                        </td>
+                    <td className="py-3 text-slate-500">
+                      {warehouse?.location || "-"}
+                    </td>
 
-                                        <td className="py-3 text-right font-semibold text-slate-900">
-                                            {item.new_available_qty}
-                                        </td>
+                    <td className="py-3 capitalize text-slate-700">
+                      {item.action_type.toLowerCase()}
+                    </td>
 
-                                    </tr>
+                    <td className="py-3 text-right font-semibold text-slate-900">
+                      {item.new_available_qty}
+                    </td>
 
-                                );
+                  </tr>
 
-                            })}
+                );
 
-                        </tbody>
+              })}
 
-                    </table>
+            </tbody>
 
-                </div>
+          </table>
 
-            </CardContent>
+        </div>
 
-        </Card>
+      </CardContent>
 
-    );
+    </Card>
+
+  );
 
 }

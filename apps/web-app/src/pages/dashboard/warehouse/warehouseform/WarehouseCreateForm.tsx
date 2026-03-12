@@ -5,6 +5,7 @@ import { Plus } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { useAuthStore } from "@/app/app.state";
 
 import {
   validateWarehouseName,
@@ -19,6 +20,8 @@ export default function WarehouseCreateForm({
   setLocation,
   handleCreate,
 }: any) {
+
+  const user = useAuthStore((state) => state.user);
 
   const [nameError, setNameError] = useState("");
   const [locationError, setLocationError] = useState("");
@@ -64,6 +67,13 @@ export default function WarehouseCreateForm({
     setLocationError("");
 
   };
+
+  const canCreate =
+    user?.role === "admin" ||
+    user?.role === "manager" ||
+    user?.role === "super_admin";
+
+  if (!canCreate) return null;
 
   return (
 
