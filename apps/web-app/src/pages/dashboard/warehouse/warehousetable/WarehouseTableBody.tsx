@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { Eye, Power, ArrowUpDown } from "lucide-react";
 import {
   Table,
@@ -49,8 +50,8 @@ export default function WarehouseTableBody({
 
   return (
     <Table>
-      <TableHeader className="sticky top-0 bg-white z-10">
 
+      <TableHeader className="sticky top-0 bg-white z-10">
         <TableRow>
 
           <TableHead
@@ -72,7 +73,6 @@ export default function WarehouseTableBody({
           </TableHead>
 
           <TableHead>Status</TableHead>
-
           <TableHead>Actions</TableHead>
 
         </TableRow>
@@ -82,16 +82,35 @@ export default function WarehouseTableBody({
 
         {warehouses.length === 0 ? (
 
-          <TableRow>
+          [...Array(5)].map((_, i) => (
 
-            <TableCell
-              colSpan={4}
-              className="text-center py-8 text-gray-500"
-            >
-              No warehouses found
-            </TableCell>
+            <TableRow key={i} className="animate-pulse">
 
-          </TableRow>
+              <TableCell>
+                <div className="h-4 w-32 bg-slate-200 rounded"></div>
+              </TableCell>
+
+              <TableCell>
+                <div className="h-4 w-28 bg-slate-200 rounded"></div>
+              </TableCell>
+
+              <TableCell>
+                <div className="h-4 w-16 bg-slate-200 rounded"></div>
+              </TableCell>
+
+              <TableCell>
+
+                <div className="flex items-center gap-3">
+
+                  <div className="h-9 w-9 bg-slate-200 rounded"></div>
+                  <div className="h-9 w-9 bg-slate-200 rounded"></div>
+
+                </div>
+
+              </TableCell>
+            </TableRow>
+
+          ))
 
         ) : (
 
@@ -108,7 +127,6 @@ export default function WarehouseTableBody({
               </TableCell>
 
               <TableCell>
-
                 {w.is_active ? (
 
                   <span className="text-green-600 font-medium">
@@ -116,7 +134,6 @@ export default function WarehouseTableBody({
                   </span>
 
                 ) : (
-
                   <span className="text-gray-500 font-medium">
                     Inactive
                   </span>
@@ -124,7 +141,6 @@ export default function WarehouseTableBody({
                 )}
 
               </TableCell>
-
               <TableCell>
 
                 <div className="flex items-center gap-3">
@@ -134,7 +150,6 @@ export default function WarehouseTableBody({
                   <Tooltip>
 
                     <TooltipTrigger asChild>
-
                       <Button
                         size="sm"
                         variant="outline"
@@ -147,7 +162,6 @@ export default function WarehouseTableBody({
                       </Button>
 
                     </TooltipTrigger>
-
                     <TooltipContent>
                       View details and update warehouse details
                     </TooltipContent>
@@ -158,13 +172,11 @@ export default function WarehouseTableBody({
                   {/* ACTIVATE / DEACTIVATE only for admin roles */}
 
                   {canManage && (
-
                     w.is_active ? (
 
                       <Tooltip>
 
                         <TooltipTrigger asChild>
-
                           <Button
                             size="sm"
                             variant="outline"
@@ -177,7 +189,6 @@ export default function WarehouseTableBody({
                           </Button>
 
                         </TooltipTrigger>
-
                         <TooltipContent>
                           Deactivate warehouse
                         </TooltipContent>
@@ -187,7 +198,6 @@ export default function WarehouseTableBody({
                     ) : (
 
                       <Tooltip>
-
                         <TooltipTrigger asChild>
 
                           <Button
@@ -206,20 +216,16 @@ export default function WarehouseTableBody({
                         <TooltipContent>
                           Activate warehouse
                         </TooltipContent>
-
                       </Tooltip>
 
                     )
-
                   )}
 
                 </div>
-
               </TableCell>
-
             </TableRow>
-          ))
 
+          ))
         )}
 
       </TableBody>

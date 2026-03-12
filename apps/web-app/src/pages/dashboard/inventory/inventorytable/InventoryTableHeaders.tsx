@@ -5,6 +5,7 @@ import {
 } from "@/components/ui/Table";
 
 import { ArrowUpDown } from "lucide-react";
+import { useAuthStore } from "@/app/app.state";   
 
 interface Props {
   onSort?: (field: string) => void;
@@ -13,6 +14,13 @@ interface Props {
 export default function InventoryTableHeader({
   onSort
 }: Props) {
+
+  const user = useAuthStore((state) => state.user);   
+
+  const canSeeActions =
+    user?.role === "admin" ||
+    user?.role === "manager" ||
+    user?.role === "super_admin";
 
   return (
 
@@ -76,9 +84,11 @@ export default function InventoryTableHeader({
 
         {/* ACTIONS */}
 
-        <TableHead className="text-center w-[110px]">
-          Actions
-        </TableHead>
+        {canSeeActions && (
+          <TableHead className="text-center w-[110px]">
+            Actions
+          </TableHead>
+        )}
 
       </TableRow>
 
