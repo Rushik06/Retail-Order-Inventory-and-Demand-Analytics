@@ -1,60 +1,113 @@
 import {
-Card,
-CardHeader,
-CardTitle,
-CardContent
+    Card,
+    CardHeader,
+    CardTitle,
+    CardContent
 } from "@/components/ui/Card";
+
 /*eslint-disable @typescript-eslint/no-explicit-any */
-export default function RecentOrdersTable({ data }: any){
 
-return(
+export default function RecentOrdersTable({
+    data,
+    products
+}: any) {
 
-<Card>
+    const getProductName = (productId: string) =>
+        products?.find((p: any) => p.id === productId)?.name || "Unknown";
 
-<CardHeader>
-<CardTitle>Recent Orders</CardTitle>
-</CardHeader>
+    return (
 
-<CardContent>
+        <Card className="shadow-sm">
 
-<div className="max-h-[320px] overflow-y-auto">
+            <CardHeader>
+                <CardTitle className="text-base font-semibold text-slate-700">
+                    Recent Orders
+                </CardTitle>
+            </CardHeader>
 
-<table className="w-full text-sm">
+            <CardContent>
 
-<thead className="border-b sticky top-0 bg-white">
-<tr>
-<th className="text-left py-2">Customer</th>
-<th className="text-left py-2">Product</th>
-<th className="text-right py-2">Qty</th>
-<th className="text-right py-2">Status</th>
-</tr>
-</thead>
+                <div className="max-h-[320px] overflow-y-auto">
 
-<tbody>
+                    <table className="w-full text-sm">
 
-{data?.map((order:any,index:number)=>(
+                        <thead className="border-b sticky top-0 bg-white">
 
-<tr key={index} className="border-b">
+                            <tr className="text-slate-600 font-medium">
 
-<td className="py-2">{order.customer}</td>
-<td className="py-2 text-muted-foreground">{order.product}</td>
-<td className="py-2 text-right">{order.quantity}</td>
-<td className="py-2 text-right capitalize">{order.status}</td>
+                                <th className="text-left py-3">Customer</th>
+                                <th className="text-left py-3">Product</th>
+                                <th className="text-right py-3">Order Date</th>
+                                <th className="text-right py-3">Status</th>
 
-</tr>
+                            </tr>
 
-))}
+                        </thead>
 
-</tbody>
+                        <tbody>
 
-</table>
+                            {data?.map((order: any, index: number) => {
 
-</div>
+                                const productName =
+                                    order.product_name || getProductName(order.product_id);
 
-</CardContent>
+                                const formattedDate = order.order_date
+                                    ? new Date(order.order_date).toLocaleDateString()
+                                    : "-";
 
-</Card>
+                                return (
 
-);
+                                    <tr
+                                        key={index}
+                                        className="border-b hover:bg-slate-50 transition"
+                                    >
+
+                                        <td className="py-3 font-medium text-slate-800">
+                                            {order.customer_name || "Customer"}
+                                        </td>
+
+                                        <td className="py-3 text-slate-600">
+                                            {productName}
+                                        </td>
+
+                                        <td className="py-3 text-right font-semibold">
+                                            {formattedDate}
+                                        </td>
+
+                                        <td className="py-3 text-right">
+
+                                            <span className={`
+px-2 py-1 rounded-md text-xs font-semibold
+${order.status === "DELIVERED"
+                                                    ? "bg-green-100 text-green-700"
+                                                    : order.status === "SHIPPED"
+                                                        ? "bg-blue-100 text-blue-700"
+                                                        : order.status === "PROCESSING"
+                                                            ? "bg-yellow-100 text-yellow-700"
+                                                            : "bg-red-100 text-red-700"
+                                                }
+`}>
+                                                {order.status.toLowerCase()}
+                                            </span>
+
+                                        </td>
+
+                                    </tr>
+
+                                );
+
+                            })}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </CardContent>
+
+        </Card>
+
+    );
 
 }

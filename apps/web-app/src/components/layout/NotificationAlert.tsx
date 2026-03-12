@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { BellRing, AlertTriangle } from "lucide-react";
 import useInventoryAlerts from "@/hooks/InventoryAlerthooks";
 
@@ -7,9 +7,34 @@ export default function InventoryAlerts() {
   const alerts = useInventoryAlerts();
   const [open, setOpen] = useState(false);
 
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  /* CLOSE DROPDOWN ON OUTSIDE CLICK */
+
+  useEffect(() => {
+
+    const handleClickOutside = (event: MouseEvent) => {
+
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
+        setOpen(false);
+      }
+
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+
+  }, []);
+
   return (
 
-    <div className="relative">
+    <div ref={containerRef} className="relative">
 
       {/* Notification Button */}
 

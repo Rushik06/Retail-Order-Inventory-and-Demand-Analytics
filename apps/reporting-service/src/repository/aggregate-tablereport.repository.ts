@@ -1,7 +1,7 @@
 import { sequelize } from "../config/sequilize.js";
 
-class ReportRepository{
-  
+class ReportRepository {
+
 
   /* TABLE — RECENT INVENTORY ACTIVITY */
 
@@ -26,19 +26,26 @@ class ReportRepository{
 
   async getRecentOrders() {
 
-    const [rows] = await sequelize.query(`
+     const [rows] = await sequelize.query(`
       SELECT
-        id,
-        status,
-        created_at
-      FROM orders
-      ORDER BY created_at DESC
+        o.id,
+        o.customer_name,
+        o.status,
+        p.name AS product_name,
+        p.id AS product_id,
+        o.created_at AS order_date
+      FROM orders o
+      LEFT JOIN order_items oi ON oi.order_id = o.id
+      LEFT JOIN products p ON p.id = oi.product_id
+      ORDER BY o.created_at DESC
       LIMIT 10
-    `);
-    return rows;
+`);
 
+return rows;
+
+    return rows;
   }
 
 }
 
- export const tablereportRepository = new ReportRepository();
+export const tablereportRepository = new ReportRepository();

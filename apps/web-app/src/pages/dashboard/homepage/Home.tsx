@@ -96,7 +96,8 @@ export default function Home() {
           warehouses={warehouses}
         />
 
-        <RecentOrdersTable data={tables.recentOrders} />
+        <RecentOrdersTable data={tables.recentOrders}
+        products={products} />
 
       </div>
 
