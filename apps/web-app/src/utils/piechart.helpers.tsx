@@ -1,13 +1,13 @@
 /*eslint-disable @typescript-eslint/no-explicit-any */
 
 export const COLORS = [
-  "#6366F1",
-  "#22C55E",
-  "#F59E0B",
-  "#EF4444",
+  "#1014d2",
+  "#e40fd6",
+  "#17f803",
+  "#ee1414",
   "#06B6D4",
-  "#8B5CF6",
-  "#14B8A6"
+  "#f0ec16",
+  "#067669"
 ];
 
 export const renderInsideLabel = ({
