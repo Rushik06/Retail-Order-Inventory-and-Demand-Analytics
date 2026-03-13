@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { Eye, Power, ArrowUpDown } from "lucide-react";
 import {
   Table,
