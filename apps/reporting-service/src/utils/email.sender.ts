@@ -2,8 +2,8 @@ import nodemailer from "nodemailer";
 
 export const sendReportEmail = async (
   email: string,
-  file: Buffer,
-  filename: string
+  pdf: Buffer,
+  excel: Buffer
 ) => {
 
   const transporter = nodemailer.createTransport({
@@ -22,8 +22,12 @@ export const sendReportEmail = async (
     text: "Please find attached dashboard report",
     attachments: [
       {
-        filename,
-        content: file
+        filename: "dashboard-report.pdf",
+        content: pdf
+      },
+      {
+        filename: "dashboard-report.xlsx",
+        content: excel
       }
     ]
   });
