@@ -87,7 +87,7 @@ export default function Products() {
         stock: "",
       });
 
-    
+      await loadProducts();
 
     } catch {
 
@@ -106,6 +106,7 @@ export default function Products() {
 
       toast.success("Product deleted successfully");
 
+      await loadProducts();
 
     } catch {
 
