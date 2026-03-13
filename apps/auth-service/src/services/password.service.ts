@@ -44,7 +44,7 @@ export class PasswordService {
     if (!user) throw new Error('USER_NOT_FOUND');
 
     const otp = randomInt(100000, 999999).toString();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); 
 
     await this.repo.createOtp(
       user.getDataValue('user_id'),

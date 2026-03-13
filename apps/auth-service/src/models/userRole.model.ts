@@ -29,5 +29,9 @@ UserRole.init(
   }
 );
 
+
 User.belongsToMany(Role, { through: UserRole, foreignKey: 'user_id' });
 Role.belongsToMany(User, { through: UserRole, foreignKey: 'role_id' });
+
+UserRole.belongsTo(User, { foreignKey: 'user_id' });
+UserRole.belongsTo(Role, { foreignKey: 'role_id' });

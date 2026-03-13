@@ -1,7 +1,7 @@
 /*eslint-disable*/ 
 import request from 'supertest';
 import app from '../src/app.js';
-import { sequelize } from '../src/config/sequilize.js';
+import { sequelize } from '../src/config/index.js';
 
 describe('Auth API', () => {
 

@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { User } from '../models/index.js';
 import { PasswordOtp } from '../models/password-otp.model.js';
 import { randomUUID } from 'crypto';
