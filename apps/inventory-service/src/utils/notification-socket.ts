@@ -7,7 +7,7 @@ export const initNotificationSocket = (server: any) => {
 
   io = new Server(server, {
     cors: {
-      origin: "*",
+      origin: process.env.FRONTEND_URL,
       methods: ["GET", "POST"]
     },
     transports: ["websocket", "polling"]

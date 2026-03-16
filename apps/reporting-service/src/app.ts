@@ -16,8 +16,8 @@ const app: Express = express();
 app.use(helmet());
 
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100
+  windowMs: Number(process.env.RATE_LIMIT_WINDOW) || 15 * 60 * 1000,
+  max: Number(process.env.RATE_LIMIT_MAX)
 });
 
 app.use(limiter);

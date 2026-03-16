@@ -104,7 +104,7 @@ async getAllUsers(): Promise<User[]> {
       isActive: user.isActive,
     });
 
-    console.log('Created user in DB:', createdUser.get());
+    
 
     return {
       id: createdUser.getDataValue('user_id'),

@@ -21,8 +21,8 @@ app.use(helmet());
 /* Global rate limiter */
 
 const globalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
+  windowMs: Number(process.env.RATE_LIMIT_WINDOW) || 15 * 60 * 1000,
+  max: Number(process.env.RATE_LIMIT_MAX),
   standardHeaders: true,
   legacyHeaders: false
 });
@@ -32,8 +32,9 @@ app.use(globalLimiter);
 /* Auth specific limiter */
 
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 20,
+
+  windowMs: Number(process.env.RATE_LIMIT_WINDOW) || 15 * 60 * 1000,
+  max: Number(process.env.RATE_LIMIT_MAX),
   standardHeaders: true,
   legacyHeaders: false
 });
