@@ -1,4 +1,4 @@
-/* eslint-disable */
+ 
 import { Pencil, Trash2 } from "lucide-react";
 import { useAuthStore } from "@/app/app.state";
 import type { Product } from "@/types/product.types";
