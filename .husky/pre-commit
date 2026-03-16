@@ -1,2 +1,2 @@
 
-npx run lint -- --fix
+pnpm -w run lint 
