@@ -1,4 +1,3 @@
-/* eslint-disable*/
 import bcrypt from "bcrypt";
 import jwt, { type SignOptions } from "jsonwebtoken";
 import { randomUUID } from "crypto";
@@ -10,6 +9,7 @@ import type {
 import { env } from "../config/index.js";
 import { UserRole } from "../models/userRole.model.js";
 import { Role } from "../models/role.model.js";
+import type { UserRoleWithRole } from "../types/auth.types.js";
 
 
 export class AuthService {
@@ -72,7 +72,7 @@ export class AuthService {
       ],
     });
 
-    const role = (userRole as any)?.Role?.role_name || "staff";
+  const role = (userRole as UserRoleWithRole)?.Role?.role_name ?? "staff";
 
     const accessToken = jwt.sign(
       {
@@ -126,8 +126,7 @@ export class AuthService {
         where: { user_id: user.id },
         include: [{ model: Role, attributes: ["role_name"] }],
       });
-
-      const role = (userRole as any)?.Role?.role_name || "staff";
+const role = (userRole as UserRoleWithRole)?.Role?.role_name ?? "staff";
 
       const newAccessToken = jwt.sign(
         {
