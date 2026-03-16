@@ -31,7 +31,7 @@ export default function Products() {
 
       setProducts(res.data);
 
-      toast.success("Products loaded successfully");
+    
 
     } catch {
 

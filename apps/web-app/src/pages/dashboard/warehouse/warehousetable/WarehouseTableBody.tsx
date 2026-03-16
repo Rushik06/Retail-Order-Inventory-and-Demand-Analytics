@@ -16,6 +16,7 @@ import {
 
 import { useAuthStore } from "@/app/app.state";
 import type { WarehouseTableProps } from "@/types/warehouse.types";
+import WarehouseTableSkeleton from "@/components/loaders/WarehouseSkeleton";
 
 export default function WarehouseTableBody({
   warehouses,
@@ -29,8 +30,10 @@ export default function WarehouseTableBody({
 }: WarehouseTableProps) {
 
   const user = useAuthStore((state) => state.user);
+
   const actionBtn =
     "h-9 w-9 p-0 flex items-center justify-center";
+
   const handleSort = (field: "name" | "location") => {
 
     if (sortField === field) {
@@ -51,6 +54,7 @@ export default function WarehouseTableBody({
     <Table>
 
       <TableHeader className="sticky top-0 bg-white z-10">
+
         <TableRow>
 
           <TableHead
@@ -75,41 +79,14 @@ export default function WarehouseTableBody({
           <TableHead>Actions</TableHead>
 
         </TableRow>
+
       </TableHeader>
 
       <TableBody>
 
         {warehouses.length === 0 ? (
 
-          [...Array(5)].map((_, i) => (
-
-            <TableRow key={i} className="animate-pulse">
-
-              <TableCell>
-                <div className="h-4 w-32 bg-slate-200 rounded"></div>
-              </TableCell>
-
-              <TableCell>
-                <div className="h-4 w-28 bg-slate-200 rounded"></div>
-              </TableCell>
-
-              <TableCell>
-                <div className="h-4 w-16 bg-slate-200 rounded"></div>
-              </TableCell>
-
-              <TableCell>
-
-                <div className="flex items-center gap-3">
-
-                  <div className="h-9 w-9 bg-slate-200 rounded"></div>
-                  <div className="h-9 w-9 bg-slate-200 rounded"></div>
-
-                </div>
-
-              </TableCell>
-            </TableRow>
-
-          ))
+          <WarehouseTableSkeleton />
 
         ) : (
 
@@ -127,19 +104,16 @@ export default function WarehouseTableBody({
 
               <TableCell>
                 {w.is_active ? (
-
                   <span className="text-green-600 font-medium">
                     Active
                   </span>
-
                 ) : (
                   <span className="text-gray-500 font-medium">
                     Inactive
                   </span>
-
                 )}
-
               </TableCell>
+
               <TableCell>
 
                 <div className="flex items-center gap-3">
@@ -161,14 +135,14 @@ export default function WarehouseTableBody({
                       </Button>
 
                     </TooltipTrigger>
+
                     <TooltipContent>
                       View details and update warehouse details
                     </TooltipContent>
 
                   </Tooltip>
 
-
-                  {/* ACTIVATE / DEACTIVATE only for admin roles */}
+                  {/* ACTIVATE / DEACTIVATE */}
 
                   {canManage && (
                     w.is_active ? (
@@ -176,6 +150,7 @@ export default function WarehouseTableBody({
                       <Tooltip>
 
                         <TooltipTrigger asChild>
+
                           <Button
                             size="sm"
                             variant="outline"
@@ -188,6 +163,7 @@ export default function WarehouseTableBody({
                           </Button>
 
                         </TooltipTrigger>
+
                         <TooltipContent>
                           Deactivate warehouse
                         </TooltipContent>
@@ -197,6 +173,7 @@ export default function WarehouseTableBody({
                     ) : (
 
                       <Tooltip>
+
                         <TooltipTrigger asChild>
 
                           <Button
@@ -215,12 +192,14 @@ export default function WarehouseTableBody({
                         <TooltipContent>
                           Activate warehouse
                         </TooltipContent>
+
                       </Tooltip>
 
                     )
                   )}
 
                 </div>
+
               </TableCell>
             </TableRow>
 
@@ -228,6 +207,7 @@ export default function WarehouseTableBody({
         )}
 
       </TableBody>
+
     </Table>
   );
 }
