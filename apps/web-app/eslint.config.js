@@ -13,7 +13,7 @@ export default defineConfig([
     '**/build/**'
   ]),
   {
-    files: ['**/*.{ts,tsx}'],
+    files: ['**/*.{ts,tsx,js,jsx}'],
     extends: [
       js.configs.recommended,
       tseslint.configs.recommended,
