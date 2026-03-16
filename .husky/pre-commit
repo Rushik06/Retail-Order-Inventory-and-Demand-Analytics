@@ -1,2 +1,2 @@
 
-npx run lint --fix
+npx run lint -- --fix
