@@ -50,6 +50,8 @@ export default function WarehousePage() {
         sortField,
         sortOrder,
       }),
+    staleTime: 1000 * 60 * 5,
+    refetchOnWindowFocus: false,
   });
 
   const warehouses = warehouseRes?.data || [];
