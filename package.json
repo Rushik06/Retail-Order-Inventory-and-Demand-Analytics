@@ -16,6 +16,7 @@
     "start": "abc",
     "build": "abc",
     "lint": "eslint .",
+    "lint: fix": "eslint . --fix",
     "format": "prettier --write \"**/*.{ts,js,json,css,md}\"",
     "prepare": "husky",
     "test": "vitest run",
