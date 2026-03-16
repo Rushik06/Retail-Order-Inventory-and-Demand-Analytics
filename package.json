@@ -12,16 +12,15 @@
 
     "seed": "pnpm --filter auth-service run seed",
     "seed:undo": "pnpm --filter auth-service run seed:undo",
-    
-    "start": "abc",
-    "build": "abc",
+   "start": "tsc",
+    "build": "node dist/server.js",
     "lint": "eslint .",
     "lint: fix": "eslint . --fix",
     "format": "prettier --write \"**/*.{ts,js,json,css,md}\"",
     "prepare": "husky",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "vitest --coverage"
   },
   "keywords": [],
   "author": "",

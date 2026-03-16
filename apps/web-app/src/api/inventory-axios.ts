@@ -1,73 +1,13 @@
-import axios from "axios";
-import {
-  getAccessToken,
-  getRefreshToken,
-  setTokens,
-  clearTokens,
-} from "../utils/token";
+import { createApiClient } from "./api-client";
 
-const inventoryAxios = axios.create({
-  baseURL: "/api",
-  withCredentials: false,
-});
-
-// Attach Access Token Automatically
-inventoryAxios.interceptors.request.use((config) => {
-  const token = getAccessToken();
-
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-
-  return config;
-});
-
-// Handle Token Refresh
-inventoryAxios.interceptors.response.use(
-  (response) => response,
-
-  async (error) => {
-    const originalRequest = error.config;
-
-    if (error.response?.status === 401 && !originalRequest?._retry) {
-      originalRequest._retry = true;
-
-      try {
-        const refreshToken = getRefreshToken();
-
-        if (!refreshToken) {
-          throw new Error("No refresh token available");
-        }
-
-        const res = await axios.post("/api/auth/refresh", {
-          refreshToken,
-        });
-
-        setTokens(res.data.accessToken, refreshToken);
-
-        originalRequest.headers.Authorization =
-          `Bearer ${res.data.accessToken}`;
-
-        return inventoryAxios(originalRequest);
-
-      } catch {
-        clearTokens();
-        window.location.href = "/login";
-      }
-    }
-
-    return Promise.reject(error);
-  }
-);
+const inventoryAxios = createApiClient(import.meta.env.VITE_API_URL);
 
 export default inventoryAxios;
 
 
 /* INVENTORY APIs */
 
-
-//Get all inventory 
-
+//Get all inventory
 export const getAllInventory = (params: {
   page?: number;
   limit?: number;
@@ -78,6 +18,7 @@ export const getAllInventory = (params: {
   inventoryAxios.get("/inventory", {
     params,
   });
+
 // Get specific inventory
 export const getInventory = (
   productId: string,
@@ -96,7 +37,7 @@ export const createInventory = (data: {
   inventoryAxios.post("/inventory/create", data);
 
 
-// Add stock (Inbound)
+// Add stock
 export const addStock = (data: {
   productId: string;
   warehouseId: string;
@@ -106,7 +47,7 @@ export const addStock = (data: {
   inventoryAxios.post("/inventory/add", data);
 
 
-// Deduct stock (Outbound)
+// Deduct stock
 export const deductStock = (data: {
   productId: string;
   warehouseId: string;

@@ -1,9 +1,9 @@
-/* eslint-disable */
 import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import { getProducts } from "@/api/product-axios";
 import { getWarehouses } from "@/api/inventory-axios";
 import { useAuthStore } from "@/app/app.state";
+import type { Product,Warehouse } from "@/types/inventoryalert.types";
 
 interface Alert {
   id: string;
@@ -19,6 +19,8 @@ export default function useInventoryAlerts() {
   const user = useAuthStore((s) => s.user);
   const STORAGE_KEY = "inventory_alerts";
 
+  const SOCKET_URL = import.meta.env.VITE_INVENTORY_SOCKET_URL;
+
   const [alerts, setAlerts] = useState<Alert[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
@@ -28,8 +30,8 @@ export default function useInventoryAlerts() {
     }
   });
 
-  const [products, setProducts] = useState<any[]>([]);
-  const [warehouses, setWarehouses] = useState<any[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
 
   /* SAVE ALERTS */
 
@@ -42,6 +44,7 @@ export default function useInventoryAlerts() {
   useEffect(() => {
 
     if (!user) return;
+
     const loadData = async () => {
 
       try {
@@ -73,7 +76,7 @@ export default function useInventoryAlerts() {
     if (!user) return;
     if (!products.length || !warehouses.length) return;
 
-    const socket = io("http://localhost:3002", {
+    const socket = io(SOCKET_URL, {
       transports: ["websocket", "polling"]
     });
 
@@ -89,8 +92,6 @@ export default function useInventoryAlerts() {
       );
 
       const alertId = `${event.productId}_${event.warehouseId}`;
-
-      /* STOCK NORMAL → REMOVE ALERT */
 
       if (event.currentQty > event.threshold) {
 
