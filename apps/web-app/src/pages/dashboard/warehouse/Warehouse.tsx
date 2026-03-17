@@ -12,7 +12,6 @@ import {
 import WarehouseForm from "./warehouseform/WarehouseForm";
 import WarehouseTable from "./warehousetable/WarehouseTable";
 import WarehouseActionModal from "./WarehouseActionModal";
-
 import useWarehouseActionModal from "@/hooks/Warehousehooks";
 import type { Warehouse } from "@/types/warehouse.types";
 
@@ -25,11 +24,7 @@ export default function WarehousePage() {
   const [name, setName] = useState("");
   const [location, setLocation] = useState("");
 
-  /* SCROLL REF */
-
   const detailsRef = useRef<HTMLDivElement | null>(null);
-
-  /* QUERY STATE */
 
   const [search, setSearch] = useState("");
   const [sortField, setSortField] = useState<"name" | "location">("name");
@@ -38,8 +33,22 @@ export default function WarehousePage() {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(6);
 
-  /* FETCH WAREHOUSES */
+  /* Helper */
+  const getErrorMessage = (err: unknown, fallback: string) => {
+    if (
+      typeof err === "object" &&
+      err !== null &&
+      "response" in err
+    ) {
+      const res = err as {
+        response?: { data?: { message?: string } };
+      };
+      return res.response?.data?.message || fallback;
+    }
+    return fallback;
+  };
 
+  /* FETCH */
   const { data: warehouseRes } = useQuery({
     queryKey: ["warehouses", page, limit, search, sortField, sortOrder],
     queryFn: () =>
@@ -66,21 +75,20 @@ export default function WarehousePage() {
       toast.success("Warehouse created");
       setName("");
       setLocation("");
-
       queryClient.invalidateQueries({ queryKey: ["warehouses"] });
     },
 
-    onError: () => {
-      toast.error("Failed to create warehouse");
+    onError: (err: unknown) => {
+      const message = getErrorMessage(err, "Failed to create warehouse");
+      toast.error(message);
     },
   });
 
-  const handleCreate = async () => {
+  const handleCreate = () => {
     createMutation.mutate();
   };
 
   /* VIEW */
-
   const handleView = async (id: string) => {
     try {
       const data = await fetchWarehouseById(id);
@@ -94,8 +102,9 @@ export default function WarehousePage() {
         });
       }, 100);
 
-    } catch {
-      toast.error("Failed to fetch warehouse");
+    } catch (err: unknown) {
+      const message = getErrorMessage(err, "Failed to fetch warehouse");
+      toast.error(message);
     }
   };
 
@@ -114,18 +123,18 @@ export default function WarehousePage() {
       queryClient.invalidateQueries({ queryKey: ["warehouses"] });
     },
 
-    onError: () => {
-      toast.error("Failed to update warehouse");
+    onError: (err: unknown) => {
+      const message = getErrorMessage(err, "Failed to update warehouse");
+      toast.error(message);
     },
   });
 
-  const handleUpdate = async () => {
+  const handleUpdate = () => {
     if (!selectedWarehouse) return;
-
     updateMutation.mutate();
   };
 
-  /* MODAL HOOK */
+  /* MODAL */
 
   const {
     actionModalOpen,
@@ -138,14 +147,11 @@ export default function WarehousePage() {
   );
 
   return (
-
     <div className="p-8 space-y-8">
 
       <h1 className="text-3xl font-semibold tracking-tight">
         Warehouse Management
       </h1>
-
-      {/* DETAILS FORM */}
 
       <div ref={detailsRef}>
         <WarehouseForm
@@ -159,8 +165,6 @@ export default function WarehousePage() {
           handleUpdate={handleUpdate}
         />
       </div>
-
-      {/* TABLE */}
 
       <WarehouseTable
         search={search}
@@ -184,8 +188,6 @@ export default function WarehousePage() {
         }
       />
 
-      {/* ACTION MODAL */}
-
       <WarehouseActionModal
         actionModalOpen={actionModalOpen}
         setActionModalOpen={setActionModalOpen}
@@ -194,6 +196,5 @@ export default function WarehousePage() {
       />
 
     </div>
-
   );
 }

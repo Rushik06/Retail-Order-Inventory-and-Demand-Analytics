@@ -1,13 +1,12 @@
-/*eslint-disable*/
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import axios from "@/api/axios";
 import { toast } from "sonner";
-import { 
-  isRequired, 
-  isValidEmail, 
-  minLength, 
-  passwordsMatch 
+import {
+  isRequired,
+  isValidEmail,
+  minLength,
+  passwordsMatch,
 } from "@/utils/validators";
 
 export default function ResetPassword() {
@@ -32,8 +31,6 @@ export default function ResetPassword() {
     setError("");
     setMessage("");
 
-    // VALIDATIONS FIRST
-
     if (
       !isRequired(form.email) ||
       !isRequired(form.otp) ||
@@ -46,19 +43,16 @@ export default function ResetPassword() {
     }
 
     if (!isValidEmail(form.email)) {
-      setError("Please enter a valid email address.");
       toast.warning("Please enter a valid email address");
       return;
     }
 
     if (!minLength(form.newPassword, 6)) {
-      setError("Password must be at least 6 characters.");
       toast.warning("Password must be at least 6 characters");
       return;
     }
 
     if (!passwordsMatch(form.newPassword, confirmPassword)) {
-      setError("Passwords do not match.");
       toast.error("Passwords do not match");
       return;
     }
@@ -68,20 +62,43 @@ export default function ResetPassword() {
 
       await axios.patch("/password/reset", form);
 
-      setMessage("Password reset successfully");
-      toast.success("Password reset successfully");
+      const successMsg = "Password reset successfully";
+
+      setMessage(successMsg);
+      toast.success(successMsg);
 
       setTimeout(() => {
         navigate("/login");
       }, 1500);
 
-    } catch (err: any) {
+    } catch (err: unknown) {
 
-      const message =
-        err.response?.data?.error || "Reset failed";
+      let errorMessage = "Reset failed";
 
-      setError(message);
-      toast.error(message);
+      if (err instanceof Error) {
+        errorMessage = err.message;
+      }
+
+      // Axios error structure handling
+      if (
+        typeof err === "object" &&
+        err !== null &&
+        "response" in err
+      ) {
+        const res = err as {
+          response?: {
+            data?: {
+              message?: string;
+            };
+          };
+        };
+
+        errorMessage =
+          res.response?.data?.message || errorMessage;
+      }
+
+      setError(errorMessage);
+      toast.error(errorMessage);
 
     } finally {
       setLoading(false);
@@ -97,11 +114,15 @@ export default function ResetPassword() {
         </h2>
 
         {error && (
-          <p className="text-red-500 text-sm mb-4 text-center">{error}</p>
+          <p className="text-red-500 text-sm mb-4 text-center">
+            {error}
+          </p>
         )}
 
         {message && (
-          <p className="text-green-600 text-sm mb-4 text-center">{message}</p>
+          <p className="text-green-600 text-sm mb-4 text-center">
+            {message}
+          </p>
         )}
 
         <div className="space-y-4">

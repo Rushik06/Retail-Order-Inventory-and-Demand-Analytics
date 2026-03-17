@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { useState } from "react";
 import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -30,6 +29,22 @@ export default function useInventoryPageLogic() {
   const [sortField, setSortField] = useState("createdAt");
   const [sortOrder, setSortOrder] = useState<"ASC" | "DESC">("DESC");
 
+  /* Helper */
+
+  const getErrorMessage = (err: unknown, fallback: string) => {
+    if (
+      typeof err === "object" &&
+      err !== null &&
+      "response" in err
+    ) {
+      const res = err as {
+        response?: { data?: { message?: string } };
+      };
+      return res.response?.data?.message || fallback;
+    }
+    return fallback;
+  };
+
   /* INVENTORY QUERY */
 
   const {
@@ -51,7 +66,7 @@ export default function useInventoryPageLogic() {
   const inventory = inventoryRes?.data || [];
   const totalPages = inventoryRes?.meta?.totalPages || 1;
 
-  /* PRODUCTS QUERY */
+  /* PRODUCTS */
 
   const { data: productsRes } = useQuery({
     queryKey: ["products"],
@@ -60,7 +75,7 @@ export default function useInventoryPageLogic() {
 
   const products = productsRes?.data || [];
 
-  /* WAREHOUSES QUERY */
+  /* WAREHOUSES */
 
   const { data: warehousesRes } = useQuery({
     queryKey: ["warehouses"],
@@ -77,23 +92,28 @@ export default function useInventoryPageLogic() {
 
   const getAllocatedStock = (pid: string) => {
     return inventory
-      .filter((i: any) => i.product_id === pid)
-      .reduce((sum: number, i: any) => sum + (i.available_qty || 0), 0);
+      .filter((i: { product_id: string }) => i.product_id === pid)
+      .reduce(
+        (sum: number, i: { available_qty?: number }) =>
+          sum + (i.available_qty || 0),
+        0
+      );
   };
 
   const getRemainingStock = (pid: string) => {
 
-    const product = products.find((p: any) => p.id === pid);
+    const product = products.find(
+      (p: { id: string; stock: number }) => p.id === pid
+    );
 
     if (!product) return 0;
 
     const allocated = getAllocatedStock(pid);
 
     return Math.max(product.stock - allocated, 0);
-
   };
 
-  /* CREATE INVENTORY MUTATION */
+  /* CREATE */
 
   const createMutation = useMutation({
     mutationFn: () => createNewInventory(productId, warehouseId, 0),
@@ -107,8 +127,9 @@ export default function useInventoryPageLogic() {
       queryClient.invalidateQueries({ queryKey: ["inventory"] });
     },
 
-    onError: () => {
-      toast.error("Failed to create inventory");
+    onError: (err: unknown) => {
+      const message = getErrorMessage(err, "Failed to create inventory");
+      toast.error(message);
     }
   });
 
@@ -120,7 +141,7 @@ export default function useInventoryPageLogic() {
     }
 
     const exists = inventory.find(
-      (i: any) =>
+      (i: { product_id: string; warehouse_id: string }) =>
         i.product_id === productId &&
         i.warehouse_id === warehouseId
     );
@@ -138,7 +159,6 @@ export default function useInventoryPageLogic() {
     }
 
     createMutation.mutate();
-
   };
 
   /* ADD STOCK */
@@ -157,12 +177,25 @@ export default function useInventoryPageLogic() {
       return false;
     }
 
-    await addInventoryStock(productId, warehouseId, quantity, referenceId ?? null);
+    try {
 
-    queryClient.invalidateQueries({ queryKey: ["inventory"] });
+      await addInventoryStock(
+        productId,
+        warehouseId,
+        quantity,
+        referenceId ?? null
+      );
 
-    return true;
+      queryClient.invalidateQueries({ queryKey: ["inventory"] });
 
+      return true;
+
+    } catch (err: unknown) {
+
+      const message = getErrorMessage(err, "Failed to add stock");
+      toast.error(message);
+      return false;
+    }
   };
 
   /* SORT */
@@ -181,20 +214,14 @@ export default function useInventoryPageLogic() {
       queryClient.setQueryData(["inventory"], sorted);
 
       return;
-
     }
 
     if (sortField === field) {
-
       setSortOrder(sortOrder === "ASC" ? "DESC" : "ASC");
-
     } else {
-
       setSortField(field);
       setSortOrder("ASC");
-
     }
-
   };
 
   const filteredInventory = filterInventory(

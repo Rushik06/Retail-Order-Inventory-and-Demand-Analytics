@@ -1,4 +1,3 @@
-/*eslint-disable*/
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "@/api/axios";
@@ -21,7 +20,6 @@ export default function Login() {
   const handleLogin = async (e?: React.FormEvent) => {
     e?.preventDefault();
 
-    // Client-side validation
     if (!isRequired(form.email) || !isRequired(form.password)) {
       setError("All fields are required.");
       toast.error("All fields are required.");
@@ -49,15 +47,29 @@ export default function Login() {
 
       navigate("/dashboard");
 
-    } catch (err: any) {
+    } catch (err: unknown) {
 
-      if (err.response?.status === 401) {
-        setError("Invalid email or password.");
-        toast.error("Invalid email or password.");
-      } else {
-        setError("Something went wrong. Please try again.");
-        toast.error("Login failed. Please try again.");
+      let errorMessage = "Login failed. Please try again.";
+
+      if (
+        typeof err === "object" &&
+        err !== null &&
+        "response" in err
+      ) {
+        const res = err as {
+          response?: {
+            data?: {
+              message?: string;
+            };
+          };
+        };
+
+        errorMessage =
+          res.response?.data?.message || errorMessage;
       }
+
+      setError(errorMessage);
+      toast.error(errorMessage);
 
     } finally {
       setLoading(false);
@@ -73,7 +85,6 @@ export default function Login() {
         className="w-full max-w-md bg-white rounded-2xl shadow-lg border border-gray-100 p-8"
       >
 
-        {/* Brand */}
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-gray-800">
             Retail Inventory
@@ -83,14 +94,12 @@ export default function Login() {
           </p>
         </div>
 
-        {/* Error Message */}
         {error && (
           <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg mb-5 text-center border border-red-100">
             {error}
           </div>
         )}
 
-        {/* Email */}
         <div className="mb-5">
           <label className="block text-sm text-gray-600 mb-1">
             Email address
@@ -105,7 +114,6 @@ export default function Login() {
           />
         </div>
 
-        {/* Password */}
         <div className="mb-6">
           <label className="block text-sm text-gray-600 mb-1">
             Password
@@ -120,7 +128,6 @@ export default function Login() {
           />
         </div>
 
-        {/* Login Button */}
         <button
           type="submit"
           disabled={loading}
@@ -129,7 +136,6 @@ export default function Login() {
           {loading ? "Signing in..." : "Sign In"}
         </button>
 
-        {/* Footer Links */}
         <div className="mt-8 space-y-3 text-sm text-center">
 
           <Link

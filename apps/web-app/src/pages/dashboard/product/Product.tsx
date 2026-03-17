@@ -8,7 +8,6 @@ import { toast } from "sonner";
 
 export default function Products() {
 
-  /* State */
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -22,26 +21,39 @@ export default function Products() {
 
   const [editingId, setEditingId] = useState<string | null>(null);
 
+  /* Helper for error message */
+  const getErrorMessage = (err: unknown, fallback: string) => {
+    if (
+      typeof err === "object" &&
+      err !== null &&
+      "response" in err
+    ) {
+      const res = err as {
+        response?: { data?: { message?: string } };
+      };
+
+      return res.response?.data?.message || fallback;
+    }
+
+    return fallback;
+  };
+
   /* Load Products */
   const loadProducts = async () => {
     try {
       setLoading(true);
 
       const res = await productApi.get("/products");
-
       setProducts(res.data);
 
-    
+    } catch (err: unknown) {
 
-    } catch {
-
-      console.error("Failed to load products");
-      
+      const message = getErrorMessage(err, "Failed to load products");
+      console.error(message);
+      toast.error(message);
 
     } finally {
-
       setLoading(false);
-
     }
   };
 
@@ -51,7 +63,6 @@ export default function Products() {
 
   /* Submit */
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-
     e.preventDefault();
 
     const payload = {
@@ -64,17 +75,11 @@ export default function Products() {
     try {
 
       if (editingId) {
-
         await productApi.patch(`/products/${editingId}`, payload);
-
         toast.success("Product updated successfully");
-
       } else {
-
         await productApi.post("/products", payload);
-
         toast.success("Product created successfully");
-
       }
 
       setEditingId(null);
@@ -89,29 +94,28 @@ export default function Products() {
 
       await loadProducts();
 
-    } catch {
+    } catch (err: unknown) {
 
-      console.error("Product save failed");
-      toast.error("Product save failed");
+      const message = getErrorMessage(err, "Product save failed");
+      console.error(message);
+      toast.error(message);
 
     }
   };
 
   /* Delete */
   const handleDelete = async (id: string) => {
-
     try {
 
       await productApi.delete(`/products/${id}`);
-
       toast.success("Product deleted successfully");
-
       await loadProducts();
 
-    } catch {
+    } catch (err: unknown) {
 
-      console.error("Delete failed");
-      toast.error("Product delete failed");
+      const message = getErrorMessage(err, "Product delete failed");
+      console.error(message);
+      toast.error(message);
 
     }
   };
@@ -130,7 +134,6 @@ export default function Products() {
     setEditingId(product.id);
 
     toast.info("Editing product");
-
   };
 
   return (
