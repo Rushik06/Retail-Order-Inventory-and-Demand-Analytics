@@ -1,9 +1,11 @@
 /*eslint-disable*/
+import { ERRORS } from "../constants/errors.js";
 import {
 
   getAllInventory,
   getInventoryByProductWarehouse
 } from "../repository/inventory.repository.js";
+import { AppError } from "../utils/app-error.js";
 
 class InventoryQueryService {
 
@@ -113,7 +115,7 @@ class InventoryQueryService {
       );
 
     if (!inventory) {
-      throw new Error("Inventory not found");
+      throw new AppError(ERRORS.INVENTORY_NOT_FOUND,404);
     }
 
     return inventory;

@@ -557,6 +557,8 @@ importers:
         specifier: ^1.3.6
         version: 1.3.6
 
+  packages/shared: {}
+
 packages:
 
   '@antfu/ni@25.0.0':

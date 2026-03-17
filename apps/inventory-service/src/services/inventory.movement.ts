@@ -3,6 +3,7 @@ import type { Transaction } from "sequelize";
 import { Inventory } from "../models/inventory.model.js";
 import { InventoryLog } from "../models/inventorylog.model.js";
 import { inventoryAlertService } from "../services/inventory.alert.js";
+import { AppError } from "../utils/app-error.js";
 
 class InventoryMovementService {
 
@@ -27,7 +28,7 @@ class InventoryMovementService {
       });
 
       if (existing) {
-        throw new Error("Inventory already exists for this product and warehouse");
+        throw new AppError("Inventory already exists for this product and warehouse",409);
       }
 
       const inventory = await Inventory.create(
@@ -149,7 +150,7 @@ class InventoryMovementService {
       const effectiveAvailable = previous - reserved;
 
       if (effectiveAvailable < quantity) {
-        throw new Error("Insufficient stock");
+        throw new AppError("Insufficient stock",400);
       }
 
       inventory.set("available_qty", previous - quantity);

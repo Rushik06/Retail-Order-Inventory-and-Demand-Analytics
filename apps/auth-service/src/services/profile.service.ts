@@ -1,16 +1,19 @@
+import { ERRORS } from '../constants/errors.js';
+import { MESSAGES } from '../constants/messages.js';
 import type { ProfileRepository } from '../repository/profile.repository.js';
+import { AppError } from '../utils/app-error.js';
 
 export class ProfileService {
   constructor(private readonly repo: ProfileRepository) {}
 
-  
-  // GET PROFILE
-  
+  /* GET PROFILE */
+
   async getProfile(userId: string) {
+
     const user = await this.repo.findById(userId);
 
     if (!user) {
-      throw new Error('USER_NOT_FOUND');
+      throw new AppError(ERRORS.USER_NOT_FOUND, 404);
     }
 
     return {
@@ -20,17 +23,20 @@ export class ProfileService {
     };
   }
 
-  
-  // UPDATE PROFILE
- 
-  async updateProfile(userId: string, data: {
-    name?: string;
-    phone?: string;
-  }) {
+  /* UPDATE PROFILE */
+
+  async updateProfile(
+    userId: string,
+    data: {
+      name?: string;
+      phone?: string;
+    }
+  ) {
+
     const user = await this.repo.update(userId, data);
 
     if (!user) {
-      throw new Error('USER_NOT_FOUND');
+      throw new AppError(ERRORS.USER_NOT_FOUND, 404);
     }
 
     return {
@@ -40,11 +46,12 @@ export class ProfileService {
     };
   }
 
- 
-  // DELETE ACCOUNT
- 
+  /* DELETE ACCOUNT */
+
   async deleteProfile(userId: string) {
+
     await this.repo.delete(userId);
-    return { message: 'Account deleted successfully' };
+
+    return { message: MESSAGES.ACCOUNT_DELETED };
   }
 }

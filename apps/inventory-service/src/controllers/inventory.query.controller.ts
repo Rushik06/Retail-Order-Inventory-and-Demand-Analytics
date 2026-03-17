@@ -7,35 +7,19 @@ export const getAllInventoryController = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  try {
 
-    const {
-      page,
-      limit,
-      search,
-      sortField,
-      sortOrder
-    } = req.query;
+  const { page, limit, search, sortField, sortOrder } = req.query;
 
-    const inventory = await inventoryQueryService.getAllInventory({
-      page: Number(page) || 1,
-      limit: Number(limit) || 10,
-      search: String(search || ""),
-      sortField: String(sortField || "createdAt"),
-      sortOrder: (sortOrder as "ASC" | "DESC") || "DESC"
-    });
+  const inventory = await inventoryQueryService.getAllInventory({
+    page: Number(page) || 1,
+    limit: Number(limit) || 10,
+    search: String(search || ""),
+    sortField: String(sortField || "createdAt"),
+    sortOrder: (sortOrder as "ASC" | "DESC") || "DESC"
+  });
 
-    res.status(200).json(inventory);
+  res.status(200).json(inventory);
 
-  } catch (error: unknown) {
-
-    const message =
-      error instanceof Error
-        ? error.message
-        : "Internal server error";
-
-    res.status(500).json({ message });
-  }
 };
 
 
@@ -45,28 +29,17 @@ export const getInventoryController = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  try {
 
-    const productId = req.params.id as string;
-    const warehouseId = req.params.id as string;
+  const productId = req.params.productId as string;
+  const warehouseId = req.params.warehouseId as string;
 
-    const inventory = await inventoryQueryService.getInventory(
-      productId,
-      warehouseId
-    );
+  const inventory = await inventoryQueryService.getInventory(
+    productId,
+    warehouseId
+  );
 
-    res.status(200).json({
-      data: inventory
-    });
+  res.status(200).json({
+    data: inventory
+  });
 
-  } catch (error: unknown) {
-
-    const message =
-      error instanceof Error
-        ? error.message
-        : "Internal server error";
-
-    res.status(404).json({ message });
-
-  }
 };

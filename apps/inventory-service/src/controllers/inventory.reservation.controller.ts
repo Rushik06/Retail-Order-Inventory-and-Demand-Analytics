@@ -5,50 +5,36 @@ export const reserveStockController = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  try {
-    const { productId, warehouseId, quantity } = req.body;
 
-    await inventoryReservationService.reserveStock(
-      productId,           
-      warehouseId,         
-      Number(quantity)     
-    );
+  const { productId, warehouseId, quantity } = req.body;
 
-    res.status(200).json({
-      message: "Stock reserved successfully",
-    });
+  await inventoryReservationService.reserveStock(
+    productId,
+    warehouseId,
+    Number(quantity)
+  );
 
-  } catch (error: unknown) {
+  res.status(200).json({
+    message: "Stock reserved successfully",
+  });
 
-    const message =
-      error instanceof Error ? error.message : "Internal server error";
-
-    res.status(400).json({ message });
-  }
 };
 
 export const releaseStockController = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  try {
-    const { productId, warehouseId, quantity } = req.body;
 
-    await inventoryReservationService.releaseStock(
-      productId,           
-      warehouseId,         
-      Number(quantity)
-    );
+  const { productId, warehouseId, quantity } = req.body;
 
-    res.status(200).json({
-      message: "Stock released successfully",
-    });
+  await inventoryReservationService.releaseStock(
+    productId,
+    warehouseId,
+    Number(quantity)
+  );
 
-  } catch (error: unknown) {
+  res.status(200).json({
+    message: "Stock released successfully",
+  });
 
-    const message =
-      error instanceof Error ? error.message : "Internal server error";
-
-    res.status(400).json({ message });
-  }
 };

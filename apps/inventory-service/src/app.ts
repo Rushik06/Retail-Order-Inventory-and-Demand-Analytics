@@ -3,7 +3,7 @@ import cors from "cors";
 import morgan from "morgan";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
-
+import { errorHandler } from "./middleware/error-handler.js";
 import { setupSwagger } from "./swagger/swagger.js";
 import inventoryRoutes from "./routes/inventory.routes.js";
 import warehouseRoutes from "./routes/warehouse.routes.js";
@@ -51,5 +51,9 @@ app.get("/health", (_req, res) => {
 
 app.use("/api/inventory", authenticate, inventoryRoutes);
 app.use("/api/warehouse", authenticate, warehouseRoutes);
+
+/* Error handler */
+
+app.use(errorHandler);
 
 export default app;

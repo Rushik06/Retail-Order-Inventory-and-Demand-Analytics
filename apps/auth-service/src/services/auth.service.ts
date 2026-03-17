@@ -2,27 +2,23 @@ import bcrypt from "bcrypt";
 import jwt, { type SignOptions } from "jsonwebtoken";
 import { randomUUID } from "crypto";
 import type { AuthRepository } from "../repository/auth.repository.js";
-import type {
-  RegisterUserInput,
-  LoginInput,
-} from "../types/auth.types.js";
+import type { RegisterUserInput, LoginInput } from "../types/auth.types.js";
 import { env } from "../config/index.js";
 import { UserRole } from "../models/userRole.model.js";
 import { Role } from "../models/role.model.js";
 import type { UserRoleWithRole } from "../types/auth.types.js";
-
+import { AppError } from "../utils/app-error.js";
+import { ERRORS } from "../constants/errors.js";
+import { MESSAGES } from "../constants/messages.js";
 
 export class AuthService {
-  constructor(private readonly repo: AuthRepository) { }
-
-
-  // REGISTER
+  constructor(private readonly repo: AuthRepository) {}
 
   async register(input: RegisterUserInput) {
     const existingUser = await this.repo.findByEmail(input.email);
 
     if (existingUser) {
-      throw new Error("EMAIL_TAKEN");
+      throw new AppError(ERRORS.EMAIL_TAKEN, 409);
     }
 
     const hashedPassword = await bcrypt.hash(input.password, 10);
@@ -42,14 +38,11 @@ export class AuthService {
     };
   }
 
-
-  // LOGIN
-
   async login(input: LoginInput) {
     const user = await this.repo.findByEmail(input.email);
 
     if (!user) {
-      throw new Error("INVALID_CREDENTIALS");
+      throw new AppError(ERRORS.INVALID_CREDENTIALS, 401);
     }
 
     const passwordMatch = await bcrypt.compare(
@@ -58,27 +51,19 @@ export class AuthService {
     );
 
     if (!passwordMatch) {
-      throw new Error("INVALID_CREDENTIALS");
+      throw new AppError(ERRORS.INVALID_CREDENTIALS, 401);
     }
 
-    //  Fetch role from UserRole table
     const userRole = await UserRole.findOne({
       where: { user_id: user.id },
-      include: [
-        {
-          model: Role,
-          attributes: ["role_name"],
-        },
-      ],
+      include: [{ model: Role, attributes: ["role_name"] }],
     });
 
-  const role = (userRole as UserRoleWithRole)?.Role?.role_name ?? "staff";
+    const role =
+      (userRole as UserRoleWithRole)?.Role?.role_name ?? "staff";
 
     const accessToken = jwt.sign(
-      {
-        id: user.id,
-        role: role,
-      },
+      { id: user.id, role },
       env.JWT_ACCESS_SECRET,
       { expiresIn: env.ACCESS_TOKEN_EXPIRY } as SignOptions
     );
@@ -100,17 +85,13 @@ export class AuthService {
         id: user.id,
         name: user.name,
         email: user.email,
-        role: role,
+        role,
       },
     };
   }
 
-
-  // REFRESH TOKEN
-
   async refresh(refreshToken: string) {
     try {
-
       const payload = jwt.verify(
         refreshToken,
         env.JWT_REFRESH_SECRET
@@ -119,50 +100,38 @@ export class AuthService {
       const user = await this.repo.findById(payload.id);
 
       if (!user) {
-        throw new Error("INVALID_REFRESH");
+        throw new AppError(ERRORS.INVALID_REFRESH_TOKEN, 401);
       }
 
       const userRole = await UserRole.findOne({
         where: { user_id: user.id },
         include: [{ model: Role, attributes: ["role_name"] }],
       });
-const role = (userRole as UserRoleWithRole)?.Role?.role_name ?? "staff";
+
+      const role =
+        (userRole as UserRoleWithRole)?.Role?.role_name ?? "staff";
 
       const newAccessToken = jwt.sign(
-        {
-          id: user.id,
-          role: role,
-        },
+        { id: user.id, role },
         env.JWT_ACCESS_SECRET,
         { expiresIn: env.ACCESS_TOKEN_EXPIRY } as SignOptions
       );
 
-      return {
-        accessToken: newAccessToken,
-      };
-
-    } catch (error) {
-      console.error("Error refreshing token:", error);
-      throw new Error("INVALID_REFRESH");
+      return { accessToken: newAccessToken };
+    } catch {
+      throw new AppError(ERRORS.INVALID_REFRESH_TOKEN, 401);
     }
   }
-  // LOGOUT
 
   async logout(refreshToken: string) {
     if (this.repo.verifyRefreshToken) {
       await this.repo.verifyRefreshToken(refreshToken);
     }
 
-    return {
-      message: "Logged out successfully",
-    };
+    return { message: MESSAGES.LOGOUT_SUCCESS };
   }
 
   async getUsers() {
-
-  const users = await this.repo.getAllUsers();
-
-   return users;
-
-}
+    return this.repo.getAllUsers();
+  }
 }

@@ -1,5 +1,12 @@
 import type { Request, Response, NextFunction } from "express";
 
+/* Extend Error safely */
+
+interface AppError extends Error {
+  statusCode?: number;
+  status?: number;
+}
+
 export const errorHandler = (
   err: unknown,
   req: Request,
@@ -12,17 +19,29 @@ export const errorHandler = (
     return;
   }
 
-  const statusCode = 500;
-
+  let statusCode = 500;
   let message = "Internal Server Error";
 
   if (err instanceof Error) {
     message = err.message;
+
+    const customError = err as AppError;
+
+    statusCode =
+      customError.statusCode ??
+      customError.status ??
+      500;
   }
+
+  console.error("GLOBAL ERROR:", err);
 
   res.status(statusCode).json({
     success: false,
-    message
+    message,
+    ...(process.env.NODE_ENV === "development" &&
+      err instanceof Error && {
+        stack: err.stack,
+      }),
   });
 
 };

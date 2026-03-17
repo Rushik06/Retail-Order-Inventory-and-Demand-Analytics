@@ -8,30 +8,19 @@ export const createInventoryController = async (
   res: Response
 ): Promise<void> => {
 
-  try {
+  const { productId, warehouseId, availableQty, reservedQty } = req.body;
 
-    const { productId, warehouseId, availableQty, reservedQty } = req.body;
+  const inventory = await inventoryMovementService.createInventory(
+    productId,
+    warehouseId,
+    Number(availableQty),
+    Number(reservedQty ?? 0)
+  );
 
-    const inventory = await inventoryMovementService.createInventory(
-      productId,
-      warehouseId,
-      Number(availableQty),
-      Number(reservedQty ?? 0)
-    );
-
-    res.status(201).json({
-      message: "Inventory created successfully",
-      data: inventory
-    });
-
-  } catch (error: unknown) {
-
-    const message =
-      error instanceof Error ? error.message : "Internal server error";
-
-    res.status(400).json({ message });
-
-  }
+  res.status(201).json({
+    message: "Inventory created successfully",
+    data: inventory
+  });
 
 };
 
@@ -43,29 +32,18 @@ export const addStockController = async (
   res: Response
 ): Promise<void> => {
 
-  try {
+  const { productId, warehouseId, quantity, referenceId } = req.body;
 
-    const { productId, warehouseId, quantity, referenceId } = req.body;
+  await inventoryMovementService.addStock(
+    productId,
+    warehouseId,
+    Number(quantity),
+    referenceId ?? undefined
+  );
 
-    await inventoryMovementService.addStock(
-      productId,
-      warehouseId,
-      Number(quantity),
-      referenceId ?? undefined
-    );
-
-    res.status(200).json({
-      message: "Stock added successfully",
-    });
-
-  } catch (error: unknown) {
-
-    const message =
-      error instanceof Error ? error.message : "Internal server error";
-
-    res.status(400).json({ message });
-
-  }
+  res.status(200).json({
+    message: "Stock added successfully",
+  });
 
 };
 
@@ -77,28 +55,17 @@ export const deductStockController = async (
   res: Response
 ): Promise<void> => {
 
-  try {
+  const { productId, warehouseId, quantity, referenceId } = req.body;
 
-    const { productId, warehouseId, quantity, referenceId } = req.body;
+  await inventoryMovementService.deductStock(
+    productId,
+    warehouseId,
+    Number(quantity),
+    referenceId
+  );
 
-    await inventoryMovementService.deductStock(
-      productId,
-      warehouseId,
-      Number(quantity),
-      referenceId
-    );
-
-    res.status(200).json({
-      message: "Stock deducted successfully",
-    });
-
-  } catch (error: unknown) {
-
-    const message =
-      error instanceof Error ? error.message : "Internal server error";
-
-    res.status(400).json({ message });
-
-  }
+  res.status(200).json({
+    message: "Stock deducted successfully",
+  });
 
 };

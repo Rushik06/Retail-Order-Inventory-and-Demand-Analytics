@@ -1,95 +1,78 @@
-import bcrypt from 'bcrypt';
-import { randomInt } from 'crypto';
-import { PasswordRepository } from '../repository/password.repository.js';
-import { EmailService } from './email.service.js';
+import bcrypt from "bcrypt";
+import { randomInt } from "crypto";
+import { PasswordRepository } from "../repository/password.repository.js";
+import { EmailService } from "./email.service.js";
+import { AppError } from "../utils/app-error.js";
+import { ERRORS } from "../constants/errors.js";
+import { MESSAGES } from "../constants/messages.js";
 
 export class PasswordService {
   private emailService = new EmailService();
 
   constructor(private readonly repo: PasswordRepository) {}
 
-  
-  // CHANGE PASSWORD 
-  
-  async changePassword(
-    userId: string,
-    currentPassword: string,
-    newPassword: string
-  ) {
+  async changePassword(userId: string, currentPassword: string, newPassword: string) {
     const user = await this.repo.findUserById(userId);
-    if (!user) throw new Error('USER_NOT_FOUND');
+
+    if (!user) throw new AppError(ERRORS.USER_NOT_FOUND, 404);
 
     const isMatch = await bcrypt.compare(
       currentPassword,
-      user.getDataValue('password')
+      user.getDataValue("password")
     );
 
-    if (!isMatch) throw new Error('INVALID_CURRENT_PASSWORD');
+    if (!isMatch) throw new AppError(ERRORS.INVALID_CREDENTIALS, 400);
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    await this.repo.updatePassword(
-      user.getDataValue('user_id'),
-      hashedPassword
-    );
+    await this.repo.updatePassword(user.getDataValue("user_id"), hashedPassword);
 
-    return { message: 'Password changed successfully' };
+    return { message: MESSAGES.PASSWORD_CHANGED };
   }
 
-
-  // FORGOT PASSWORD (Generate OTP)
- 
   async forgotPassword(email: string) {
     const user = await this.repo.findUserByEmail(email);
-    if (!user) throw new Error('USER_NOT_FOUND');
+
+    if (!user) throw new AppError(ERRORS.USER_NOT_FOUND, 404);
 
     const otp = randomInt(100000, 999999).toString();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); 
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
-    await this.repo.createOtp(
-      user.getDataValue('user_id'),
-      otp,
-      expiresAt
-    );
+    await this.repo.createOtp(user.getDataValue("user_id"), otp, expiresAt);
 
     await this.emailService.sendOtpEmail(
-      user.getDataValue('email'),
+      user.getDataValue("email"),
       otp
     );
 
-    return { message: 'OTP sent to registered email' };
+    return { message: MESSAGES.OTP_SENT };
   }
 
-  
-  // RESET PASSWORD (Using OTP)
-
-  async resetPassword(
-    email: string,
-    otp: string,
-    newPassword: string
-  ) {
+  async resetPassword(email: string, otp: string, newPassword: string) {
     const user = await this.repo.findUserByEmail(email);
-    if (!user) throw new Error('USER_NOT_FOUND');
+
+    if (!user) throw new AppError(ERRORS.USER_NOT_FOUND, 404);
 
     const validOtp = await this.repo.findValidOtp(
-      user.getDataValue('user_id'),
+      user.getDataValue("user_id"),
       otp
     );
 
-    if (!validOtp) throw new Error('INVALID_OTP');
+    if (!validOtp) throw new AppError(ERRORS.INVALID_OTP, 400);
 
-    if (new Date() > validOtp.getDataValue('expires_at'))
-      throw new Error('OTP_EXPIRED');
+    if (new Date() > validOtp.getDataValue("expires_at")) {
+      throw new AppError(ERRORS.OTP_EXPIRED, 400);
+    }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
     await this.repo.updatePassword(
-      user.getDataValue('user_id'),
+      user.getDataValue("user_id"),
       hashedPassword
     );
 
-    await this.repo.markOtpUsed(validOtp.getDataValue('id'));
+    await this.repo.markOtpUsed(validOtp.getDataValue("id"));
 
-    return { message: 'Password reset successfully' };
+    return { message: MESSAGES.PASSWORD_RESET };
   }
 }

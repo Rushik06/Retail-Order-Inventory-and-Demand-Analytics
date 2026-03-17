@@ -11,6 +11,7 @@ import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 
 import { setupSwagger } from "./swagger/swaggers.js";
+import { errorHandler } from "./middleware/error-handler.js";
 
 const app: Express = express();
 
@@ -67,5 +68,9 @@ app.get("/health", (_req, res) => {
     service: "auth-service",
   });
 });
+
+/* Error handler */
+
+app.use(errorHandler);
 
 export default app;

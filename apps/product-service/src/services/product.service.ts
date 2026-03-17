@@ -1,22 +1,23 @@
 import { randomUUID } from "crypto";
 import { Product } from "../models/product.model.js";
-import type { CreateProductInput } from "../types/product.types.js";
-import type { UpdateProductInput } from "../types/product.types.js";
+import type {
+  CreateProductInput,
+  UpdateProductInput
+} from "../types/product.types.js";
 
+import { AppError } from "../utils/app-error.js"; 
+import { ERRORS } from "../constants/errors.js"; 
 
-/*  CREATE */
-export const createProduct = async (
-  data: CreateProductInput
-) => {
-  // Count existing products
+/* CREATE */
+
+export const createProduct = async (data: CreateProductInput) => {
+
   const count = await Product.count();
 
-  // Generate category prefix
   const prefix = data.category
     ? data.category.slice(0, 4).toUpperCase()
     : "PROD";
 
-  // Generate SKU
   const sku = `${prefix}-${String(count + 1).padStart(5, "0")}`;
 
   return Product.create({
@@ -26,7 +27,7 @@ export const createProduct = async (
   });
 };
 
-/*  GET ALL */
+/* GET ALL */
 
 export const getProducts = async () => {
   return Product.findAll({
@@ -34,33 +35,44 @@ export const getProducts = async () => {
   });
 };
 
-/*  UPDATE */
+/* UPDATE */
 
 export const updateProduct = async (
   id: string,
   data: UpdateProductInput
 ) => {
-  const product = await Product.findByPk(id);
-  if (!product) throw new Error("Product not found");
 
-  // SKU 
+  const product = await Product.findByPk(id);
+
+  if (!product) {
+    throw new AppError(ERRORS.PRODUCT_NOT_FOUND, 404);
+  }
+
   return product.update(data);
 };
 
-/* DELETE  */
+/* DELETE */
 
 export const deleteProduct = async (id: string) => {
+
   const product = await Product.findByPk(id);
-  if (!product) throw new Error("Product not found");
+
+  if (!product) {
+    throw new AppError(ERRORS.PRODUCT_NOT_FOUND, 404); 
+  }
 
   return product.destroy();
 };
 
-/*GET BY ID  */
+/* GET BY ID */
 
 export const getProductById = async (id: string) => {
+
   const product = await Product.findByPk(id);
-  if (!product) throw new Error("Product not found");
+
+  if (!product) {
+    throw new AppError(ERRORS.PRODUCT_NOT_FOUND, 404); 
+  }
 
   return product;
 };
