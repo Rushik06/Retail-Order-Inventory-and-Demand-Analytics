@@ -1,9 +1,10 @@
-/*eslint-disable */
+import {Server as HTTPServer} from "http";
 import { Server } from "socket.io";
+import type { LowStockEvent } from "../types/notification.types.js";
 
 let io: Server | null = null;
 
-export const initNotificationSocket = (server: any) => {
+export const initNotificationSocket = (server: HTTPServer) => {
 
   io = new Server(server, {
     cors: {
@@ -19,7 +20,7 @@ export const initNotificationSocket = (server: any) => {
 
 };
 
-export const sendLowStockNotification = async (event: any) => {
+export const sendLowStockNotification = async (event: LowStockEvent) => {
 
   if (!io) return;
 

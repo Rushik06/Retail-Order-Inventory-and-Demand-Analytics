@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx --watch src/server.ts",
-     "build": "tsc",
+    "build": "tsc",
     "start": "node dist/server.js",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -43,7 +43,6 @@
     "@types/swagger-ui-express": "^4.1.8",
     "sequelize-cli": "^6.6.5",
     "supertest": "^7.2.2",
-    "ts-node": "^10.9.2",
     "typescript": "^5.9.3",
     "vitest": "^4.0.18"
   }

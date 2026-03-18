@@ -1,7 +1,8 @@
-
 import amqp from "amqplib";
+import { QUEUES } from "../constants/queues.js";
 
 let channel: amqp.Channel | null = null;
+
 
 export const connectRabbitMQ = async (): Promise<void> => {
   const url = process.env.RABBITMQ_URL || "amqp://rabbitmq:5672";
@@ -9,26 +10,38 @@ export const connectRabbitMQ = async (): Promise<void> => {
   while (!channel) {
     try {
       const connection = await amqp.connect(url);
-
       channel = await connection.createChannel();
 
-      await channel.assertExchange("inventory.events", "topic", {
+      // Main exchange
+      await channel.assertExchange(QUEUES.EXCHANGE, "topic", { durable: true });
+
+      // Dead Letter Exchange + Queue
+      await channel.assertExchange(QUEUES.DLX, "direct", { durable: true });
+      await channel.assertQueue(QUEUES.DLQ, { durable: true });
+      await channel.bindQueue(QUEUES.DLQ, QUEUES.DLX, QUEUES.DLQ_ROUTING_KEY);
+
+      try {
+        await channel.deleteQueue(QUEUES.QUEUE, { ifUnused: false, ifEmpty: false });
+      } catch {
+        
+      }
+
+      // Main queue wired to the DLX so nack'd messages go to DLQ
+      await channel.assertQueue(QUEUES.QUEUE, {
         durable: true,
+        arguments: {
+          "x-dead-letter-exchange": QUEUES.DLX,
+          "x-dead-letter-routing-key": QUEUES.DLQ_ROUTING_KEY,
+        },
       });
 
-      await channel.assertQueue("inventory.alerts.queue", {
-        durable: true,
-      });
+      await channel.bindQueue(QUEUES.QUEUE, QUEUES.EXCHANGE, "inventory.low_stock");
 
-      await channel.bindQueue(
-        "inventory.alerts.queue",
-        "inventory.events",
-        "inventory.low_stock"
-      );
-    
       console.log("RabbitMQ connected successfully");
-    } catch  {
+  
+    } catch {
       console.log("RabbitMQ not ready, retrying in 5 seconds...");
+      channel = null; 
       await new Promise((res) => setTimeout(res, 5000));
     }
   }
@@ -43,7 +56,7 @@ export const publishEvent = async (
   }
 
   channel.publish(
-    "inventory.events",
+    QUEUES.EXCHANGE,
     routingKey,
     Buffer.from(JSON.stringify(message)),
     { persistent: true }
