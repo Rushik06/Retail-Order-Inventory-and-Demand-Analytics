@@ -1,14 +1,35 @@
-FROM node:20-alpine
-
+#BASE
+FROM node:20-alpine AS base
 WORKDIR /app
-
 RUN npm install -g pnpm
-ENV CI=true
 
-COPY . .
+#DEPS
+FROM base AS deps
+COPY pnpm-lock.yaml ./
+COPY pnpm-workspace.yaml ./
+COPY package.json ./
+COPY apps ./apps
+RUN pnpm install --frozen-lockfile --config.node-linker=hoisted
 
-RUN pnpm install
+#BUILD
+FROM base AS build
+COPY --from=deps /app /app          
+WORKDIR /app/apps/reporting-service
+RUN /app/node_modules/.bin/tsc
 
+#PRUNE
+FROM base AS prune
+WORKDIR /app
+COPY --from=build /app /app
+ENV CI=true  
+RUN pnpm prune --prod --ignore-scripts
+
+#RUNNER
+FROM node:20-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+COPY --from=prune /app/apps/reporting-service/dist ./dist
+COPY --from=prune /app/apps/reporting-service/package.json ./
+COPY --from=prune /app/node_modules ./node_modules
 EXPOSE 3003
-
-CMD ["pnpm", "--filter", "reporting-service", "dev"]
+CMD ["node", "dist/server.js"]

@@ -1,14 +1,18 @@
-FROM node:20-alpine
-
+# ---------- BUILD ----------
+FROM node:20-alpine AS build
 WORKDIR /app
 
 RUN npm install -g pnpm
-ENV CI=true
 
 COPY . .
-
 RUN pnpm install
+RUN pnpm --filter web-app build
 
+# ---------- SERVE ----------
+FROM nginx:alpine
 
-EXPOSE 5173
-CMD ["pnpm", "--filter", "web-app", "dev", "--", "--host","0.0.0.0"]
+COPY --from=build /app/apps/web-app/dist /usr/share/nginx/html
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]

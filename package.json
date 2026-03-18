@@ -3,25 +3,32 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  
   "scripts": {
-    
-    "dev": "pnpm --parallel --filter auth-service --filter product-service --filter inventory-service --filter reporting-service  --filter web-app run dev",
+    "dev": "pnpm --parallel --filter auth-service --filter product-service --filter inventory-service --filter reporting-service --filter web-app run dev",
 
-    "migrate": "pnpm --filter auth-service --filter product-service --filter inventory-service   run migrate",
-    "migrate:undo": "pnpm --filter auth-service --filter product-service --filter inventory-service   run migrate:undo",
+    "migrate": "pnpm --filter auth-service run migrate && pnpm --filter product-service run migrate && pnpm --filter inventory-service run migrate",
+    "migrate:undo": "pnpm --filter auth-service run migrate:undo && pnpm --filter product-service run migrate:undo && pnpm --filter inventory-service run migrate:undo",
 
     "seed": "pnpm --filter auth-service run seed",
     "seed:undo": "pnpm --filter auth-service run seed:undo",
-   "start": "tsc",
-    "build": "node dist/server.js",
+
+    "build": "pnpm --filter auth-service --filter product-service --filter inventory-service --filter reporting-service build",
+
+    "start": "pnpm --parallel --filter auth-service --filter product-service --filter inventory-service --filter reporting-service start",
+
     "lint": "eslint .",
-    "lint: fix": "eslint . --fix",
+    "lint:fix": "eslint . --fix",
+
     "format": "prettier --write \"**/*.{ts,js,json,css,md}\"",
+
     "prepare": "husky",
+
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest --coverage"
   },
+
   "keywords": [],
   "author": "",
   "license": "ISC",

@@ -1,9 +1,11 @@
+version: "3.9"
+
 services:
 
   postgres:
     image: postgres:15
     container_name: retail_postgres
-    restart: always
+    restart: unless-stopped
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: password
@@ -17,7 +19,7 @@ services:
   rabbitmq:
     image: rabbitmq:3-management
     container_name: retail_rabbitmq
-    restart: always
+    restart: unless-stopped
     ports:
       - "5672:5672"
       - "15672:15672"
@@ -33,8 +35,11 @@ services:
     build:
       context: .
       dockerfile: apps/auth-service/Dockerfile
+    restart: unless-stopped
     ports:
       - "3000:3000"
+    env_file:
+      - ./apps/auth-service/.env
     depends_on:
       postgres:
         condition: service_started
@@ -45,8 +50,11 @@ services:
     build:
       context: .
       dockerfile: apps/product-service/Dockerfile
+    restart: unless-stopped
     ports:
       - "3001:3001"
+    env_file:
+      - ./apps/product-service/.env
     depends_on:
       postgres:
         condition: service_started
@@ -57,8 +65,11 @@ services:
     build:
       context: .
       dockerfile: apps/inventory-service/Dockerfile
+    restart: unless-stopped
     ports:
       - "3002:3002"
+    env_file:
+      - ./apps/inventory-service/.env
     depends_on:
       postgres:
         condition: service_started
@@ -71,8 +82,11 @@ services:
     build:
       context: .
       dockerfile: apps/reporting-service/Dockerfile
+    restart: unless-stopped
     ports:
       - "3003:3003"
+    env_file:
+      - ./apps/reporting-service/.env
     depends_on:
       postgres:
         condition: service_started
@@ -83,19 +97,20 @@ services:
     build:
       context: .
       dockerfile: apps/web-app/Dockerfile
+    restart: unless-stopped
     ports:
-      - "5173:5173"
+      - "5173:80"   
     depends_on:
       - auth-service
       - product-service
       - inventory-service
       - reporting-service
-      
 
 
   nginx:
     image: nginx:alpine
     container_name: retail_nginx
+    restart: unless-stopped
     ports:
       - "80:80"
     volumes:
