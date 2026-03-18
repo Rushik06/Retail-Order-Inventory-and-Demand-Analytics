@@ -1,2 +1,2 @@
-export { AppError } from "./app-error.js";
-export { errorHandler } from "./error-handler.js";
+export { AppError, errorHandler } from "./errors/index.js";
+export { logger } from "./logger/logger.js";

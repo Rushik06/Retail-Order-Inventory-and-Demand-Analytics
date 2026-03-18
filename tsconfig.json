@@ -5,7 +5,7 @@
     "moduleResolution": "NodeNext",
     "baseUrl": ".",
     "paths": {
-      "@repo/shared": ["packages/shared/src/index.ts"]
+      "@repo/shared": ["packages/shared/src/errors/index.ts"]
     },
     "strict": true,
     "esModuleInterop": true,
