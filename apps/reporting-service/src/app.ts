@@ -7,7 +7,7 @@ import rateLimit from "express-rate-limit";
 import { setupSwagger } from "./swagger/swagger.js";
 import reportRoutes from "./routes/reporting.routes.js";
 import exportRoutes from "./routes/export.routes.js";
-import { errorHandler } from "./middleware/error-handler.js";
+import {  errorHandler } from "@repo/shared";
 
 const app: Express = express();
 

@@ -3,7 +3,7 @@ import { sequelize } from "../config/index.js";
 import { Order } from "../models/order.model.js";
 import { OrderItem } from "../models/orderItem.model.js";
 import { Product } from "../models/product.model.js";
-import { AppError } from "../utils/app-error.js";
+import { AppError} from "@repo/shared";
 import { ERRORS } from "../constants/errors.js";
 
 export const createOrder = async (

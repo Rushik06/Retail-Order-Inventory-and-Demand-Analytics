@@ -3,7 +3,7 @@ import type { Transaction } from "sequelize";
 import { Inventory } from "../models/inventory.model.js";
 import { InventoryLog } from "../models/inventorylog.model.js";
 import { inventoryAlertService } from "../services/inventory.alert.js";
-import { AppError } from "../utils/app-error.js";
+import { AppError } from "@repo/shared";
 
 class InventoryMovementService {
 

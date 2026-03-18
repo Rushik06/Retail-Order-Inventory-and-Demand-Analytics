@@ -1,7 +1,7 @@
 import { ERRORS } from '../constants/errors.js';
 import { MESSAGES } from '../constants/messages.js';
 import type { ProfileRepository } from '../repository/profile.repository.js';
-import { AppError } from '../utils/app-error.js';
+import { AppError} from "@repo/shared";
 
 export class ProfileService {
   constructor(private readonly repo: ProfileRepository) {}

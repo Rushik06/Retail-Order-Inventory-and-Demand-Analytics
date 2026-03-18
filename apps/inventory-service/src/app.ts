@@ -3,7 +3,7 @@ import cors from "cors";
 import morgan from "morgan";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
-import { errorHandler } from "./middleware/error-handler.js";
+import {  errorHandler } from "@repo/shared";
 import { setupSwagger } from "./swagger/swagger.js";
 import inventoryRoutes from "./routes/inventory.routes.js";
 import warehouseRoutes from "./routes/warehouse.routes.js";

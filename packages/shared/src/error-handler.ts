@@ -1,19 +1,17 @@
 import type { Request, Response, NextFunction } from "express";
+import { AppError } from "./app-error.js";
 
-/* Extend Error safely */
-
-interface AppError extends Error {
+interface HttpError extends Error {
   statusCode?: number;
   status?: number;
 }
 
 export const errorHandler = (
   err: unknown,
-  req: Request,
+  _req: Request,
   res: Response,
   next: NextFunction
 ): void => {
-
   if (res.headersSent) {
     next(err);
     return;
@@ -22,15 +20,13 @@ export const errorHandler = (
   let statusCode = 500;
   let message = "Internal Server Error";
 
-  if (err instanceof Error) {
+  if (err instanceof AppError) {
+    statusCode = err.statusCode;
     message = err.message;
-
-    const customError = err as AppError;
-
-    statusCode =
-      customError.statusCode ??
-      customError.status ??
-      500;
+  } else if (err instanceof Error) {
+    message = err.message;
+    const httpError = err as HttpError;
+    statusCode = httpError.statusCode ?? httpError.status ?? 500;
   }
 
   console.error("GLOBAL ERROR:", err);
@@ -43,5 +39,4 @@ export const errorHandler = (
         stack: err.stack,
       }),
   });
-
 };

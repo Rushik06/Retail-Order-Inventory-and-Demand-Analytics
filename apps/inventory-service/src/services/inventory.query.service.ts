@@ -5,7 +5,7 @@ import {
   getAllInventory,
   getInventoryByProductWarehouse
 } from "../repository/inventory.repository.js";
-import { AppError } from "../utils/app-error.js";
+import { AppError} from "@repo/shared";
 
 class InventoryQueryService {
 

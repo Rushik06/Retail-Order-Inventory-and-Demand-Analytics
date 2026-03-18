@@ -11,7 +11,7 @@ import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 
 import { setupSwagger } from "./swagger/swaggers.js";
-import { errorHandler } from "./middleware/error-handler.js";
+import {  errorHandler } from "@repo/shared";
 
 const app: Express = express();
 

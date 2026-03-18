@@ -1,6 +1,6 @@
 import { Warehouse } from "../models/warehouse.model.js";
 import { Op } from "sequelize";
-import { AppError } from "../utils/app-error.js";
+import { AppError } from "@repo/shared";
 import { ERRORS } from "../constants/errors.js";
 
 class WarehouseService {

@@ -2,7 +2,7 @@ import bcrypt from "bcrypt";
 import { randomInt } from "crypto";
 import { PasswordRepository } from "../repository/password.repository.js";
 import { EmailService } from "./email.service.js";
-import { AppError } from "../utils/app-error.js";
+import { AppError} from "@repo/shared";
 import { ERRORS } from "../constants/errors.js";
 import { MESSAGES } from "../constants/messages.js";
 

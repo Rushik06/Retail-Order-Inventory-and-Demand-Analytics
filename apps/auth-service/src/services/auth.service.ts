@@ -7,7 +7,7 @@ import { env } from "../config/index.js";
 import { UserRole } from "../models/userRole.model.js";
 import { Role } from "../models/role.model.js";
 import type { UserRoleWithRole } from "../types/auth.types.js";
-import { AppError } from "../utils/app-error.js";
+import { AppError} from "@repo/shared";
 import { ERRORS } from "../constants/errors.js";
 import { MESSAGES } from "../constants/messages.js";
 

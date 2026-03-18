@@ -5,7 +5,7 @@ import type {
   UpdateProductInput
 } from "../types/product.types.js";
 
-import { AppError } from "../utils/app-error.js"; 
+import { AppError} from "@repo/shared"; 
 import { ERRORS } from "../constants/errors.js"; 
 
 /* CREATE */
