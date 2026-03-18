@@ -26,7 +26,7 @@ export const connectRabbitMQ = async (): Promise<void> => {
         
       }
 
-      // Main queue wired to the DLX so nack'd messages go to DLQ
+      // Main queue(where it is wired to DLX send rejected messages to DLQ)
       await channel.assertQueue(QUEUES.QUEUE, {
         durable: true,
         arguments: {
