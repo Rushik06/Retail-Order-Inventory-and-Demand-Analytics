@@ -14,8 +14,6 @@ import {
 import { getProducts } from "@/api/product-axios";
 import { getWarehouses } from "@/api/inventory-axios";
 
-import { filterInventory, sortInventory } from "@/utils/inventory.helpers";
-
 export default function useInventoryPageLogic() {
 
   const queryClient = useQueryClient();
@@ -28,8 +26,6 @@ export default function useInventoryPageLogic() {
   const [search, setSearch] = useState("");
   const [sortField, setSortField] = useState("createdAt");
   const [sortOrder, setSortOrder] = useState<"ASC" | "DESC">("DESC");
-
-  /* Helper */
 
   const getErrorMessage = (err: unknown, fallback: string) => {
     if (
@@ -54,13 +50,7 @@ export default function useInventoryPageLogic() {
   } = useQuery({
     queryKey: ["inventory", page, limit, search, sortField, sortOrder],
     queryFn: () =>
-      fetchInventory({
-        page,
-        limit,
-        search,
-        sortField,
-        sortOrder
-      }),
+      fetchInventory({ page, limit, search, sortField, sortOrder }),
   });
 
   const inventory = inventoryRes?.data || [];
@@ -79,11 +69,7 @@ export default function useInventoryPageLogic() {
 
   const { data: warehousesRes } = useQuery({
     queryKey: ["warehouses"],
-    queryFn: () =>
-      getWarehouses({
-        page: 1,
-        limit: 1000
-      })
+    queryFn: () => getWarehouses({ page: 1, limit: 1000 })
   });
 
   const warehouses = warehousesRes?.data?.data || [];
@@ -101,15 +87,11 @@ export default function useInventoryPageLogic() {
   };
 
   const getRemainingStock = (pid: string) => {
-
     const product = products.find(
       (p: { id: string; stock: number }) => p.id === pid
     );
-
     if (!product) return 0;
-
     const allocated = getAllocatedStock(pid);
-
     return Math.max(product.stock - allocated, 0);
   };
 
@@ -120,10 +102,8 @@ export default function useInventoryPageLogic() {
 
     onSuccess: () => {
       toast.success("Inventory created successfully");
-
       setProductId("");
       setWarehouseId("");
-
       queryClient.invalidateQueries({ queryKey: ["inventory"] });
     },
 
@@ -178,20 +158,15 @@ export default function useInventoryPageLogic() {
     }
 
     try {
-
       await addInventoryStock(
         productId,
         warehouseId,
         quantity,
         referenceId ?? null
       );
-
       queryClient.invalidateQueries({ queryKey: ["inventory"] });
-
       return true;
-
     } catch (err: unknown) {
-
       const message = getErrorMessage(err, "Failed to add stock");
       toast.error(message);
       return false;
@@ -201,38 +176,24 @@ export default function useInventoryPageLogic() {
   /* SORT */
 
   const handleSort = (field: string) => {
-
-    if (field === "product_id" || field === "warehouse_id") {
-
-      const sorted = sortInventory(
-        inventory,
-        products,
-        warehouses,
-        field
-      );
-
-      queryClient.setQueryData(["inventory"], sorted);
-
-      return;
-    }
-
     if (sortField === field) {
-      setSortOrder(sortOrder === "ASC" ? "DESC" : "ASC");
+      setSortOrder(prev => (prev === "ASC" ? "DESC" : "ASC"));
     } else {
       setSortField(field);
       setSortOrder("ASC");
     }
+    setPage(1);
   };
 
-  const filteredInventory = filterInventory(
-    inventory,
-    products,
-    warehouses,
-    search
-  );
+  /* SEARCH */
+
+  const handleSearch = (value: string) => {
+    setSearch(value);
+    setPage(1);
+  };
 
   return {
-    inventory: filteredInventory,
+    inventory,
     products,
     warehouses,
     productId,
@@ -245,7 +206,7 @@ export default function useInventoryPageLogic() {
     limit,
     setLimit,
     search,
-    setSearch,
+    setSearch: handleSearch,
     totalPages,
     loadInventory: refetch,
     createInventory,
