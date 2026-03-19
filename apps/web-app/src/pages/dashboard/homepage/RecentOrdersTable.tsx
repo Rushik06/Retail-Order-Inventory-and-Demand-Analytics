@@ -85,7 +85,9 @@ ${order.status === "DELIVERED"
                               ? "bg-blue-100 text-blue-700"
                               : order.status === "PROCESSING"
                                 ? "bg-yellow-100 text-yellow-700"
-                                : "bg-red-100 text-red-700"
+                                : order.status === "CANCELLED"
+                                  ? "bg-red-100 text-red-700"
+                                  : "bg-slate-100 text-slate-500"
                           }
 `}
                       >
