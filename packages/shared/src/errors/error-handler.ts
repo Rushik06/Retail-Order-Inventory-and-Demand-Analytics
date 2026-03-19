@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
 import { AppError } from "../errors/app-error.js";
+import { logger } from "../logger/logger.js";
 
 interface HttpError extends Error {
   statusCode?: number;
@@ -29,7 +30,7 @@ export const errorHandler = (
     statusCode = httpError.statusCode ?? httpError.status ?? 500;
   }
 
-  console.error("GLOBAL ERROR:", err);
+  logger.error("GLOBAL ERROR:");
 
   res.status(statusCode).json({
     success: false,

@@ -1,5 +1,6 @@
 import app from "./app.js";
 import { sequelize, env } from "./config/index.js";
+import { logger } from "@repo/shared";
 import type { Server } from "http";
 
 let server: Server;
@@ -8,22 +9,22 @@ async function startServer(): Promise<void> {
   try {
 
     await sequelize.authenticate();
-    console.log("Reporting DB connected successfully");
+    logger.info("Reporting DB connected successfully");
 
     server = app.listen(env.PORT, () => {
-      console.log(`Reporting service running on http://localhost:${env.PORT}`);
+      logger.info({ port: env.PORT }, `Reporting service running on http://localhost:${env.PORT}`);
     });
 
   } catch (error) {
 
-    console.error("Failed to start reporting service:", error);
+    logger.error({ err: error }, "Failed to start reporting service");
     process.exit(1);
 
   }
 }
 
 process.on("SIGTERM", async () => {
-  console.log("SIGTERM received. Shutting down reporting service...");
+  logger.info("SIGTERM received. Shutting down reporting service...");
 
   server.close(async () => {
     await sequelize.close();

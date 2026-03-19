@@ -1,9 +1,9 @@
-# ---------- BASE ----------
+# BASE 
 FROM node:20-alpine AS base
 WORKDIR /app
 RUN npm install -g pnpm
 
-# ---------- DEPS ----------
+# DEPS 
 FROM base AS deps
 COPY pnpm-lock.yaml ./
 COPY pnpm-workspace.yaml ./
@@ -11,13 +11,13 @@ COPY package.json ./
 COPY apps ./apps
 RUN pnpm install --frozen-lockfile --config.node-linker=hoisted
 
-# ---------- BUILD ----------
+# BUILD 
 FROM base AS build
 COPY --from=deps /app /app
 WORKDIR /app/apps/web-app
 RUN /app/node_modules/.bin/tsc -b && /app/node_modules/.bin/vite build  
 
-# ---------- SERVE ----------
+#  SERVE 
 FROM nginx:alpine
 
 COPY --from=build /app/apps/web-app/dist /usr/share/nginx/html

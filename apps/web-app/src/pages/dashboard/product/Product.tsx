@@ -5,6 +5,7 @@ import ProductForm from "./ProductForm";
 import ProductTable from "./ProductTable";
 import type { Product } from "@/types/product.types";
 import { toast } from "sonner";
+import log from "loglevel";
 
 export default function Products() {
 
@@ -49,7 +50,7 @@ export default function Products() {
     } catch (err: unknown) {
 
       const message = getErrorMessage(err, "Failed to load products");
-      console.error(message);
+      log.error(message);
       toast.error(message);
 
     } finally {
@@ -97,7 +98,7 @@ export default function Products() {
     } catch (err: unknown) {
 
       const message = getErrorMessage(err, "Product save failed");
-      console.error(message);
+      log.error(message);
       toast.error(message);
 
     }
@@ -114,7 +115,7 @@ export default function Products() {
     } catch (err: unknown) {
 
       const message = getErrorMessage(err, "Product delete failed");
-      console.error(message);
+      log.error(message);
       toast.error(message);
 
     }

@@ -459,6 +459,9 @@ importers:
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
+      loglevel:
+        specifier: ^1.9.2
+        version: 1.9.2
       lucide-react:
         specifier: ^0.574.0
         version: 0.574.0(react@19.2.4)
@@ -505,6 +508,9 @@ importers:
       '@tailwindcss/vite':
         specifier: ^4.2.0
         version: 4.2.0(vite@7.3.1(@types/node@24.10.13)(jiti@2.6.1)(lightningcss@1.31.1)(tsx@4.21.0)(yaml@2.8.2))
+      '@types/loglevel':
+        specifier: ^1.6.3
+        version: 1.6.3
       '@types/node':
         specifier: ^24.10.1
         version: 24.10.13
@@ -2447,6 +2453,10 @@ packages:
   '@types/jsonwebtoken@9.0.10':
     resolution: {integrity: sha512-asx5hIG9Qmf/1oStypjanR7iKTv0gXQ1Ov/jfrX6kS/EO0OFni8orbmGCn0672NHR3kXHwpAwR+B368ZGN/2rA==}
 
+  '@types/loglevel@1.6.3':
+    resolution: {integrity: sha512-v2YWQQgqtNXAzybOT9qV3CIJqSeoaMUwmBfIMTQdvhsWUybYic/zNGccKH494naWKJ7zUm+VTgFepJfTrbCCJQ==}
+    deprecated: This is a stub types definition. loglevel provides its own type definitions, so you do not need this installed.
+
   '@types/methods@1.1.4':
     resolution: {integrity: sha512-ymXWVrDiCxTBE3+RIrrP533E70eA+9qu7zdWoHuOmGujkYtzf4HQF96b8nwHLqhuf4ykX61IGRIB38CC6/sImQ==}
 
@@ -4169,6 +4179,10 @@ packages:
   log-update@6.1.0:
     resolution: {integrity: sha512-9ie8ItPR6tjY5uYJh8K/Zrv/RMZ5VOlOWvtZdEHYSTFKZfIBPQa9tOAEeAWhd+AnIneLJ22w5fjOYtoutpWq5w==}
     engines: {node: '>=18'}
+
+  loglevel@1.9.2:
+    resolution: {integrity: sha512-HgMmCqIJSAKqo68l0rS2AanEWfkxaZ5wNiEFb5ggm08lDs9Xl2KxBlX3PTcaD2chBM1gXAYf491/M2Rv8Jwayg==}
+    engines: {node: '>= 0.6.0'}
 
   lru-cache@10.4.3:
     resolution: {integrity: sha512-JNAzZcXrCt42VGLuYz0zfAzDfAvJWW6AfYlDBQyDV5DClI2m5sAmK+OIO7s59XfsRsWHp02jAJrRadPRGTt6SQ==}
@@ -7498,6 +7512,10 @@ snapshots:
       '@types/ms': 2.1.0
       '@types/node': 25.2.3
 
+  '@types/loglevel@1.6.3':
+    dependencies:
+      loglevel: 1.9.2
+
   '@types/methods@1.1.4': {}
 
   '@types/morgan@1.9.10':
@@ -9283,6 +9301,8 @@ snapshots:
       slice-ansi: 7.1.2
       strip-ansi: 7.1.2
       wrap-ansi: 9.0.2
+
+  loglevel@1.9.2: {}
 
   lru-cache@10.4.3: {}
 

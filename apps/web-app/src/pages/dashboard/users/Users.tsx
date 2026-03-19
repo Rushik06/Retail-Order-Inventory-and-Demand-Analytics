@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { fetchUsers, assignUserRole } from "@/app/app.logic"
 import { useAuthStore } from "@/app/app.state"
+import log from "loglevel"
 
 import {
   Card,
@@ -40,7 +41,7 @@ export default function Users() {
 
     } catch (err) {
 
-      console.error("Failed to load users", err)
+      log.error("Failed to load users", err)
 
     } finally {
 
@@ -79,7 +80,7 @@ export default function Users() {
 
     } catch (err) {
 
-      console.error("Role assignment failed", err)
+      log.error("Role assignment failed", err)
 
     }
 

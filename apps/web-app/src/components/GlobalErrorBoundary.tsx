@@ -1,15 +1,17 @@
 import React from "react";
 import { AlertTriangle, RefreshCw } from "lucide-react";
+import log from "loglevel";
 
 interface State {
   hasError: boolean;
 }
 
-export default class GlobalErrorBoundary extends React.Component<
-  { children: React.ReactNode },
-  State
-> {
-  constructor(props: { children: React.ReactNode }) {
+interface Props {
+  children: React.ReactNode;
+}
+
+export default class GlobalErrorBoundary extends React.Component<Props, State> {
+  constructor(props: Props) {
     super(props);
     this.state = { hasError: false };
   }
@@ -19,7 +21,7 @@ export default class GlobalErrorBoundary extends React.Component<
   }
 
   componentDidCatch(error: unknown) {
-    console.error("App crashed:", error);
+    log.error("App crashed:", error);
   }
 
   handleReload = () => {

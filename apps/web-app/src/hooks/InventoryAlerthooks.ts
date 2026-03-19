@@ -4,6 +4,7 @@ import { getProducts } from "@/api/product-axios";
 import { getWarehouses } from "@/api/inventory-axios";
 import { useAuthStore } from "@/app/app.state";
 import type { Product,Warehouse } from "@/types/inventoryalert.types";
+import log from "loglevel";    
 
 interface Alert {
   id: string;
@@ -60,7 +61,7 @@ export default function useInventoryAlerts() {
         setWarehouses(warehouseRes.data?.data || []);
 
       } catch (err) {
-        console.error("Failed loading alert metadata", err);
+        log.error("Failed loading alert metadata", err);
       }
 
     };
@@ -81,7 +82,7 @@ export default function useInventoryAlerts() {
     });
 
     socket.on("connect", () => {
-      console.log("Inventory socket connected");
+      log.info("Inventory socket connected");
     });
 
     socket.on("inventory.low_stock", (event) => {

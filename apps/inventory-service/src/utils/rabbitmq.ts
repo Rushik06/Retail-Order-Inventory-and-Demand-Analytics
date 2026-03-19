@@ -1,8 +1,8 @@
 import amqp from "amqplib";
 import { QUEUES } from "../constants/queues.js";
+import { logger } from "@repo/shared";
 
 let channel: amqp.Channel | null = null;
-
 
 export const connectRabbitMQ = async (): Promise<void> => {
   const url = process.env.RABBITMQ_URL || "amqp://rabbitmq:5672";
@@ -12,10 +12,8 @@ export const connectRabbitMQ = async (): Promise<void> => {
       const connection = await amqp.connect(url);
       channel = await connection.createChannel();
 
-      // Main exchange
       await channel.assertExchange(QUEUES.EXCHANGE, "topic", { durable: true });
 
-      // Dead Letter Exchange + Queue
       await channel.assertExchange(QUEUES.DLX, "direct", { durable: true });
       await channel.assertQueue(QUEUES.DLQ, { durable: true });
       await channel.bindQueue(QUEUES.DLQ, QUEUES.DLX, QUEUES.DLQ_ROUTING_KEY);
@@ -23,10 +21,9 @@ export const connectRabbitMQ = async (): Promise<void> => {
       try {
         await channel.deleteQueue(QUEUES.QUEUE, { ifUnused: false, ifEmpty: false });
       } catch {
-        
+        // queue may not exist yet, safe to ignore
       }
 
-      // Main queue(where it is wired to DLX send rejected messages to DLQ)
       await channel.assertQueue(QUEUES.QUEUE, {
         durable: true,
         arguments: {
@@ -37,11 +34,11 @@ export const connectRabbitMQ = async (): Promise<void> => {
 
       await channel.bindQueue(QUEUES.QUEUE, QUEUES.EXCHANGE, "inventory.low_stock");
 
-      console.log("RabbitMQ connected successfully");
-  
-    } catch {
-      console.log("RabbitMQ not ready, retrying in 5 seconds...");
-      channel = null; 
+      logger.info("RabbitMQ connected successfully");
+
+    } catch (error) {
+      logger.warn({ err: error }, "RabbitMQ not ready, retrying in 5 seconds...");
+      channel = null;
       await new Promise((res) => setTimeout(res, 5000));
     }
   }

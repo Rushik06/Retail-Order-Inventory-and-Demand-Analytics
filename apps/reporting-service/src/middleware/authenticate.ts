@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
+import { logger } from "@repo/shared";
 
 export const authenticate = (
   req: Request,
@@ -9,7 +10,7 @@ export const authenticate = (
   const authHeader = req.headers.authorization;
 
   if (!authHeader?.startsWith("Bearer ")) {
-    console.log("No token provided in Authorization header");
+    logger.warn({ path: req.path }, "No token provided in Authorization header");
     return res.status(401).json({ message: "Unauthorized" });
   }
 
@@ -24,7 +25,7 @@ export const authenticate = (
     (req as any).user = decoded;
     next();
   } catch (error) {
-    console.log("Invalid token provided:", error);
+    logger.warn({ err: error, path: req.path }, "Invalid token provided");
     return res.status(401).json({ message: "Invalid token" });
   }
 };

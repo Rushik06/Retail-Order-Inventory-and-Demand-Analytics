@@ -1,6 +1,7 @@
-import {Server as HTTPServer} from "http";
+import { Server as HTTPServer } from "http";
 import { Server } from "socket.io";
 import type { LowStockEvent } from "../types/notification.types.js";
+import { logger } from "@repo/shared";
 
 let io: Server | null = null;
 
@@ -15,7 +16,7 @@ export const initNotificationSocket = (server: HTTPServer) => {
   });
 
   io.on("connection", (socket) => {
-    console.log("Client connected:", socket.id);
+    logger.info({ socketId: socket.id }, "Client connected");
   });
 
 };
@@ -31,5 +32,10 @@ export const sendLowStockNotification = async (event: LowStockEvent) => {
     threshold: event.threshold,
     message: `Low stock detected (Qty: ${event.currentQty})`
   });
+
+  logger.info(
+    { productId: event.productId, warehouseId: event.warehouseId, currentQty: event.currentQty },
+    "Low stock notification sent"
+  );
 
 };

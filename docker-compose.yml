@@ -40,6 +40,9 @@ services:
       - "3000:3000"
     env_file:
       - ./apps/auth-service/.env
+    environment:
+      - NODE_ENV=production
+      - LOG_LEVEL=info        
     depends_on:
       postgres:
         condition: service_started
@@ -55,6 +58,9 @@ services:
       - "3001:3001"
     env_file:
       - ./apps/product-service/.env
+    environment:
+      - NODE_ENV=production
+      - LOG_LEVEL=info       
     depends_on:
       postgres:
         condition: service_started
@@ -70,6 +76,9 @@ services:
       - "3002:3002"
     env_file:
       - ./apps/inventory-service/.env
+    environment:
+      - NODE_ENV=production
+      - LOG_LEVEL=info        
     depends_on:
       postgres:
         condition: service_started
@@ -87,6 +96,9 @@ services:
       - "3003:3003"
     env_file:
       - ./apps/reporting-service/.env
+    environment:
+      - NODE_ENV=production
+      - LOG_LEVEL=info        
     depends_on:
       postgres:
         condition: service_started
@@ -99,7 +111,7 @@ services:
       dockerfile: apps/web-app/Dockerfile
     restart: unless-stopped
     ports:
-      - "5173:80"   
+      - "5173:80"
     depends_on:
       - auth-service
       - product-service

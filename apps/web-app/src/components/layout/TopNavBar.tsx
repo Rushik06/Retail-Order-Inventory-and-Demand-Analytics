@@ -4,12 +4,14 @@ import { useAuthStore } from "@/app/app.state";
 import api from "@/api/axios";
 import { toast } from "sonner";
 import InventoryAlerts from "./NotificationAlert";
+import log from "loglevel";                                   
 
 export default function Topbar() {
 
   const navigate = useNavigate();
   const logout = useAuthStore((s) => s.logout);
   const user = useAuthStore((s) => s.user);
+
   const handleLogout = async () => {
 
     try {
@@ -21,7 +23,7 @@ export default function Topbar() {
       toast.success("Logged out successfully");
 
     } catch (err) {
-     console.error(err);
+      log.error("Logout failed:", err);                        
       toast.error("Logout failed");
 
     } finally {
@@ -41,9 +43,7 @@ export default function Topbar() {
         <h2 className="text-lg font-semibold text-slate-800">
           Welcome, {user?.name}
         </h2>
-
       </div>
-
 
       {/* Right Section */}
 
@@ -60,11 +60,10 @@ export default function Topbar() {
         >
           <LogOut size={16} />
           Logout
-
         </button>
+
       </div>
     </header>
 
   );
-
 }
