@@ -3,8 +3,9 @@ import { sequelize } from "../config/index.js";
 import { Order } from "../models/order.model.js";
 import { OrderItem } from "../models/orderItem.model.js";
 import { Product } from "../models/product.model.js";
-import { AppError} from "@repo/shared";
+import { AppError, logger } from "@repo/shared";
 import { ERRORS } from "../constants/errors.js";
+import { publishOrderCreated } from "../utils/rabbitmq.js";
 
 export const createOrder = async (
   customerName: string,
@@ -21,7 +22,6 @@ export const createOrder = async (
 
     let totalAmount = 0;
 
-    // Validate and calculate
     for (const item of items) {
 
       const product = await Product.findByPk(item.productId, { transaction });
@@ -36,11 +36,9 @@ export const createOrder = async (
         throw new AppError(ERRORS.INSUFFICIENT_STOCK, 400);
       }
 
-      totalAmount +=
-        Number(product.getDataValue("price")) * item.quantity;
+      totalAmount += Number(product.getDataValue("price")) * item.quantity;
     }
 
-    // Create order
     const order = await Order.create(
       {
         id: randomUUID(),
@@ -51,20 +49,14 @@ export const createOrder = async (
       { transaction }
     );
 
-    // stock deduction & order items creation
     for (const item of items) {
 
       const product = await Product.findByPk(item.productId, { transaction });
 
-      const newStock =
-        Number(product!.getDataValue("stock")) - item.quantity;
+      const newStock = Number(product!.getDataValue("stock")) - item.quantity;
 
       product!.set("stock", newStock);
-
-      product!.set(
-        "status",
-        newStock === 0 ? "OUT_OF_STOCK" : "IN_STOCK"
-      );
+      product!.set("status", newStock === 0 ? "OUT_OF_STOCK" : "IN_STOCK");
 
       await product!.save({ transaction });
 
@@ -79,6 +71,17 @@ export const createOrder = async (
     }
 
     await transaction.commit();
+
+    await publishOrderCreated({
+      orderId: order.getDataValue("id"),
+      items,
+    });
+
+    logger.info(
+      { orderId: order.getDataValue("id"), customerName },
+      "Order created successfully"
+    );
+
     return order;
 
   } catch (error) {
@@ -126,7 +129,6 @@ export const updateOrderStatus = async (
           Number(item.getDataValue("quantity"));
 
         product!.set("stock", restoredStock);
-
         product!.set("status", "IN_STOCK");
 
         await product!.save({ transaction });
@@ -137,6 +139,9 @@ export const updateOrderStatus = async (
     await order.save({ transaction });
 
     await transaction.commit();
+
+    logger.info({ orderId, status }, "Order status updated");
+
     return order;
 
   } catch (error) {
@@ -146,7 +151,6 @@ export const updateOrderStatus = async (
 };
 
 export const getOrders = async () => {
-
   return Order.findAll({
     include: [
       {
@@ -156,5 +160,4 @@ export const getOrders = async () => {
     ],
     order: [["createdAt", "DESC"]],
   });
-
 };

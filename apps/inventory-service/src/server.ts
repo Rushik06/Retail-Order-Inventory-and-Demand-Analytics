@@ -7,6 +7,7 @@ import { logger } from "@repo/shared";
 import http from "http";
 import { initNotificationSocket } from "./utils/notification-socket.js";
 import { startInventoryAlertConsumer } from "./services/consumer.js";
+import { startOrderCreatedConsumer } from "./services/order.consumer.js";
 
 let server: http.Server;
 
@@ -23,22 +24,23 @@ async function startServer(): Promise<void> {
     initNotificationSocket(server);
 
     server.listen(env.PORT, () => {
-      logger.info({ port: env.PORT }, `Inventory service running on http://localhost:${env.PORT}`);
+      logger.info(
+        { port: env.PORT },
+        `Inventory service running on http://localhost:${env.PORT}`
+      );
     });
 
     startInventoryAlertConsumer();
+    startOrderCreatedConsumer();
 
   } catch (error) {
-
-    logger.error({ err: error }, "Failed to start server");
+    logger.fatal({ err: error }, "Failed to start server");
     process.exit(1);
-
   }
 }
 
 process.on("SIGTERM", async () => {
   logger.info("SIGTERM received. Shutting down inventory service...");
-
   server.close(async () => {
     await sequelize.close();
     process.exit(0);

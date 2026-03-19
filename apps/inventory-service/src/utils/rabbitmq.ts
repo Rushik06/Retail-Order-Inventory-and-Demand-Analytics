@@ -1,6 +1,6 @@
 import amqp from "amqplib";
-import { QUEUES } from "../constants/queues.js";
 import { logger } from "@repo/shared";
+import { QUEUES } from "../constants/queues.js";
 
 let channel: amqp.Channel | null = null;
 
@@ -12,6 +12,7 @@ export const connectRabbitMQ = async (): Promise<void> => {
       const connection = await amqp.connect(url);
       channel = await connection.createChannel();
 
+      // ----------- INVENTORY EXCHANGE (alerts) -----------
       await channel.assertExchange(QUEUES.EXCHANGE, "topic", { durable: true });
 
       await channel.assertExchange(QUEUES.DLX, "direct", { durable: true });
@@ -21,7 +22,7 @@ export const connectRabbitMQ = async (): Promise<void> => {
       try {
         await channel.deleteQueue(QUEUES.QUEUE, { ifUnused: false, ifEmpty: false });
       } catch {
-        // queue may not exist yet, safe to ignore
+        // queue may not exist yet
       }
 
       await channel.assertQueue(QUEUES.QUEUE, {
@@ -34,7 +35,21 @@ export const connectRabbitMQ = async (): Promise<void> => {
 
       await channel.bindQueue(QUEUES.QUEUE, QUEUES.EXCHANGE, "inventory.low_stock");
 
+      // ----------- ORDERS EXCHANGE (order created) -----------
+      await channel.assertExchange("orders", "topic", { durable: true });
+      await channel.assertQueue("inventory.order.created", { durable: true });
+      await channel.bindQueue("inventory.order.created", "orders", "order.created");
+
       logger.info("RabbitMQ connected successfully");
+
+      connection.on("error", (err) => {
+        logger.error({ err }, "RabbitMQ connection error");
+      });
+
+      connection.on("close", () => {
+        logger.warn("RabbitMQ connection closed");
+        channel = null;
+      });
 
     } catch (error) {
       logger.warn({ err: error }, "RabbitMQ not ready, retrying in 5 seconds...");
@@ -42,6 +57,13 @@ export const connectRabbitMQ = async (): Promise<void> => {
       await new Promise((res) => setTimeout(res, 5000));
     }
   }
+};
+
+export const getChannel = (): amqp.Channel => {
+  if (!channel) {
+    throw new Error("RabbitMQ channel not initialized");
+  }
+  return channel;
 };
 
 export const publishEvent = async (
