@@ -7,7 +7,7 @@ import { reportService } from "../src/services/reporting.service.js";
 /* MOCK SERVICE */
 
 /*eslint-disable */
-vi.mock("../services/reporting.service.js", () => ({
+vi.mock("../src/services/reporting.service.js", () => ({
   reportService: {
     getDashboard: vi.fn(),
     getCounters: vi.fn(),

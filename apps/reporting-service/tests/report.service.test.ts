@@ -9,7 +9,7 @@ import { tablereportRepository } from "../src/repository/aggregate-tablereport.r
 /* MOCK REPOSITORIES */
 
 /*eslint-disable */
-vi.mock("../repository/counter-report.repository.js", () => ({
+vi.mock("../src/repository/counter-report.repository.js", () => ({
   counterreportRepository: {
     getTotalProducts: vi.fn(),
     getTotalWarehouses: vi.fn(),
@@ -19,7 +19,7 @@ vi.mock("../repository/counter-report.repository.js", () => ({
   }
 }));
 
-vi.mock("../repository/chart-report.repository.js", () => ({
+vi.mock("../src/repository/chart-report.repository.js", () => ({
   chartreportRepository: {
     getWarehouseStockChart: vi.fn(),
     getCategoryDistributionChart: vi.fn(),
@@ -28,7 +28,7 @@ vi.mock("../repository/chart-report.repository.js", () => ({
   }
 }));
 
-vi.mock("../repository/aggregate-tablereport.repository.js", () => ({
+vi.mock("../src/repository/aggregate-tablereport.repository.js", () => ({
   tablereportRepository: {
     getRecentInventoryActivity: vi.fn(),
     getRecentOrders: vi.fn()

@@ -48,10 +48,14 @@ export class ProfileService {
 
   /* DELETE ACCOUNT */
 
-  async deleteProfile(userId: string) {
+async deleteProfile(userId: string) {
+  const user = await this.repo.findById(userId);
 
-    await this.repo.delete(userId);
-
-    return { message: MESSAGES.ACCOUNT_DELETED };
+  if (!user) {
+    throw new AppError(ERRORS.USER_NOT_FOUND, 404);
   }
+
+  await this.repo.delete(userId);
+  return { message: MESSAGES.ACCOUNT_DELETED };
+}
 }

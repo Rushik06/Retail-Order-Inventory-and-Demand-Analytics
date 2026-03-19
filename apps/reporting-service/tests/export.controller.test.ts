@@ -7,7 +7,7 @@ import { exportService } from "../src/services/export.service.js";
 /* MOCK SERVICE */
 
 /*eslint-disable */
-vi.mock("../services/export.service.js", () => ({
+vi.mock("../src/services/export.service.js", () => ({
   exportService: {
     exportPDF: vi.fn(),
     exportExcel: vi.fn(),
