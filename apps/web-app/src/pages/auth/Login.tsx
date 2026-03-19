@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "@/api/axios";
 import { useAuthStore } from "@/app/app.state";
+import { setAccessToken } from "@/utils/token"; // ← add
 import { isRequired, isValidEmail } from "@/utils/validators";
 import { toast } from "sonner";
 
@@ -38,8 +39,9 @@ export default function Login() {
 
       const res = await axios.post("/auth/login", form);
 
-      localStorage.setItem("accessToken", res.data.accessToken);
-      localStorage.setItem("refreshToken", res.data.refreshToken);
+      // accessToken saved to localStorage — refreshToken is set
+      // as httpOnly cookie by the server automatically
+      setAccessToken(res.data.accessToken);
 
       setUser(res.data.user);
 
@@ -146,7 +148,7 @@ export default function Login() {
           </Link>
 
           <div className="text-gray-500">
-            Don’t have an account?{" "}
+            Don't have an account?{" "}
             <Link
               to="/register"
               className="text-blue-600 hover:underline font-medium"

@@ -1,49 +1,44 @@
-# BASE 
+# BASE
 FROM node:20-alpine AS base
 WORKDIR /app
-RUN npm install -g pnpm
+RUN npm install -g pnpm turbo
 
-# DEPS 
-FROM base AS deps
-COPY pnpm-lock.yaml ./
-COPY pnpm-workspace.yaml ./
-COPY package.json ./
-COPY apps ./apps
-COPY packages ./packages                                            
-RUN pnpm install --frozen-lockfile --config.node-linker=hoisted --ignore-scripts
+# PRUNER
+FROM base AS pruner
+COPY . .
+RUN turbo prune reporting-service --docker
 
-# BUILD
-FROM base AS build
-COPY --from=deps /app /app
+# INSTALLER
+FROM base AS installer
+COPY --from=pruner /app/out/json/ .
+COPY --from=pruner /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
+RUN pnpm install --frozen-lockfile --ignore-scripts
 
-# build shared first
-WORKDIR /app/packages/shared                                        
-RUN /app/node_modules/.bin/tsc                                      
+# BUILDER
+FROM base AS builder
+COPY --from=installer /app .
+COPY --from=pruner /app/out/full/ .
+RUN pnpm turbo build --filter=reporting-service
 
-# build the service
-WORKDIR /app/apps/reporting-service
-RUN /app/node_modules/.bin/tsc
-
-# RUNNER 
+# RUNNER
 FROM node:20-alpine AS runner
 WORKDIR /app
 RUN npm install -g pnpm
 
-COPY apps/reporting-service/package.json ./apps/reporting-service/package.json
-COPY packages/shared/package.json ./packages/shared/package.json   
-COPY pnpm-lock.yaml ./
-COPY pnpm-workspace.yaml ./
-COPY package.json ./
+COPY --from=pruner /app/out/json/ .
+COPY --from=pruner /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
+RUN pnpm install --frozen-lockfile --prod --ignore-scripts
 
-RUN pnpm install --config.node-linker=hoisted --prod --ignore-scripts
-
-COPY --from=build /app/apps/reporting-service/dist ./dist
-
+COPY --from=builder /app/apps/reporting-service/dist ./apps/reporting-service/dist
 
 RUN mkdir -p ./node_modules/@repo/shared
-COPY --from=build /app/packages/shared/dist ./node_modules/@repo/shared/dist
-COPY packages/shared/package.json ./node_modules/@repo/shared/package.json
+COPY --from=builder /app/packages/shared/dist ./node_modules/@repo/shared/dist
+COPY --from=builder /app/packages/shared/package.json ./node_modules/@repo/shared/package.json
+
+RUN mkdir -p ./apps/reporting-service/node_modules/@repo/shared
+COPY --from=builder /app/packages/shared/dist ./apps/reporting-service/node_modules/@repo/shared/dist
+COPY --from=builder /app/packages/shared/package.json ./apps/reporting-service/node_modules/@repo/shared/package.json
 
 ENV NODE_ENV=production
 EXPOSE 3003
-CMD ["node", "dist/server.js"]
+CMD ["node", "apps/reporting-service/dist/server.js"]

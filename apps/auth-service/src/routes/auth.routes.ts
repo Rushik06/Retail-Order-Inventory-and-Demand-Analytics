@@ -8,7 +8,6 @@ import { authenticate } from '../middleware/auth.middleware.js';
 import {
   registerSchema,
   loginSchema,
-  refreshSchema,
 } from '../validation/auth.schema.js';
 
 const router: Router = Router();
@@ -43,28 +42,12 @@ const controller = new AuthController(service);
  *     responses:
  *       201:
  *         description: User registered successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 id:
- *                   type: string
- *                 name:
- *                   type: string
- *                 email:
- *                   type: string
- *              
  *       409:
  *         description: Email already exists
  *       400:
  *         description: Validation error
  */
-router.post(
-  '/register',
-  validate(registerSchema),
-  controller.register
-);
+router.post('/register', validate(registerSchema), controller.register);
 
 /**
  * @swagger
@@ -88,17 +71,36 @@ router.post(
  *                 type: string
  *     responses:
  *       200:
- *         description: Returns JWT token
+ *         description: Returns access token and sets httpOnly refresh token cookie
+ *         headers:
+ *           Set-Cookie:
+ *             description: httpOnly refresh token cookie (refreshToken)
+ *             schema:
+ *               type: string
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 accessToken:
+ *                   type: string
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     name:
+ *                       type: string
+ *                     email:
+ *                       type: string
+ *                     role:
+ *                       type: string
  *       401:
  *         description: Invalid credentials
  *       400:
- *         description: Invalid format
+ *         description: Validation error
  */
-router.post(
-  '/login',
-  validate(loginSchema),
-  controller.login
-);
+router.post('/login', validate(loginSchema), controller.login);
 
 /**
  * @swagger
@@ -106,30 +108,35 @@ router.post(
  *   post:
  *     summary: Refresh access token
  *     tags: [Auth]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - refreshToken
- *             properties:
- *               refreshToken:
- *                 type: string
+ *     description: Reads the refresh token from the httpOnly cookie (set during login). No request body needed. Rotates the refresh token — old one is deleted from Redis, new one is set in cookie.
+ *     parameters:
+ *       - in: cookie
+ *         name: refreshToken
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: httpOnly refresh token cookie
  *     responses:
  *       200:
- *         description: New access token issued
+ *         description: New access token issued, new refresh token cookie set
+ *         headers:
+ *           Set-Cookie:
+ *             description: Rotated httpOnly refresh token cookie
+ *             schema:
+ *               type: string
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 accessToken:
+ *                   type: string
  *       401:
- *         description: Invalid refresh token
+ *         description: Invalid or expired refresh token
  *       400:
- *         description: Invalid format
+ *         description: Refresh token cookie missing
  */
-router.post(
-  '/refresh',
-  validate(refreshSchema),
-  controller.refresh
-);
+router.post('/refresh', controller.refresh);
 
 /**
  * @swagger
@@ -137,37 +144,35 @@ router.post(
  *   post:
  *     summary: Logout user
  *     tags: [Auth]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - refreshToken
- *             properties:
- *               refreshToken:
- *                 type: string
+ *     description: Reads the refresh token from the httpOnly cookie, deletes it from Redis, and clears the cookie. No request body needed.
+ *     parameters:
+ *       - in: cookie
+ *         name: refreshToken
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: httpOnly refresh token cookie
  *     responses:
  *       200:
- *         description: Successfully logged out
+ *         description: Successfully logged out, cookie cleared
  *       400:
- *         description: Invalid format
+ *         description: Refresh token cookie missing
  */
-router.post(
-  '/logout',
-  validate(refreshSchema),
-  controller.logout
-);
+router.post('/logout', controller.logout);
+
 /**
  * @swagger
  * /api/auth/users:
  *   get:
  *     summary: Get all users (Admin only)
  *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: List of users
+ *       401:
+ *         description: Unauthorized
  *       403:
  *         description: Forbidden
  */
@@ -175,7 +180,7 @@ router.get(
   '/users',
   authenticate,
   authorizeRole('admin', 'super_admin'),
-  controller.getUsers
+  controller.getUsers,
 );
 
 export default router;

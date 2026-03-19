@@ -1,26 +1,28 @@
-# BASE 
+# BASE
 FROM node:20-alpine AS base
 WORKDIR /app
-RUN npm install -g pnpm
+RUN npm install -g pnpm turbo
 
-# DEPS 
-FROM base AS deps
-COPY pnpm-lock.yaml ./
-COPY pnpm-workspace.yaml ./
-COPY package.json ./
-COPY apps ./apps
-RUN pnpm install --frozen-lockfile --config.node-linker=hoisted
+# PRUNER
+FROM base AS pruner
+COPY . .
+RUN turbo prune web-app --docker
 
-# BUILD 
-FROM base AS build
-COPY --from=deps /app /app
-WORKDIR /app/apps/web-app
-RUN /app/node_modules/.bin/tsc -b && /app/node_modules/.bin/vite build  
+# INSTALLER
+FROM base AS installer
+COPY --from=pruner /app/out/json/ .
+COPY --from=pruner /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
+RUN pnpm install --frozen-lockfile --ignore-scripts
 
-#  SERVE 
+# BUILDER
+FROM base AS builder
+COPY --from=installer /app .
+COPY --from=pruner /app/out/full/ .
+RUN pnpm turbo build --filter=web-app
+
+# SERVE
 FROM nginx:alpine
-
-COPY --from=build /app/apps/web-app/dist /usr/share/nginx/html
+COPY --from=builder /app/apps/web-app/dist /usr/share/nginx/html
 
 RUN printf 'server {\n\
     listen 80;\n\
@@ -33,5 +35,4 @@ RUN printf 'server {\n\
 }\n' > /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
-
 CMD ["nginx", "-g", "daemon off;"]

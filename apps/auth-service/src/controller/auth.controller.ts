@@ -1,5 +1,7 @@
-import type { Request, Response } from "express";
-import { AuthService } from "../services/auth.service.js";
+import type { Request, Response } from 'express';
+import { AuthService } from '../services/auth.service.js';
+import { AppError } from '@repo/shared';
+import { COOKIE_OPTIONS } from '../constants/auth.js'; 
 
 export class AuthController {
   constructor(private readonly service: AuthService) {}
@@ -11,17 +13,29 @@ export class AuthController {
 
   login = async (req: Request, res: Response): Promise<Response> => {
     const result = await this.service.login(req.body);
-    return res.status(200).json(result);
+    res.cookie('refreshToken', result.refreshToken, COOKIE_OPTIONS);
+    return res.status(200).json({
+      accessToken: result.accessToken,
+      user: result.user,
+    });
   };
 
   refresh = async (req: Request, res: Response): Promise<Response> => {
-    const result = await this.service.refresh(req.body.refreshToken);
-    return res.status(200).json(result);
+    const refreshToken = req.cookies.refreshToken;
+    if (!refreshToken) throw new AppError('Refresh token is required', 400);
+
+    const result = await this.service.refresh(refreshToken);
+    res.cookie('refreshToken', result.refreshToken, COOKIE_OPTIONS);
+    return res.status(200).json({ accessToken: result.accessToken });
   };
 
   logout = async (req: Request, res: Response): Promise<Response> => {
-    await this.service.logout(req.body.refreshToken);
-    return res.status(200).json({ message: "Logged out successfully" });
+    const refreshToken = req.cookies.refreshToken;
+    if (!refreshToken) throw new AppError('Refresh token is required', 400);
+
+    const result = await this.service.logout(refreshToken);
+    res.clearCookie('refreshToken', COOKIE_OPTIONS);
+    return res.status(200).json(result);
   };
 
   getUsers = async (_req: Request, res: Response): Promise<Response> => {

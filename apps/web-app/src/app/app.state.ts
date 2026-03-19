@@ -1,11 +1,13 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { AuthUser } from "@/types/auth.types";
+import api from "../api/axios";
+import { clearTokens } from "../utils/token";
 
 interface AuthState {
   user: AuthUser | null;
   setUser: (user: AuthUser | null) => void;
-  logout: () => void;
+  logout: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -15,17 +17,22 @@ export const useAuthStore = create<AuthState>()(
 
       setUser: (user) => set({ user }),
 
-      logout: () => {
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("refreshToken");
-
-        set({ user: null });
+      logout: async () => {
+        try {
+      
+          await api.post("/auth/logout"); 
+        } catch {
+      
+        } finally {
+          clearTokens();       
+          set({ user: null }); 
+        }
       },
     }),
     {
       name: "auth-storage",
 
-      // persist only user
+    
       partialize: (state) => ({
         user: state.user,
       }),

@@ -1,17 +1,12 @@
 import axios from "axios";
-import {
-  getAccessToken,
-  getRefreshToken,
-  setTokens,
-  clearTokens,
-} from "../utils/token";
+import { getAccessToken, setAccessToken, clearTokens } from "../utils/token";
 
 const AUTH_URL = import.meta.env.VITE_AUTH_URL;
 
 export const createApiClient = (baseURL: string) => {
   const api = axios.create({
     baseURL,
-    withCredentials: false,
+    withCredentials: true, 
   });
 
   /* REQUEST INTERCEPTOR */
@@ -48,24 +43,22 @@ export const createApiClient = (baseURL: string) => {
         originalRequest._retry = true;
 
         try {
-          const refreshToken = getRefreshToken();
-
-          if (!refreshToken) {
-            throw new Error("No refresh token available");
-          }
-
+          // httpOnly cookie is sent automatically
           const res = await axios.post(
-            `${AUTH_URL}/refresh`,
-            { refreshToken }
+            `${AUTH_URL}/auth/refresh`,
+            {},
+            { withCredentials: true }
           );
 
-          setTokens(res.data.accessToken, refreshToken);
+          // Only accessToken comes back in the body
+          setAccessToken(res.data.accessToken);
 
           originalRequest.headers.Authorization =
             `Bearer ${res.data.accessToken}`;
 
           return api(originalRequest);
         } catch {
+          // Refresh failed — clear access token and redirect to login
           clearTokens();
           window.location.href = "/login";
         }

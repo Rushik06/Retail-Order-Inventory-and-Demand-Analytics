@@ -1,5 +1,6 @@
 import express from "express";
 import type { Express } from "express";
+import cookieParser from "cookie-parser"; 
 
 import authRoutes from "./routes/auth.routes.js";
 import profileRoutes from "./routes/profile.routes.js";
@@ -11,36 +12,27 @@ import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 
 import { setupSwagger } from "./swagger/swaggers.js";
-import {  errorHandler } from "@repo/shared";
+import { errorHandler } from "@repo/shared";
 
 const app: Express = express();
 
-/* Security Headers */
-
 app.use(helmet());
-
-/* Global rate limiter */
 
 const globalLimiter = rateLimit({
   windowMs: Number(process.env.RATE_LIMIT_WINDOW) || 15 * 60 * 1000,
   max: Number(process.env.RATE_LIMIT_MAX),
   standardHeaders: true,
-  legacyHeaders: false
+  legacyHeaders: false,
 });
 
 app.use(globalLimiter);
 
-/* Auth specific limiter */
-
 const authLimiter = rateLimit({
-
   windowMs: Number(process.env.RATE_LIMIT_WINDOW) || 15 * 60 * 1000,
   max: Number(process.env.RATE_LIMIT_MAX),
   standardHeaders: true,
-  legacyHeaders: false
+  legacyHeaders: false,
 });
-
-/* CORS */
 
 app.use(
   cors({
@@ -50,8 +42,7 @@ app.use(
 );
 
 app.use(express.json());
-
-/* Routes */
+app.use(cookieParser()); // ← add — must be after express.json()
 
 app.use("/api/auth", authLimiter, authRoutes);
 app.use("/api/profile", profileRoutes);
@@ -60,16 +51,12 @@ app.use("/api/rbac", rbacRoutes);
 
 setupSwagger(app);
 
-/* Health check */
-
 app.get("/health", (_req, res) => {
   res.status(200).json({
     status: "OK",
     service: "auth-service",
   });
 });
-
-/* Error handler */
 
 app.use(errorHandler);
 
