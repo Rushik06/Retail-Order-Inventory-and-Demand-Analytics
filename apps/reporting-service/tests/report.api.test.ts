@@ -8,17 +8,17 @@ import { reportController } from "../src/controllers/reporting.controller.js";
 /* MOCK MIDDLEWARES */
 
 /*eslint-disable */
-vi.mock("../middleware/authenticate.js", () => ({
+vi.mock("../src/middleware/authenticate.js", () => ({
   authenticate: (req: any, res: any, next: any) => next()
 }));
 
-vi.mock("../middleware/authorize.js", () => ({
+vi.mock("../src/middleware/authorize.js", () => ({
   authorizeRoles: () => (req: any, res: any, next: any) => next()
 }));
 
 /* MOCK CONTROLLER */
 
-vi.mock("../controllers/reporting.controller.js", () => ({
+vi.mock("../src/controllers/reporting.controller.js", () => ({
   reportController: {
     getDashboard: vi.fn((req, res) => res.json({ dashboard: true })),
     getCounters: vi.fn((req, res) => res.json({ counters: true })),

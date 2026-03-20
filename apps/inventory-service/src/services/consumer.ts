@@ -1,59 +1,28 @@
-import amqp from "amqplib";
+import { getChannel } from "../utils/rabbitmq.js";
 import { sendLowStockNotification } from "../utils/notification-socket.js";
+import { QUEUES } from "../constants/queues.js";
+import { logger } from "@repo/shared";
 
-export const startInventoryAlertConsumer = async () => {
+export const startInventoryAlertConsumer = (): void => {
+  const channel = getChannel();
 
-  const url = process.env.RABBITMQ_URL || "amqp://rabbitmq:5672";
+  logger.info("Inventory alert consumer started");
 
-  try {
+  channel.consume(QUEUES.QUEUE, async (msg) => {
+    if (!msg) return;
 
-    const connection = await amqp.connect(url);
-    connection.on("error", (err) => {
-      console.error("RabbitMQ connection error:", err);
-    });
+    try {
+      const event = JSON.parse(msg.content.toString());
+      logger.info({ event }, "Low stock event received");
 
-    connection.on("close", () => {
-      console.log("RabbitMQ connection closed");
-    });
-
-    const channel = await connection.createChannel();
-    await channel.assertExchange("inventory.events", "topic", {
-      durable: true
-    });
-
-    const queue = "inventory.alerts.queue";
-
-    await channel.assertQueue(queue, { durable: true });
-    await channel.bindQueue(queue, "inventory.events", "inventory.low_stock");
-
-    console.log("Inventory alert consumer started");
-
-    channel.consume(queue, async (msg) => {
-
-      if (!msg) return;
-
-      try {
-
-        const event = JSON.parse(msg.content.toString());
-        console.log("LOW STOCK EVENT RECEIVED:", event);
-
-        if (event.event === "LOW_STOCK" || event.event === "STOCK_RECOVERED") {
-          await sendLowStockNotification(event);
-
-        }
-        channel.ack(msg);
-
-      } catch (error) {
-
-        console.error("Failed processing alert event", error);
-        channel.nack(msg, false, false); 
-
+      if (event.event === "LOW_STOCK" || event.event === "STOCK_RECOVERED") {
+        await sendLowStockNotification(event);
       }
 
-    });
-
-  } catch (error) {
-    console.error("Failed to start inventory alert consumer:", error);
-  }
-
+      channel.ack(msg);
+    } catch (error) {
+      logger.error({ err: error }, "Failed processing alert event");
+      channel.nack(msg, false, false);
+    }
+  });
 };

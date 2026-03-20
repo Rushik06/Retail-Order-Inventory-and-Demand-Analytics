@@ -3,41 +3,42 @@ import { sequelize } from "../config/index.js";
 import { Order } from "../models/order.model.js";
 import { OrderItem } from "../models/orderItem.model.js";
 import { Product } from "../models/product.model.js";
+import { AppError, logger } from "@repo/shared";
+import { ERRORS } from "../constants/errors.js";
+import { publishOrderCreated } from "../utils/rabbitmq.js";
 
 export const createOrder = async (
   customerName: string,
   items: { productId: string; quantity: number }[]
 ) => {
+
   if (!customerName || !items || items.length === 0) {
-    throw new Error("Invalid order data");
+    throw new AppError(ERRORS.INVALID_ORDER_DATA, 400);
   }
 
   const transaction = await sequelize.transaction();
 
   try {
+
     let totalAmount = 0;
 
-    // Validate and calculate
     for (const item of items) {
+
       const product = await Product.findByPk(item.productId, { transaction });
 
       if (!product) {
-        throw new Error(`Product not found: ${item.productId}`);
+        throw new AppError(ERRORS.PRODUCT_NOT_FOUND, 404);
       }
 
       const stock = Number(product.getDataValue("stock"));
 
       if (stock < item.quantity) {
-        throw new Error(
-          `Insufficient stock for ${product.getDataValue("name")}`
-        );
+        throw new AppError(ERRORS.INSUFFICIENT_STOCK, 400);
       }
 
-      totalAmount +=
-        Number(product.getDataValue("price")) * item.quantity;
+      totalAmount += Number(product.getDataValue("price")) * item.quantity;
     }
 
-    // Create order
     const order = await Order.create(
       {
         id: randomUUID(),
@@ -48,20 +49,14 @@ export const createOrder = async (
       { transaction }
     );
 
-    // stock deduction & order items creation
     for (const item of items) {
+
       const product = await Product.findByPk(item.productId, { transaction });
 
-      const newStock =
-        Number(product!.getDataValue("stock")) - item.quantity;
+      const newStock = Number(product!.getDataValue("stock")) - item.quantity;
 
       product!.set("stock", newStock);
-
-      // Auto mark stock status
-      product!.set(
-        "status",
-        newStock === 0 ? "OUT_OF_STOCK" : "IN_STOCK"
-      );
+      product!.set("status", newStock === 0 ? "OUT_OF_STOCK" : "IN_STOCK");
 
       await product!.save({ transaction });
 
@@ -76,7 +71,19 @@ export const createOrder = async (
     }
 
     await transaction.commit();
+
+    await publishOrderCreated({
+      orderId: order.getDataValue("id"),
+      items,
+    });
+
+    logger.info(
+      { orderId: order.getDataValue("id"), customerName },
+      "Order created successfully"
+    );
+
     return order;
+
   } catch (error) {
     await transaction.rollback();
     throw error;
@@ -87,28 +94,31 @@ export const updateOrderStatus = async (
   orderId: string,
   status: string
 ) => {
+
   const transaction = await sequelize.transaction();
 
   try {
+
     const order = await Order.findByPk(orderId, {
       include: [OrderItem],
       transaction,
     });
 
     if (!order) {
-      throw new Error("Order not found");
+      throw new AppError(ERRORS.ORDER_NOT_FOUND, 404);
     }
 
     const currentStatus = order.getDataValue("status");
 
-    
     if (status === "CANCELLED" && currentStatus !== "CANCELLED") {
+
       const orderItems = await OrderItem.findAll({
         where: { orderId },
         transaction,
       });
 
       for (const item of orderItems) {
+
         const product = await Product.findByPk(
           item.getDataValue("productId"),
           { transaction }
@@ -119,8 +129,6 @@ export const updateOrderStatus = async (
           Number(item.getDataValue("quantity"));
 
         product!.set("stock", restoredStock);
-
-        // Auto restore stock status
         product!.set("status", "IN_STOCK");
 
         await product!.save({ transaction });
@@ -131,7 +139,11 @@ export const updateOrderStatus = async (
     await order.save({ transaction });
 
     await transaction.commit();
+
+    logger.info({ orderId, status }, "Order status updated");
+
     return order;
+
   } catch (error) {
     await transaction.rollback();
     throw error;
@@ -139,7 +151,7 @@ export const updateOrderStatus = async (
 };
 
 export const getOrders = async () => {
-  const orders = await Order.findAll({
+  return Order.findAll({
     include: [
       {
         model: OrderItem,
@@ -148,6 +160,4 @@ export const getOrders = async () => {
     ],
     order: [["createdAt", "DESC"]],
   });
-
-  return orders;
 };

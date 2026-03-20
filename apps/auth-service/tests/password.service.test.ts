@@ -1,171 +1,338 @@
-/*eslint-disable*/ 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import bcrypt from 'bcrypt';
-import { PasswordService } from '../src/services/password.service.js';
-import { PasswordRepository } from '../src/repository/password.repository.js';
+/*eslint-disable*/
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import { AuthService } from "../src/services/auth.service.js";
 
-// MOCK bcrypt 
-vi.mock('bcrypt', () => ({
-  default: {
-    compare: vi.fn(),
-    hash: vi.fn(),
+/* MOCKS */
+
+vi.mock("../src/config/index.js", () => ({
+  env: {
+    JWT_ACCESS_SECRET: "test-access-secret",
+    JWT_REFRESH_SECRET: "test-refresh-secret",
+    ACCESS_TOKEN_EXPIRY: "15m",
+    REFRESH_TOKEN_EXPIRY: "7d"
+  }
+}));
+
+vi.mock("../src/models/userRole.model.js", () => ({
+  UserRole: {
+    findOne: vi.fn().mockResolvedValue(null)
+  }
+}));
+
+vi.mock("../src/models/role.model.js", () => ({
+  Role: {}
+}));
+
+vi.mock("../src/constants/errors.js", () => ({
+  ERRORS: {
+    EMAIL_TAKEN: "EMAIL_TAKEN",
+    INVALID_CREDENTIALS: "INVALID_CREDENTIALS",
+    INVALID_REFRESH_TOKEN: "INVALID_REFRESH"
+  }
+}));
+
+vi.mock("../src/constants/messages.js", () => ({
+  MESSAGES: {
+    LOGOUT_SUCCESS: "Logged out successfully"
+  }
+}));
+
+vi.mock("@repo/shared", () => ({
+  AppError: class AppError extends Error {
+    statusCode: number;
+    constructor(message: string, statusCode: number) {
+      super(message);
+      this.statusCode = statusCode;
+    }
   },
+  logger: {
+    info: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn()
+  }
 }));
 
-//  MOCK EmailService 
-vi.mock('../src/services/email.service.js', () => ({
-  EmailService: vi.fn().mockImplementation(() => ({
-    sendOtpEmail: vi.fn().mockResolvedValue(true),
-  })),
-}));
+/* TESTS */
 
-// MOCK crypto randomInt
-vi.mock('crypto', () => ({
-  randomInt: vi.fn(() => 123456),
-}));
+describe("AuthService", () => {
 
-describe('PasswordService', () => {
-  let repo: PasswordRepository;
-  let service: PasswordService;
-
-  const mockUser = {
-    getDataValue: vi.fn((key: string) => {
-      const values: Record<string, any> = {
-        user_id: 'user-123',
-        email: 'test@mail.com',
-        password: 'hashed-password',
-      };
-      return values[key];
-    }),
-  };
-
-  const mockOtp = {
-    getDataValue: vi.fn((key: string) => {
-      const values: Record<string, any> = {
-        id: 'otp-1',
-        expires_at: new Date(Date.now() + 600000),
-      };
-      return values[key];
-    }),
-  };
+  let mockRepo: any;
+  let service: AuthService;
 
   beforeEach(() => {
-    repo = {
-      findUserById: vi.fn(),
-      updatePassword: vi.fn(),
-      createOtp: vi.fn(),
-      findValidOtp: vi.fn(),
-      markOtpUsed: vi.fn(),
-    } as unknown as PasswordRepository;
+    mockRepo = {
+      findByEmail: vi.fn(),
+      create: vi.fn(),
+      findById: vi.fn(),
+      saveRefreshToken: vi.fn(),
+      verifyRefreshToken: vi.fn(),
+      rotateRefreshToken: vi.fn(),
+      deleteRefreshToken: vi.fn(),
+      getAllUsers: vi.fn()
+    };
 
-    service = new PasswordService(repo);
+    service = new AuthService(mockRepo);
     vi.clearAllMocks();
   });
 
- 
-  // CHANGE PASSWORD
- 
+  /* REGISTER */
 
-  it('should change password successfully', async () => {
-    (repo.findUserByEmail as any).mockResolvedValue(mockUser);
-    (bcrypt.compare as any).mockResolvedValue(true);
-    (bcrypt.hash as any).mockResolvedValue('new-hash');
+  describe("register", () => {
 
-    const result = await service.changePassword(
-      'user-123',
-      'oldpass',
-      'newpass'
-    );
+    it("should register a new user successfully", async () => {
 
-    expect(repo.updatePassword).toHaveBeenCalledWith(
-      'user-123',
-      'new-hash'
-    );
+      mockRepo.findByEmail.mockResolvedValue(null);
 
-    expect(result.message).toBe('Password changed successfully');
+      mockRepo.create.mockResolvedValue({
+        id: "123",
+        name: "Test User",
+        email: "test@test.com",
+        password: "hashed_password",
+        isActive: true
+      });
+
+      const result = await service.register({
+        name: "Test User",
+        email: "test@test.com",
+        password: "password123"
+      });
+
+      expect(result).toEqual({
+        id: "123",
+        name: "Test User",
+        email: "test@test.com"
+      });
+
+      expect(mockRepo.findByEmail).toHaveBeenCalled();
+      expect(mockRepo.create).toHaveBeenCalled();
+
+      // password must not be returned
+      expect(result).not.toHaveProperty("password");
+
+    });
+
+    it("should hash password before storing", async () => {
+
+      mockRepo.findByEmail.mockResolvedValue(null);
+      mockRepo.create.mockResolvedValue({
+        id: "123",
+        name: "Test User",
+        email: "test@test.com"
+      });
+
+      await service.register({
+        name: "Test User",
+        email: "test@test.com",
+        password: "plainpassword"
+      });
+
+      const calledWith = mockRepo.create.mock.calls[0][0];
+      expect(calledWith.password).not.toBe("plainpassword");
+      expect(await bcrypt.compare("plainpassword", calledWith.password)).toBe(true);
+
+    });
+
+    it("should throw EMAIL_TAKEN if user already exists", async () => {
+
+      mockRepo.findByEmail.mockResolvedValue({ id: "1", email: "test@test.com" });
+
+      await expect(
+        service.register({
+          name: "Test",
+          email: "test@test.com",
+          password: "password123"
+        })
+      ).rejects.toThrow("EMAIL_TAKEN");
+
+      expect(mockRepo.create).not.toHaveBeenCalled();
+
+    });
+
   });
 
-  it('should throw if user not found', async () => {
-    (repo.findUserByEmail as any).mockResolvedValue(null);
+  /* LOGIN */
 
-    await expect(
-      service.changePassword('id', 'a', 'b')
-    ).rejects.toThrow('USER_NOT_FOUND');
+  describe("login", () => {
+
+    it("should login successfully and return tokens", async () => {
+
+      const hashed = await bcrypt.hash("password123", 10);
+
+      mockRepo.findByEmail.mockResolvedValue({
+        id: "123",
+        name: "Test User",
+        email: "test@test.com",
+        password: hashed
+      });
+
+      mockRepo.saveRefreshToken.mockResolvedValue(undefined);
+
+      const result = await service.login({
+        email: "test@test.com",
+        password: "password123"
+      });
+
+      expect(result).toHaveProperty("accessToken");
+      expect(result).toHaveProperty("refreshToken");
+      expect(result.user.email).toBe("test@test.com");
+
+    });
+
+    it("should call saveRefreshToken after login", async () => {
+
+      const hashed = await bcrypt.hash("password123", 10);
+
+      mockRepo.findByEmail.mockResolvedValue({
+        id: "123",
+        name: "Test User",
+        email: "test@test.com",
+        password: hashed
+      });
+
+      mockRepo.saveRefreshToken.mockResolvedValue(undefined);
+
+      await service.login({ email: "test@test.com", password: "password123" });
+
+      expect(mockRepo.saveRefreshToken).toHaveBeenCalled();
+
+    });
+
+    it("should default role to staff when no UserRole found", async () => {
+
+      const hashed = await bcrypt.hash("password123", 10);
+
+      mockRepo.findByEmail.mockResolvedValue({
+        id: "123",
+        name: "Test User",
+        email: "test@test.com",
+        password: hashed
+      });
+
+      mockRepo.saveRefreshToken.mockResolvedValue(undefined);
+
+      const result = await service.login({ email: "test@test.com", password: "password123" });
+
+      expect(result.user.role).toBe("staff");
+
+    });
+
+    it("should throw INVALID_CREDENTIALS if user not found", async () => {
+
+      mockRepo.findByEmail.mockResolvedValue(null);
+
+      await expect(
+        service.login({ email: "unknown@test.com", password: "pass123" })
+      ).rejects.toThrow("INVALID_CREDENTIALS");
+
+    });
+
+    it("should throw INVALID_CREDENTIALS if password is incorrect", async () => {
+
+      const hashed = await bcrypt.hash("correctpass", 10);
+
+      mockRepo.findByEmail.mockResolvedValue({
+        id: "123",
+        name: "Test User",
+        email: "test@test.com",
+        password: hashed
+      });
+
+      await expect(
+        service.login({ email: "test@test.com", password: "wrongpass" })
+      ).rejects.toThrow("INVALID_CREDENTIALS");
+
+    });
+
   });
 
-  it('should throw if current password invalid', async () => {
-    (repo.findUserByEmail as any).mockResolvedValue(mockUser);
-    (bcrypt.compare as any).mockResolvedValue(false);
+  /* REFRESH */
 
-    await expect(
-      service.changePassword('id', 'wrong', 'new')
-    ).rejects.toThrow('INVALID_CURRENT_PASSWORD');
+  describe("refresh", () => {
+
+    it("should refresh token successfully", async () => {
+
+      const refreshToken = jwt.sign({ id: "123" }, "test-refresh-secret");
+
+      mockRepo.verifyRefreshToken.mockResolvedValue(undefined);
+      mockRepo.rotateRefreshToken.mockResolvedValue("new-refresh-token");
+
+      mockRepo.findById.mockResolvedValue({
+        id: "123",
+        name: "Test User",
+        email: "test@test.com"
+      });
+
+      const result = await service.refresh(refreshToken);
+
+      expect(result).toHaveProperty("accessToken");
+      expect(result).toHaveProperty("refreshToken");
+      expect(mockRepo.verifyRefreshToken).toHaveBeenCalledWith(refreshToken);
+      expect(mockRepo.rotateRefreshToken).toHaveBeenCalled();
+
+    });
+
+    it("should throw INVALID_REFRESH for invalid token", async () => {
+
+      await expect(
+        service.refresh("invalid-token")
+      ).rejects.toThrow("INVALID_REFRESH");
+
+    });
+
+    it("should throw INVALID_REFRESH if user not found after decode", async () => {
+
+      const refreshToken = jwt.sign({ id: "ghost" }, "test-refresh-secret");
+
+      mockRepo.verifyRefreshToken.mockResolvedValue(undefined);
+      mockRepo.findById.mockResolvedValue(null);
+
+      await expect(
+        service.refresh(refreshToken)
+      ).rejects.toThrow("INVALID_REFRESH");
+
+    });
+
   });
 
-  
-  // FORGOT PASSWORD
+  /* LOGOUT */
 
+  describe("logout", () => {
 
-  it('should generate OTP and send email', async () => {
-    (repo.findUserByEmail as any).mockResolvedValue(mockUser);
+    it("should logout successfully", async () => {
 
-    const result = await service.forgotPassword('test@mail.com');
+      mockRepo.deleteRefreshToken.mockResolvedValue(undefined);
 
-    expect(repo.createOtp).toHaveBeenCalled();
-    expect(result.message).toBe('OTP sent to registered email');
+      const result = await service.logout("sometoken");
+
+      expect(result).toEqual({ message: "Logged out successfully" });
+      expect(mockRepo.deleteRefreshToken).toHaveBeenCalledWith("sometoken");
+
+    });
+
   });
 
-  it('should throw if forgot password user not found', async () => {
-    (repo.findUserByEmail as any).mockResolvedValue(null);
+  /* GET USERS */
 
-    await expect(
-      service.forgotPassword('wrong@mail.com')
-    ).rejects.toThrow('USER_NOT_FOUND');
+  describe("getUsers", () => {
+
+    it("should return all users", async () => {
+
+      const mockUsers = [
+        { id: "1", email: "a@test.com" },
+        { id: "2", email: "b@test.com" }
+      ];
+
+      mockRepo.getAllUsers.mockResolvedValue(mockUsers);
+
+      const result = await service.getUsers();
+
+      expect(result).toEqual(mockUsers);
+      expect(mockRepo.getAllUsers).toHaveBeenCalled();
+
+    });
+
   });
 
-  // RESET PASSWORD
-
-  it('should reset password successfully', async () => {
-    (repo.findUserByEmail as any).mockResolvedValue(mockUser);
-    (repo.findValidOtp as any).mockResolvedValue(mockOtp);
-    (bcrypt.hash as any).mockResolvedValue('new-hash');
-
-    const result = await service.resetPassword(
-      'test@mail.com',
-      '123456',
-      'newpass'
-    );
-
-    expect(repo.updatePassword).toHaveBeenCalled();
-    expect(repo.markOtpUsed).toHaveBeenCalledWith('otp-1');
-    expect(result.message).toBe('Password reset successfully');
-  });
-
-  it('should throw if OTP invalid', async () => {
-    (repo.findUserByEmail as any).mockResolvedValue(mockUser);
-    (repo.findValidOtp as any).mockResolvedValue(null);
-
-    await expect(
-      service.resetPassword('test@mail.com', '000000', 'new')
-    ).rejects.toThrow('INVALID_OTP');
-  });
-
-  it('should throw if OTP expired', async () => {
-    const expiredOtp = {
-      getDataValue: vi.fn((key: string) => {
-        const values: Record<string, any> = {
-          id: 'otp-1',
-          expires_at: new Date(Date.now() - 1000),
-        };
-        return values[key];
-      }),
-    };
-
-    (repo.findUserByEmail as any).mockResolvedValue(mockUser);
-    (repo.findValidOtp as any).mockResolvedValue(expiredOtp);
-
-    await expect(
-      service.resetPassword('test@mail.com', '123456', 'new')
-    ).rejects.toThrow('OTP_EXPIRED');
-  });
 });

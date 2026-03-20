@@ -1,4 +1,3 @@
-/*eslint-disable*/
 import { useState } from "react";
 import { registerUser } from "../../app/app.logic";
 import { Link, useNavigate } from "react-router-dom";
@@ -24,7 +23,6 @@ export default function Register() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // CLIENT SIDE VALIDATION
     if (!isRequired(form.name)) {
       setError("Full name is required");
       toast.error("Full name is required");
@@ -53,13 +51,29 @@ export default function Register() {
 
       navigate("/login");
 
-    } catch (err: any) {
+    } catch (err: unknown) {
 
-      const message =
-        err.response?.data?.error || "Registration failed";
+      let errorMessage = "Registration failed";
 
-      setError(message);
-      toast.error(message);
+      if (
+        typeof err === "object" &&
+        err !== null &&
+        "response" in err
+      ) {
+        const res = err as {
+          response?: {
+            data?: {
+              message?: string;
+            };
+          };
+        };
+
+        errorMessage =
+          res.response?.data?.message || errorMessage;
+      }
+
+      setError(errorMessage);
+      toast.error(errorMessage);
 
     } finally {
       setLoading(false);
@@ -69,7 +83,6 @@ export default function Register() {
   return (
     <div className="min-h-screen flex">
 
-      {/* LEFT SIDE */}
       <div className="hidden lg:flex w-1/2 bg-blue-50 flex-col justify-center px-20">
         <h1 className="text-4xl font-bold text-gray-800">
           Join Retail Inventory
@@ -79,7 +92,6 @@ export default function Register() {
         </p>
       </div>
 
-      {/* RIGHT SIDE */}
       <div className="flex w-full lg:w-1/2 items-center justify-center bg-white p-6">
         <div className="w-full max-w-md space-y-8">
 

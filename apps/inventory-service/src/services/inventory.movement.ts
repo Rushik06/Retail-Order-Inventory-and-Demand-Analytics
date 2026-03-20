@@ -3,6 +3,7 @@ import type { Transaction } from "sequelize";
 import { Inventory } from "../models/inventory.model.js";
 import { InventoryLog } from "../models/inventorylog.model.js";
 import { inventoryAlertService } from "../services/inventory.alert.js";
+import { AppError, logger } from "@repo/shared";
 
 class InventoryMovementService {
 
@@ -14,7 +15,9 @@ class InventoryMovementService {
     availableQty: number,
     reservedQty: number = 0
   ): Promise<Inventory> {
-  console.log(productId)
+
+    logger.info({ productId, warehouseId, availableQty }, "Creating inventory");
+
     return await sequelize.transaction(async (transaction: Transaction) => {
 
       const existing = await Inventory.findOne({
@@ -27,7 +30,7 @@ class InventoryMovementService {
       });
 
       if (existing) {
-        throw new Error("Inventory already exists for this product and warehouse");
+        throw new AppError("Inventory already exists for this product and warehouse", 409);
       }
 
       const inventory = await Inventory.create(
@@ -58,6 +61,8 @@ class InventoryMovementService {
         10,
         transaction
       );
+
+      logger.info({ productId, warehouseId }, "Inventory created successfully");
 
       return inventory;
 
@@ -115,6 +120,8 @@ class InventoryMovementService {
         { transaction }
       );
 
+      logger.info({ productId, warehouseId, quantity, previousQty: previous }, "Stock added successfully");
+
     });
   }
 
@@ -149,7 +156,7 @@ class InventoryMovementService {
       const effectiveAvailable = previous - reserved;
 
       if (effectiveAvailable < quantity) {
-        throw new Error("Insufficient stock");
+        throw new AppError("Insufficient stock", 400);
       }
 
       inventory.set("available_qty", previous - quantity);
@@ -174,6 +181,8 @@ class InventoryMovementService {
         },
         { transaction }
       );
+
+      logger.info({ productId, warehouseId, quantity, previousQty: previous }, "Stock deducted successfully");
 
     });
   }

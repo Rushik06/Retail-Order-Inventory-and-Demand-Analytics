@@ -1,14 +1,14 @@
 import { useState } from "react";
 import api from "@/api/axios";
 import { useAuthStore } from "@/app/app.state";
-
 import ProfileActions from "./ProfileActions";
 import ProfileEditButtons from "./ProfileEditButtons";
 import StatusMessage from "./StatusMessage";
 import DeleteConfirmation from "./DeleteConfirmation";
-import RequestAccess from "./RequestAccess"; 
+import RequestAccess from "./RequestAccess";
 
 export default function Profile() {
+
   const user = useAuthStore((s) => s.user);
   const setUser = useAuthStore((s) => s.setUser);
 
@@ -23,7 +23,22 @@ export default function Profile() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
-  // UPDATE PROFILE
+  /* Helper */
+  const getErrorMessage = (err: unknown, fallback: string) => {
+    if (
+      typeof err === "object" &&
+      err !== null &&
+      "response" in err
+    ) {
+      const res = err as {
+        response?: { data?: { message?: string } };
+      };
+      return res.response?.data?.message || fallback;
+    }
+    return fallback;
+  };
+
+  /* UPDATE PROFILE */
 
   const handleUpdate = async () => {
     try {
@@ -31,29 +46,34 @@ export default function Profile() {
       setMessage("");
 
       const res = await api.patch("/profile", form);
-
       setUser(res.data);
       setEditMode(false);
-
       setMessage("Profile updated successfully");
-    } catch  {
-      setMessage( "Update failed");
+
+    } catch (err: unknown) {
+
+      const msg = getErrorMessage(err, "Update failed");
+      setMessage(msg);
+
     } finally {
       setLoading(false);
     }
   };
 
-  
-  // DELETE PROFILE
-  
+  /* DELETE PROFILE */
+
   const handleDelete = async () => {
     try {
-      await api.delete("/profile");
 
+      await api.delete("/profile");
       localStorage.clear();
       window.location.href = "/login";
-    } catch {
-      setMessage( "Failed to delete account");
+
+    } catch (err: unknown) {
+
+      const msg = getErrorMessage(err, "Failed to delete account");
+      setMessage(msg);
+
     }
   };
 
@@ -73,7 +93,6 @@ export default function Profile() {
       {/* Profile Card */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 relative">
 
-        {/* Top Right Icons */}
         {!editMode && (
           <ProfileActions
             onEdit={() => setEditMode(true)}
@@ -81,7 +100,6 @@ export default function Profile() {
           />
         )}
 
-        {/* Avatar + Basic Info */}
         <div className="flex items-center gap-6">
           <div className="h-20 w-20 rounded-full bg-blue-100 flex items-center justify-center text-2xl font-semibold text-blue-600">
             {user?.name?.charAt(0).toUpperCase()}
@@ -97,13 +115,10 @@ export default function Profile() {
           </div>
         </div>
 
-        {/* Divider */}
         <div className="my-6 border-t border-slate-200" />
 
-        {/* Request Access Buttons */}
         <RequestAccess />
 
-        {/* Editable Form */}
         <div className="space-y-6 max-w-md">
 
           {/* Name */}
@@ -146,7 +161,6 @@ export default function Profile() {
             />
           </div>
 
-          {/* Save / Cancel */}
           {editMode && (
             <ProfileEditButtons
               loading={loading}
@@ -161,13 +175,11 @@ export default function Profile() {
             />
           )}
 
-          {/* Status Message */}
           <StatusMessage message={message} />
 
         </div>
       </div>
 
-      {/* Delete Modal */}
       <DeleteConfirmation
         open={confirmDelete}
         onCancel={() => setConfirmDelete(false)}

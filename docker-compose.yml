@@ -1,9 +1,11 @@
+version: "3.9"
+
 services:
 
   postgres:
     image: postgres:15
     container_name: retail_postgres
-    restart: always
+    restart: unless-stopped
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: password
@@ -11,13 +13,27 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - D:/rms_postgres_data:/var/lib/postgresql/data
+      - ${POSTGRES_DATA_PATH}:/var/lib/postgresql/data
 
+  redis:
+    image: redis:7-alpine
+    container_name: retail_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - ${REDIS_DATA_PATH}:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   rabbitmq:
     image: rabbitmq:3-management
     container_name: retail_rabbitmq
-    restart: always
+    restart: unless-stopped
     ports:
       - "5672:5672"
       - "15672:15672"
@@ -27,75 +43,102 @@ services:
       timeout: 5s
       retries: 5
 
-
   auth-service:
     container_name: retail_auth_service
     build:
       context: .
       dockerfile: apps/auth-service/Dockerfile
-    ports:
-      - "3000:3000"
+    restart: unless-stopped
+    expose:
+      - "3000"
+    env_file:
+      - ./apps/auth-service/.env
+    environment:
+      - NODE_ENV=production
+      - LOG_LEVEL=info
+      - SERVICE_NAME=auth-service
+      - REDIS_HOST=retail_redis        
+      - REDIS_PORT=6379
     depends_on:
       postgres:
         condition: service_started
-
+      redis:
+        condition: service_healthy     
 
   product-service:
     container_name: retail_product_service
     build:
       context: .
       dockerfile: apps/product-service/Dockerfile
-    ports:
-      - "3001:3001"
+    restart: unless-stopped
+    expose:
+      - "3001"
+    env_file:
+      - ./apps/product-service/.env
+    environment:
+      - NODE_ENV=production
+      - LOG_LEVEL=info
+      - SERVICE_NAME=product-service
     depends_on:
       postgres:
         condition: service_started
-
 
   inventory-service:
     container_name: retail_inventory_service
     build:
       context: .
       dockerfile: apps/inventory-service/Dockerfile
-    ports:
-      - "3002:3002"
+    restart: unless-stopped
+    expose:
+      - "3002"
+    env_file:
+      - ./apps/inventory-service/.env
+    environment:
+      - NODE_ENV=production
+      - LOG_LEVEL=info
+      - SERVICE_NAME=inventory-service
     depends_on:
       postgres:
         condition: service_started
       rabbitmq:
         condition: service_healthy
 
-
   reporting-service:
     container_name: retail_reporting_service
     build:
       context: .
       dockerfile: apps/reporting-service/Dockerfile
-    ports:
-      - "3003:3003"
+    restart: unless-stopped
+    expose:
+      - "3003"
+    env_file:
+      - ./apps/reporting-service/.env
+    environment:
+      - NODE_ENV=production
+      - LOG_LEVEL=info
+      - SERVICE_NAME=reporting-service
     depends_on:
       postgres:
         condition: service_started
-
 
   web-app:
     container_name: retail_web_app
     build:
       context: .
       dockerfile: apps/web-app/Dockerfile
-    ports:
-      - "5173:5173"
+    restart: unless-stopped
+    expose:
+      - "80"
     depends_on:
       - auth-service
       - product-service
       - inventory-service
       - reporting-service
-      
-
 
   nginx:
     image: nginx:alpine
     container_name: retail_nginx
+    restart: unless-stopped
     ports:
       - "80:80"
     volumes:

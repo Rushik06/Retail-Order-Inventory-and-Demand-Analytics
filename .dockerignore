@@ -1,0 +1,31 @@
+# dependencies
+node_modules
+.pnpm-store
+
+# build outputs
+dist
+build
+
+# logs
+npm-debug.log*
+pnpm-debug.log*
+
+# env files
+.env
+.env.*
+
+# git
+.git
+.gitignore
+
+# OS / editor
+.DS_Store
+.vscode
+.idea
+
+# docker
+Dockerfile*
+docker-compose.yml
+
+# tests
+coverage

@@ -18,3 +18,9 @@ export interface User {
   role?: string;
 
 }
+
+export type UserRoleWithRole = {
+  Role?: {
+    role_name: string;
+  };
+}

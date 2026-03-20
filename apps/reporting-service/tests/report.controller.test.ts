@@ -1,13 +1,13 @@
+/*eslint-disable*/
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import type { Request, Response, NextFunction } from "express";
+import type { Request, Response } from "express";
 
 import { reportController } from "../src/controllers/reporting.controller.js";
 import { reportService } from "../src/services/reporting.service.js";
 
-/* MOCK SERVICE */
+/* MOCKS */
 
-/*eslint-disable */
-vi.mock("../services/reporting.service.js", () => ({
+vi.mock("../src/services/reporting.service.js", () => ({
   reportService: {
     getDashboard: vi.fn(),
     getCounters: vi.fn(),
@@ -16,172 +16,172 @@ vi.mock("../services/reporting.service.js", () => ({
   }
 }));
 
+/* HELPERS */
+
+const mockResponse = () => {
+  const res = {} as Response;
+  res.status = vi.fn().mockReturnValue(res);
+  res.json = vi.fn().mockReturnValue(res);
+  return res;
+};
+
 describe("ReportController", () => {
 
-  let req: Partial<Request>;
-  let res: Partial<Response>;
-  let next: NextFunction;
-
   beforeEach(() => {
-
-    req = {};
-
-    res = {
-      status: vi.fn().mockReturnThis(),
-      json: vi.fn()
-    };
-
-    next = vi.fn();
-
     vi.clearAllMocks();
-
   });
 
   /* DASHBOARD */
 
-  it("should return dashboard data", async () => {
+  describe("getDashboard", () => {
 
-    const mockData = { counters: {}, charts: {}, tables: {} };
+    it("should return 200 with dashboard data", async () => {
 
-    (reportService.getDashboard as any).mockResolvedValue(mockData);
+      const req = {} as Request;
+      const res = mockResponse();
 
-    await reportController.getDashboard(
-      req as Request,
-      res as Response,
-      next
-    );
+      const mockData = {
+        counters: { totalProducts: 10, totalOrders: 20 },
+        charts: {},
+        tables: {}
+      };
 
-    expect(reportService.getDashboard).toHaveBeenCalled();
+      (reportService.getDashboard as any).mockResolvedValue(mockData);
 
-    expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.json).toHaveBeenCalledWith(mockData);
+      await reportController.getDashboard(req, res);
 
-  });
+      expect(reportService.getDashboard).toHaveBeenCalled();
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith(mockData);
 
-  it("should call next on dashboard error", async () => {
+    });
 
-    const error = new Error("Dashboard error");
+    it("should throw when service throws", async () => {
 
-    (reportService.getDashboard as any).mockRejectedValue(error);
+      const req = {} as Request;
+      const res = mockResponse();
 
-    await reportController.getDashboard(
-      req as Request,
-      res as Response,
-      next
-    );
+      (reportService.getDashboard as any).mockRejectedValue(new Error("DB_ERROR"));
 
-    expect(next).toHaveBeenCalledWith(error);
+      await expect(reportController.getDashboard(req, res)).rejects.toThrow("DB_ERROR");
+
+    });
 
   });
 
   /* COUNTERS */
 
-  it("should return counters", async () => {
+  describe("getCounters", () => {
 
-    const mockCounters = { totalProducts: 10 };
+    it("should return 200 with counters data", async () => {
 
-    (reportService.getCounters as any).mockResolvedValue(mockCounters);
+      const req = {} as Request;
+      const res = mockResponse();
 
-    await reportController.getCounters(
-      req as Request,
-      res as Response,
-      next
-    );
+      const mockCounters = {
+        totalProducts: 10,
+        totalWarehouses: 5,
+        lowStockItems: 2,
+        totalOrders: 20,
+        totalRevenue: 1000
+      };
 
-    expect(reportService.getCounters).toHaveBeenCalled();
+      (reportService.getCounters as any).mockResolvedValue(mockCounters);
 
-    expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.json).toHaveBeenCalledWith(mockCounters);
+      await reportController.getCounters(req, res);
 
-  });
+      expect(reportService.getCounters).toHaveBeenCalled();
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith(mockCounters);
 
-  it("should call next on counters error", async () => {
+    });
 
-    const error = new Error("Counters error");
+    it("should throw when service throws", async () => {
 
-    (reportService.getCounters as any).mockRejectedValue(error);
+      const req = {} as Request;
+      const res = mockResponse();
 
-    await reportController.getCounters(
-      req as Request,
-      res as Response,
-      next
-    );
+      (reportService.getCounters as any).mockRejectedValue(new Error("DB_ERROR"));
 
-    expect(next).toHaveBeenCalledWith(error);
+      await expect(reportController.getCounters(req, res)).rejects.toThrow("DB_ERROR");
+
+    });
 
   });
 
   /* CHARTS */
 
-  it("should return charts", async () => {
+  describe("getCharts", () => {
 
-    const mockCharts = { warehouseStock: [] };
+    it("should return 200 with charts data", async () => {
 
-    (reportService.getCharts as any).mockResolvedValue(mockCharts);
+      const req = {} as Request;
+      const res = mockResponse();
 
-    await reportController.getCharts(
-      req as Request,
-      res as Response,
-      next
-    );
+      const mockCharts = {
+        warehouseStock: [{ warehouse: "A", total_stock: 100 }],
+        categoryDistribution: [],
+        ordersByStatus: [],
+        topSellingProducts: []
+      };
 
-    expect(reportService.getCharts).toHaveBeenCalled();
+      (reportService.getCharts as any).mockResolvedValue(mockCharts);
 
-    expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.json).toHaveBeenCalledWith(mockCharts);
+      await reportController.getCharts(req, res);
 
-  });
+      expect(reportService.getCharts).toHaveBeenCalled();
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith(mockCharts);
 
-  it("should call next on charts error", async () => {
+    });
 
-    const error = new Error("Charts error");
+    it("should throw when service throws", async () => {
 
-    (reportService.getCharts as any).mockRejectedValue(error);
+      const req = {} as Request;
+      const res = mockResponse();
 
-    await reportController.getCharts(
-      req as Request,
-      res as Response,
-      next
-    );
+      (reportService.getCharts as any).mockRejectedValue(new Error("DB_ERROR"));
 
-    expect(next).toHaveBeenCalledWith(error);
+      await expect(reportController.getCharts(req, res)).rejects.toThrow("DB_ERROR");
+
+    });
 
   });
 
   /* TABLES */
 
-  it("should return tables", async () => {
+  describe("getTables", () => {
 
-    const mockTables = { recentOrders: [] };
+    it("should return 200 with tables data", async () => {
 
-    (reportService.getTables as any).mockResolvedValue(mockTables);
+      const req = {} as Request;
+      const res = mockResponse();
 
-    await reportController.getTables(
-      req as Request,
-      res as Response,
-      next
-    );
+      const mockTables = {
+        recentActivity: [{ product_name: "Laptop" }],
+        recentOrders: [{ customer_name: "John" }]
+      };
 
-    expect(reportService.getTables).toHaveBeenCalled();
+      (reportService.getTables as any).mockResolvedValue(mockTables);
 
-    expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.json).toHaveBeenCalledWith(mockTables);
+      await reportController.getTables(req, res);
 
-  });
+      expect(reportService.getTables).toHaveBeenCalled();
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith(mockTables);
 
-  it("should call next on tables error", async () => {
+    });
 
-    const error = new Error("Tables error");
+    it("should throw when service throws", async () => {
 
-    (reportService.getTables as any).mockRejectedValue(error);
+      const req = {} as Request;
+      const res = mockResponse();
 
-    await reportController.getTables(
-      req as Request,
-      res as Response,
-      next
-    );
+      (reportService.getTables as any).mockRejectedValue(new Error("DB_ERROR"));
 
-    expect(next).toHaveBeenCalledWith(error);
+      await expect(reportController.getTables(req, res)).rejects.toThrow("DB_ERROR");
+
+    });
 
   });
 

@@ -9,21 +9,21 @@ import { sendReportEmail } from "../src/utils/email.sender.js";
 /* MOCK MODULES */
 
 /*eslint-disable */
-vi.mock("../services/reporting.service.js", () => ({
+vi.mock("../src/services/reporting.service.js", () => ({
   reportService: {
     getDashboard: vi.fn()
   }
 }));
 
-vi.mock("../utils/pdf.generator.js", () => ({
+vi.mock("../src/utils/pdf.generator.js", () => ({
   generateDashboardPDF: vi.fn()
 }));
 
-vi.mock("../utils/excel.generator.js", () => ({
+vi.mock("../src/utils/excel.generator.js", () => ({
   generateDashboardExcel: vi.fn()
 }));
 
-vi.mock("../utils/email.sender.js", () => ({
+vi.mock("../src/utils/email.sender.js", () => ({
   sendReportEmail: vi.fn()
 }));
 

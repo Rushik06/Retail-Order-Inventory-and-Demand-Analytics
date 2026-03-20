@@ -1,13 +1,12 @@
 /*eslint-disable*/
+import { ERRORS } from "../constants/errors.js";
 import {
-
   getAllInventory,
   getInventoryByProductWarehouse
 } from "../repository/inventory.repository.js";
+import { AppError } from "@repo/shared";
 
 class InventoryQueryService {
-
-  /* GET ALL INVENTORY WITH PAGINATION SEARCH SORT */
 
   async getAllInventory(params?: {
     page?: number;
@@ -33,18 +32,29 @@ class InventoryQueryService {
 
     const filtered = allInventory.filter((item: any) => {
 
-      const productId =
-        item.product_id?.toLowerCase?.() || "";
+      if (!searchValue) return true;
 
-      const warehouseId =
-        item.warehouse_id?.toLowerCase?.() || "";
+      const sku =
+        item.product?.sku?.toLowerCase?.() || "";
+
+      const productName =
+        item.product?.name?.toLowerCase?.() || "";
+
+      const warehouseName =
+        item.warehouse?.name?.toLowerCase?.() || "";
+
+      const location =
+        item.warehouse?.location?.toLowerCase?.() || "";
 
       return (
-        productId.includes(searchValue) ||
-        warehouseId.includes(searchValue)
+        sku.includes(searchValue) ||
+        productName.includes(searchValue) ||
+        warehouseName.includes(searchValue) ||
+        location.includes(searchValue)
       );
 
     });
+
     /* SORT */
 
     const sorted = filtered.sort((a: any, b: any) => {
@@ -52,25 +62,40 @@ class InventoryQueryService {
       let aValue: any;
       let bValue: any;
 
-      if (sortField === "product_id") {
-        aValue = a.product?.name || "";
-        bValue = b.product?.name || "";
-      }
+      switch (sortField) {
+        case "sku":
+          aValue = a.product?.sku || "";
+          bValue = b.product?.sku || "";
+          break;
 
-      else if (sortField === "warehouse_id") {
-        aValue = a.warehouse?.name || "";
-        bValue = b.warehouse?.name || "";
-      }
+        case "product_id":
+        case "productName":
+          aValue = a.product?.name || "";
+          bValue = b.product?.name || "";
+          break;
 
-      else {
-        aValue = a[sortField];
-        bValue = b[sortField];
+        case "warehouse_id":
+        case "warehouseName":
+          aValue = a.warehouse?.name || "";
+          bValue = b.warehouse?.name || "";
+          break;
+
+        case "location":
+          aValue = a.warehouse?.location || "";
+          bValue = b.warehouse?.location || "";
+          break;
+
+        default:
+          aValue = a[sortField];
+          bValue = b[sortField];
       }
 
       if (typeof aValue === "string") {
         aValue = aValue.toLowerCase();
-        bValue = bValue.toLowerCase();
+        bValue = (bValue as string).toLowerCase();
       }
+
+      if (aValue === bValue) return 0;
 
       if (sortOrder === "ASC") {
         return aValue > bValue ? 1 : -1;
@@ -83,9 +108,7 @@ class InventoryQueryService {
     /* PAGINATION */
 
     const start = (page - 1) * limit;
-    const end = start + limit;
-
-    const paginated = sorted.slice(start, end);
+    const paginated = sorted.slice(start, start + limit);
 
     return {
       data: paginated,
@@ -99,21 +122,18 @@ class InventoryQueryService {
 
   }
 
-  /* GET INVENTORY BY PRODUCT AND WAREHOUSE */
-
   async getInventory(
     productId: string,
     warehouseId: string
   ) {
 
-    const inventory =
-      await getInventoryByProductWarehouse(
-        productId,
-        warehouseId
-      );
+    const inventory = await getInventoryByProductWarehouse(
+      productId,
+      warehouseId
+    );
 
     if (!inventory) {
-      throw new Error("Inventory not found");
+      throw new AppError(ERRORS.INVENTORY_NOT_FOUND, 404);
     }
 
     return inventory;
@@ -122,5 +142,4 @@ class InventoryQueryService {
 
 }
 
-export const inventoryQueryService =
-  new InventoryQueryService();
+export const inventoryQueryService = new InventoryQueryService();

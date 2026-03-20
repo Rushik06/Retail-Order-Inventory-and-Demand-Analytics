@@ -12,7 +12,7 @@ const options: swaggerJsdoc.Options = {
     },
     servers: [
       {
-        url: 'http://localhost:3000'
+        url: 'http://localhost'  
       }
     ],
     components: {
@@ -25,7 +25,10 @@ const options: swaggerJsdoc.Options = {
       }
     }
   },
-  apis: ['./src/**/*.ts'] // scans route files
+  apis: process.env.NODE_ENV === 'production' 
+    ? ['./dist/**/*.js']   
+    : ['./src/**/*.ts']    
+
 };
 
 const swaggerSpec = swaggerJsdoc(options);

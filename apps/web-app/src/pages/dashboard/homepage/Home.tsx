@@ -3,11 +3,15 @@ import { fetchDashboard } from "@/app/reporting.logic";
 import { getProducts } from "@/api/product-axios";
 import { getWarehouses } from "@/api/inventory-axios";
 import { useAuthStore } from "@/app/app.state";
+
 import DashboardHeader from "@/pages/dashboard/homepage/DashboardHeader";
 import DashboardCounters from "@/pages/dashboard/homepage/DashboardCounters";
 import DashboardCharts from "@/pages/dashboard/homepage/dashboardcharts/DashboardCharts";
 import InventoryActivityTable from "@/pages/dashboard/homepage/ActivityTable";
 import RecentOrdersTable from "@/pages/dashboard/homepage/RecentOrdersTable";
+
+import DashboardSkeleton from "@/components/loaders/DashboardSkeleton";
+
 import type { DashboardData } from "@/types/dashboard.types";
 import type { Order } from "@/utils/recentorder-table.helpers";
 import type { InventoryActivity } from "@/utils/activity-table.helpers";
@@ -38,42 +42,7 @@ export default function Home() {
   }, []);
 
   if (!dashboard) {
-    return (
-
-      <div className="max-w-[1400px] mx-auto px-6 space-y-10 animate-pulse">
-
-        {/* Header Skeleton */}
-        <div className="h-10 w-64 bg-slate-200 rounded"></div>
-
-        {/* Counters Skeleton */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {[...Array(4)].map((_, i) => (
-            <div
-              key={i}
-              className="h-24 bg-slate-200 rounded-lg"
-            />
-          ))}
-        </div>
-
-        {/* Charts Skeleton */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-          <div className="h-[340px] bg-slate-200 rounded-lg"></div>
-          <div className="h-[340px] bg-slate-200 rounded-lg"></div>
-
-        </div>
-
-        {/* Tables Skeleton */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-          <div className="h-[320px] bg-slate-200 rounded-lg"></div>
-          <div className="h-[320px] bg-slate-200 rounded-lg"></div>
-
-        </div>
-
-      </div>
-
-    );
+    return <DashboardSkeleton />;
   }
 
   const { counters, charts, tables, products, warehouses } = dashboard;

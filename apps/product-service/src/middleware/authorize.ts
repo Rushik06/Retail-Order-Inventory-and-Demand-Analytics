@@ -1,22 +1,22 @@
-/*eslint-disable @typescript-eslint/no-explicit-any */
 import type { Request, Response, NextFunction } from "express";
+import { logger } from "@repo/shared";
 
 export const authorize =
   (...allowedRoles: string[]) =>
   (req: Request, res: Response, next: NextFunction) => {
 
+    /*eslint-disable @typescript-eslint/no-explicit-any */
     const user = (req as any).user;
 
     if (!user) {
-      console.log("No user found on request");
+      logger.warn({ path: req.path }, "No user found on request");
       return res.status(401).json({ message: "Unauthorized" });
     }
 
     if (!allowedRoles.includes(user.role)) {
-      console.log("Role mismatch - Forbidden");
+      logger.warn({ role: user.role, allowedRoles, path: req.path }, "Role mismatch - Forbidden");
       return res.status(403).json({ message: "Forbidden" });
     }
 
-    
     next();
   };

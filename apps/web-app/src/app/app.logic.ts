@@ -1,11 +1,12 @@
 import api from "../api/axios";
-import { setTokens } from "../utils/token";
+import { setAccessToken } from "../utils/token"; 
 import { useAuthStore } from "./app.state";
 
 export const loginUser = async (email: string, password: string) => {
   const res = await api.post("/auth/login", { email, password });
 
-  setTokens(res.data.accessToken, res.data.refreshToken);
+  
+  setAccessToken(res.data.accessToken);
 
   useAuthStore.getState().setUser(res.data.user);
 
@@ -47,13 +48,12 @@ export const fetchUsers = async () => {
   return res.data;
 };
 
-/*EMAIL-REQUEST ACCESS */
-export const requestRoleAccess = async (roleName: string) => {
+/* EMAIL - REQUEST ACCESS */
 
+export const requestRoleAccess = async (roleName: string) => {
   const res = await api.post("/rbac/request-role", {
-    roleName
+    roleName,
   });
 
   return res.data;
-
 };

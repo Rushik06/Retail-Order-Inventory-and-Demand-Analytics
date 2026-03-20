@@ -9,12 +9,14 @@ import {
   Table,
   TableBody
 } from "@/components/ui/Table";
+
 import InventoryTableRows from "./InventoryTableRows";
 import InventoryActionDialog from "./InventoryActionDialog";
 import InventoryTableHeader from "./InventoryTableHeaders";
 import useInventoryActions from "@/hooks/Inventoryhooks";
 import type { Props } from "@/types/inventory.types";
 import InventoryPagination from "./InventoryPagination";
+import InventoryTableSkeleton from "@/components/loaders/InventoryTableSkeleton";
 
 export default function InventoryTable({
   inventory,
@@ -111,35 +113,8 @@ export default function InventoryTable({
               <TableBody>
 
                 {loading ? (
-                  [...Array(6)].map((_, i) => (
 
-                    <tr key={i} className="animate-pulse">
-                      <td className="p-4">
-                        <div className="h-4 bg-gray-200 rounded w-[200px]" />
-                      </td>
-
-                      <td className="p-4">
-                        <div className="h-4 bg-gray-200 rounded w-[200px]" />
-                      </td>
-
-                      <td className="p-4 text-center">
-                        <div className="h-4 bg-gray-200 rounded w-[40px] mx-auto" />
-                      </td>
-
-                      <td className="p-4 text-center">
-                        <div className="h-4 bg-gray-200 rounded w-[40px] mx-auto" />
-                      </td>
-
-                      <td className="p-4 text-center">
-                        <div className="h-4 bg-gray-200 rounded w-[60px] mx-auto" />
-                      </td>
-
-                      <td className="p-4 text-center">
-                        <div className="h-4 bg-gray-200 rounded w-[20px] mx-auto" />
-                      </td>
-                    </tr>
-
-                  ))
+                  <InventoryTableSkeleton />
 
                 ) : (
 
@@ -153,8 +128,11 @@ export default function InventoryTable({
                 )}
 
               </TableBody>
+
             </Table>
+
           </div>
+
           {/* PAGINATION */}
 
           <InventoryPagination
@@ -162,6 +140,7 @@ export default function InventoryTable({
             totalPages={totalPages}
             setPage={setPage}
           />
+
         </div>
 
       </CardContent>
@@ -179,5 +158,6 @@ export default function InventoryTable({
       />
 
     </Card>
+
   );
 }

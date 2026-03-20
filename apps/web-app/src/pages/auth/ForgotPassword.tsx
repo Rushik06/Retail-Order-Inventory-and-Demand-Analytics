@@ -1,4 +1,3 @@
-/*eslint-disable*/
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../api/axios";
@@ -16,7 +15,6 @@ export default function ForgotPassword() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    //CLIENT SIDE VALIDATION
     if (!isRequired(email)) {
       setError("Email is required");
       toast.error("Email is required");
@@ -36,21 +34,38 @@ export default function ForgotPassword() {
 
       await api.post("/password/forgot", { email });
 
-      setMessage("OTP sent successfully to your email");
-      toast.success("OTP sent successfully to your email");
+      const successMsg = "OTP sent successfully to your email";
 
-      // Smooth redirect after success
+      setMessage(successMsg);
+      toast.success(successMsg);
+
       setTimeout(() => {
         navigate(`/reset-password?email=${email}`);
       }, 1500);
 
-    } catch (err: any) {
+    } catch (err: unknown) {
 
-      const message =
-        err.response?.data?.error || "Something went wrong";
+      let errorMessage = "Something went wrong";
 
-      setError(message);
-      toast.error(message);
+      if (
+        typeof err === "object" &&
+        err !== null &&
+        "response" in err
+      ) {
+        const res = err as {
+          response?: {
+            data?: {
+              message?: string;
+            };
+          };
+        };
+
+        errorMessage =
+          res.response?.data?.message || errorMessage;
+      }
+
+      setError(errorMessage);
+      toast.error(errorMessage);
 
     } finally {
       setLoading(false);
@@ -68,14 +83,12 @@ export default function ForgotPassword() {
           Forgot Password
         </h2>
 
-        {/* Success Message */}
         {message && (
           <div className="bg-green-50 text-green-600 text-sm p-3 rounded-lg">
             {message}
           </div>
         )}
 
-        {/* Error Message */}
         {error && (
           <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg">
             {error}

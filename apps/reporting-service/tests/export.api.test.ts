@@ -8,21 +8,25 @@ import { exportController } from "../src/controllers/export.controller.js";
 /* MOCK MIDDLEWARES */
 
 /*eslint-disable */
-vi.mock("../middleware/authenticate.js", () => ({
+vi.mock("../src/middleware/authenticate.js", () => ({
   authenticate: (req: any, res: any, next: any) => next()
 }));
 
-vi.mock("../middleware/authorize.js", () => ({
+vi.mock("../src/middleware/authorize.js", () => ({
   authorizeRoles: () => (req: any, res: any, next: any) => next()
 }));
 
-vi.mock("../middleware/validate-schema.js", () => ({
+vi.mock("../src/middleware/validate-schema.js", () => ({
   validate: () => (req: any, res: any, next: any) => next()
+}));
+
+vi.mock("../src/validations/export.schema.js", () => ({
+  exportEmailSchema: {}
 }));
 
 /* MOCK CONTROLLER */
 
-vi.mock("../controllers/export.controller.js", () => ({
+vi.mock("../src/controllers/export.controller.js", () => ({
   exportController: {
     exportPDF: vi.fn((req, res) => res.send("pdf-file")),
     exportExcel: vi.fn((req, res) => res.send("excel-file")),

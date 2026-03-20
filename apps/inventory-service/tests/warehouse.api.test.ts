@@ -4,37 +4,55 @@ import request from "supertest";
 import express from "express";
 
 import router from "../src/routes/warehouse.routes.js";
+import {
+  createWarehouseController,
+  getAllWarehousesController,
+  getWarehouseByIdController,
+  updateWarehouseController,
+  deactivateWarehouseController,
+  activateWarehouseController
+} from "../src/controllers/warehouse.controller.js";
 
 /* MOCK MIDDLEWARES */
 
-vi.mock("../../src/middleware/auth.middleware.js", () => ({
+vi.mock("../src/middleware/auth.middleware.js", () => ({
   authenticate: (req: any, res: any, next: any) => next()
 }));
 
-vi.mock("../../src/middleware/authorize.middleware.js", () => ({
+vi.mock("../src/middleware/authorize.middleware.js", () => ({
   authorizeRoles: () => (req: any, res: any, next: any) => next()
 }));
 
-vi.mock("../../src/middleware/validate.middleware.js", () => ({
+vi.mock("../src/middleware/validate.middleware.js", () => ({
   validate: () => (req: any, res: any, next: any) => next()
 }));
 
-/* MOCK CONTROLLERS */
+vi.mock("../src/validations/warehouse.validation.js", () => ({
+  createWarehouseSchema: {},
+  updateWarehouseSchema: {}
+}));
 
-const mockCreate = vi.fn((req, res) => res.status(201).json({ message: "created" }));
-const mockGetAll = vi.fn((req, res) => res.status(200).json([]));
-const mockGetById = vi.fn((req, res) => res.status(200).json({ id: "1" }));
-const mockUpdate = vi.fn((req, res) => res.status(200).json({ message: "updated" }));
-const mockDeactivate = vi.fn((req, res) => res.status(200).json({ message: "deactivated" }));
-const mockActivate = vi.fn((req, res) => res.status(200).json({ message: "activated" }));
+/* MOCK CONTROLLERS — functions defined inside factory to avoid hoisting issues */
 
-vi.mock("../../src/controllers/warehouse.controller.js", () => ({
-  createWarehouseController: mockCreate,
-  getAllWarehousesController: mockGetAll,
-  getWarehouseByIdController: mockGetById,
-  updateWarehouseController: mockUpdate,
-  deactivateWarehouseController: mockDeactivate,
-  activateWarehouseController: mockActivate
+vi.mock("../src/controllers/warehouse.controller.js", () => ({
+  createWarehouseController: vi.fn((req: any, res: any) =>
+    res.status(201).json({ message: "created" })
+  ),
+  getAllWarehousesController: vi.fn((req: any, res: any) =>
+    res.status(200).json([])
+  ),
+  getWarehouseByIdController: vi.fn((req: any, res: any) =>
+    res.status(200).json({ id: "1" })
+  ),
+  updateWarehouseController: vi.fn((req: any, res: any) =>
+    res.status(200).json({ message: "updated" })
+  ),
+  deactivateWarehouseController: vi.fn((req: any, res: any) =>
+    res.status(200).json({ message: "deactivated" })
+  ),
+  activateWarehouseController: vi.fn((req: any, res: any) =>
+    res.status(200).json({ message: "activated" })
+  )
 }));
 
 describe("Warehouse Routes", () => {
@@ -54,13 +72,10 @@ describe("Warehouse Routes", () => {
 
     const res = await request(app)
       .post("/warehouses")
-      .send({
-        name: "Delhi",
-        location: "India"
-      });
+      .send({ name: "Delhi", location: "India" });
 
     expect(res.status).toBe(201);
-    expect(mockCreate).toHaveBeenCalled();
+    expect(createWarehouseController).toHaveBeenCalled();
 
   });
 
@@ -68,11 +83,10 @@ describe("Warehouse Routes", () => {
 
   it("GET /warehouses should return warehouses", async () => {
 
-    const res = await request(app)
-      .get("/warehouses");
+    const res = await request(app).get("/warehouses");
 
     expect(res.status).toBe(200);
-    expect(mockGetAll).toHaveBeenCalled();
+    expect(getAllWarehousesController).toHaveBeenCalled();
 
   });
 
@@ -80,11 +94,10 @@ describe("Warehouse Routes", () => {
 
   it("GET /warehouses/:id should return warehouse", async () => {
 
-    const res = await request(app)
-      .get("/warehouses/1");
+    const res = await request(app).get("/warehouses/1");
 
     expect(res.status).toBe(200);
-    expect(mockGetById).toHaveBeenCalled();
+    expect(getWarehouseByIdController).toHaveBeenCalled();
 
   });
 
@@ -94,12 +107,10 @@ describe("Warehouse Routes", () => {
 
     const res = await request(app)
       .patch("/warehouses/1")
-      .send({
-        name: "Updated"
-      });
+      .send({ name: "Updated" });
 
     expect(res.status).toBe(200);
-    expect(mockUpdate).toHaveBeenCalled();
+    expect(updateWarehouseController).toHaveBeenCalled();
 
   });
 
@@ -107,11 +118,10 @@ describe("Warehouse Routes", () => {
 
   it("PATCH /warehouses/:id/deactivate should deactivate warehouse", async () => {
 
-    const res = await request(app)
-      .patch("/warehouses/1/deactivate");
+    const res = await request(app).patch("/warehouses/1/deactivate");
 
     expect(res.status).toBe(200);
-    expect(mockDeactivate).toHaveBeenCalled();
+    expect(deactivateWarehouseController).toHaveBeenCalled();
 
   });
 
@@ -119,11 +129,10 @@ describe("Warehouse Routes", () => {
 
   it("PATCH /warehouses/:id/activate should activate warehouse", async () => {
 
-    const res = await request(app)
-      .patch("/warehouses/1/activate");
+    const res = await request(app).patch("/warehouses/1/activate");
 
     expect(res.status).toBe(200);
-    expect(mockActivate).toHaveBeenCalled();
+    expect(activateWarehouseController).toHaveBeenCalled();
 
   });
 

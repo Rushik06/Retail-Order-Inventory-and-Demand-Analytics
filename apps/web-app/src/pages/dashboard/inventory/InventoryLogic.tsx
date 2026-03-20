@@ -1,6 +1,7 @@
-/* eslint-disable */
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+
 import {
   fetchInventory,
   createNewInventory,
@@ -12,112 +13,115 @@ import {
 
 import { getProducts } from "@/api/product-axios";
 import { getWarehouses } from "@/api/inventory-axios";
-import {
-  filterInventory,
-  sortInventory
-} from "@/utils/inventory.helpers";
 
 export default function useInventoryPageLogic() {
 
-  const [inventory, setInventory] = useState<any[]>([]);
-  const [products, setProducts] = useState<any[]>([]);
-  const [warehouses, setWarehouses] = useState<any[]>([]);
+  const queryClient = useQueryClient();
+
   const [productId, setProductId] = useState("");
   const [warehouseId, setWarehouseId] = useState("");
-  const [loading, setLoading] = useState(true);
 
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(6);
   const [search, setSearch] = useState("");
   const [sortField, setSortField] = useState("createdAt");
   const [sortOrder, setSortOrder] = useState<"ASC" | "DESC">("DESC");
-  const [totalPages, setTotalPages] = useState(1);
+
+  const getErrorMessage = (err: unknown, fallback: string) => {
+    if (
+      typeof err === "object" &&
+      err !== null &&
+      "response" in err
+    ) {
+      const res = err as {
+        response?: { data?: { message?: string } };
+      };
+      return res.response?.data?.message || fallback;
+    }
+    return fallback;
+  };
+
+  /* INVENTORY QUERY */
+
+  const {
+    data: inventoryRes,
+    isLoading: loading,
+    refetch
+  } = useQuery({
+    queryKey: ["inventory", page, limit, search, sortField, sortOrder],
+    queryFn: () =>
+      fetchInventory({ page, limit, search, sortField, sortOrder }),
+  });
+
+  const inventory = inventoryRes?.data || [];
+  const totalPages = inventoryRes?.meta?.totalPages || 1;
+
+  /* PRODUCTS */
+
+  const { data: productsRes } = useQuery({
+    queryKey: ["products"],
+    queryFn: getProducts
+  });
+
+  const products = productsRes?.data || [];
+
+  /* WAREHOUSES */
+
+  const { data: warehousesRes } = useQuery({
+    queryKey: ["warehouses"],
+    queryFn: () => getWarehouses({ page: 1, limit: 1000 })
+  });
+
+  const warehouses = warehousesRes?.data?.data || [];
+
+  /* HELPERS */
 
   const getAllocatedStock = (pid: string) => {
     return inventory
-      .filter((i) => i.product_id === pid)
-      .reduce((sum, i) => sum + (i.available_qty || 0), 0);
+      .filter((i: { product_id: string }) => i.product_id === pid)
+      .reduce(
+        (sum: number, i: { available_qty?: number }) =>
+          sum + (i.available_qty || 0),
+        0
+      );
   };
 
   const getRemainingStock = (pid: string) => {
-
-    const product = products.find((p) => p.id === pid);
-
+    const product = products.find(
+      (p: { id: string; stock: number }) => p.id === pid
+    );
     if (!product) return 0;
     const allocated = getAllocatedStock(pid);
     return Math.max(product.stock - allocated, 0);
   };
 
-  const loadInventory = async () => {
+  /* CREATE */
 
-    setLoading(true);
+  const createMutation = useMutation({
+    mutationFn: () => createNewInventory(productId, warehouseId, 0),
 
-    try {
+    onSuccess: () => {
+      toast.success("Inventory created successfully");
+      setProductId("");
+      setWarehouseId("");
+      queryClient.invalidateQueries({ queryKey: ["inventory"] });
+    },
 
-      const res = await fetchInventory({
-        page,
-        limit,
-        search,
-        sortField,
-        sortOrder
-      });
-
-      setInventory(res.data || []);
-
-      if (res.meta) {
-        setTotalPages(res.meta.totalPages || 1);
-      }
-
-    } catch (err) {
-
-      console.error("Inventory load failed", err);
-      toast.error("Failed to load inventory");
-
+    onError: (err: unknown) => {
+      const message = getErrorMessage(err, "Failed to create inventory");
+      toast.error(message);
     }
-
-    setLoading(false);
-
-  };
-
-  const loadDropdowns = async () => {
-
-    try {
-
-      const productRes = await getProducts();
-      setProducts(productRes.data || []);
-
-      const warehouseRes = await getWarehouses({
-        page: 1,
-        limit: 1000
-      });
-
-      setWarehouses(warehouseRes.data?.data || []);
-
-    } catch {
-      toast.error("Failed to load products or warehouses");
-    }
-
-  };
-
-  useEffect(() => {
-    loadInventory();
-  }, [page, limit, search, sortField, sortOrder]);
-
-  useEffect(() => {
-    loadDropdowns();
-  }, []);
+  });
 
   const createInventory = async () => {
 
     if (!productId || !warehouseId) {
-
       toast.warning("Please select product and warehouse");
       return;
-
     }
 
     const exists = inventory.find(
-      (i) =>
+      (i: { product_id: string; warehouse_id: string }) =>
         i.product_id === productId &&
         i.warehouse_id === warehouseId
     );
@@ -134,19 +138,10 @@ export default function useInventoryPageLogic() {
       return;
     }
 
-    try {
-      await createNewInventory(productId, warehouseId, 0);
-      toast.success("Inventory created successfully");
-
-      setProductId("");
-      setWarehouseId("");
-      await loadInventory();
-
-    } catch {
-      toast.error("Failed to create inventory");
-    }
-
+    createMutation.mutate();
   };
+
+  /* ADD STOCK */
 
   const safeAddInventoryStock = async (
     productId: string,
@@ -156,53 +151,49 @@ export default function useInventoryPageLogic() {
   ) => {
 
     const remaining = getRemainingStock(productId);
+
     if (quantity > remaining) {
       toast.error(`Only ${remaining} stock remaining to allocate`);
       return false;
-
     }
 
-    await addInventoryStock(productId, warehouseId, quantity, referenceId ?? null);
-    await loadInventory();
-       return true;
+    try {
+      await addInventoryStock(
+        productId,
+        warehouseId,
+        quantity,
+        referenceId ?? null
+      );
+      queryClient.invalidateQueries({ queryKey: ["inventory"] });
+      return true;
+    } catch (err: unknown) {
+      const message = getErrorMessage(err, "Failed to add stock");
+      toast.error(message);
+      return false;
+    }
   };
 
+  /* SORT */
+
   const handleSort = (field: string) => {
-
-    if (field === "product_id" || field === "warehouse_id") {
-      const sorted = sortInventory(
-        inventory,
-        products,
-        warehouses,
-        field
-      );
-
-      setInventory(sorted);
-      return;
-
-    }
-
     if (sortField === field) {
-
-      setSortOrder(sortOrder === "ASC" ? "DESC" : "ASC");
-
+      setSortOrder(prev => (prev === "ASC" ? "DESC" : "ASC"));
     } else {
       setSortField(field);
       setSortOrder("ASC");
-
     }
-
+    setPage(1);
   };
 
-  const filteredInventory = filterInventory(
-    inventory,
-    products,
-    warehouses,
-    search
-  );
+  /* SEARCH */
+
+  const handleSearch = (value: string) => {
+    setSearch(value);
+    setPage(1);
+  };
 
   return {
-    inventory: filteredInventory,
+    inventory,
     products,
     warehouses,
     productId,
@@ -215,9 +206,9 @@ export default function useInventoryPageLogic() {
     limit,
     setLimit,
     search,
-    setSearch,
+    setSearch: handleSearch,
     totalPages,
-    loadInventory,
+    loadInventory: refetch,
     createInventory,
     safeAddInventoryStock,
     reserveInventoryStock,

@@ -1,134 +1,212 @@
 import { Routes, Route, Navigate } from "react-router-dom";
+import { Suspense, useEffect, useState } from "react";
+
 import { useAuthStore } from "../app/app.state";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
-
-import Login from "../pages/auth/Login";
-import Register from "../pages/auth/Register";
-import ForgotPassword from "../pages/auth/ForgotPassword";
-import ResetPassword from "../pages/auth/ResetPassword";
-
-import Profile from "../pages/dashboard/profile/Profile";
-import Home from "@/pages/dashboard/homepage/Home";
-import Security from "@/pages/dashboard/Security";
-import Products from "@/pages/dashboard/product/Product";
-import Orders from "@/pages/dashboard/order/Order";
-
-import Inventory from "@/pages/dashboard/inventory/Inventory";
-import Warehouse from "@/pages/dashboard/warehouse/Warehouse";
-import Users from "../pages/dashboard/users/Users";
-
 import DashboardLayout from "../components/layout/DashboardLayout";
 
+import RouteSkeleton from "@/components/loaders/RouteSkeleton";
+import { useLazyPages } from "@/hooks/lazy-pages";
+
+import type { RolesModule } from "@/types/app-routes.types";
+
 function AppRoutes() {
+
   const user = useAuthStore((s) => s.user);
 
+  const {
+    Login,
+    Register,
+    ForgotPassword,
+    ResetPassword,
+    Profile,
+    Home,
+    Security,
+    Products,
+    Orders,
+    Inventory,
+    Warehouse,
+    Users
+  } = useLazyPages();
+
+  const [roles, setRoles] = useState<RolesModule | null>(null);
+
+  /* Lazy load role constants */
+
+  useEffect(() => {
+
+    const loadRoles = async () => {
+
+      const module = await import("@/constants/roles.constants");
+
+      setRoles(module);
+
+    };
+
+    loadRoles();
+
+  }, []);
+
+  if (!roles) {
+    return <RouteSkeleton />;
+  }
+
+  const {
+    PRODUCT_ROLES,
+    ORDER_ROLES,
+    INVENTORY_ROLES,
+    WAREHOUSE_ROLES,
+    USER_ROLES
+  } = roles;
+
   return (
-    <Routes>
-      {/* Root redirect */}
-      <Route
-        path="/"
-        element={
-          user ? (
-            <Navigate to="/dashboard" replace />
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        }
-      />
 
-      {/* Public routes */}
-      <Route
-        path="/login"
-        element={user ? <Navigate to="/dashboard" replace /> : <Login />}
-      />
+    <Suspense fallback={<RouteSkeleton />}>
 
-      <Route
-        path="/register"
-        element={user ? <Navigate to="/dashboard" replace /> : <Register />}
-      />
+      <Routes>
 
-      <Route
-        path="/forgot-password"
-        element={user ? <Navigate to="/dashboard" replace /> : <ForgotPassword />}
-      />
+        {/* Root redirect */}
 
-      <Route
-        path="/reset-password"
-        element={user ? <Navigate to="/dashboard" replace /> : <ResetPassword />}
-      />
-
-      {/* Protected dashboard */}
-      <Route
-        path="/dashboard"
-        element={
-          user ? (
-            <ProtectedRoute>
-              <DashboardLayout />
-            </ProtectedRoute>
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        }
-      >
-        {/* Dashboard pages */}
-        <Route index element={<Home />} />
-        <Route path="profile" element={<Profile />} />
-        <Route path="security" element={<Security />} />
-
-        {/* Product - manager + admin */}
         <Route
-          path="products"
+          path="/"
           element={
-            <ProtectedRoute allowedRoles={["manager", "admin", "super_admin","staff"]}>
-              <Products />
-            </ProtectedRoute>
+            user
+              ? <Navigate to="/dashboard" replace />
+              : <Navigate to="/login" replace />
+          }
+        />
+
+        {/* Public routes */}
+
+        <Route
+          path="/login"
+          element={
+            user
+              ? <Navigate to="/dashboard" replace />
+              : <Login />
           }
         />
 
         <Route
-          path="orders"
+          path="/register"
           element={
-            <ProtectedRoute allowedRoles={["staff", "manager", "admin", "super_admin"]}>
-              <Orders />
-            </ProtectedRoute>
+            user
+              ? <Navigate to="/dashboard" replace />
+              : <Register />
           }
         />
 
-        {/* Inventory - manager + admin */}
         <Route
-          path="inventory"
+          path="/forgot-password"
           element={
-            <ProtectedRoute allowedRoles={["manager", "admin", "super_admin","staff"]}>
-              <Inventory />
-            </ProtectedRoute>
+            user
+              ? <Navigate to="/dashboard" replace />
+              : <ForgotPassword />
           }
         />
 
-        {/* Warehouse - admin + manager + staff */}
         <Route
-          path="warehouses"
+          path="/reset-password"
           element={
-            <ProtectedRoute allowedRoles={["admin", "super_admin","manager","staff"]}>
-              <Warehouse />
-            </ProtectedRoute>
+            user
+              ? <Navigate to="/dashboard" replace />
+              : <ResetPassword />
           }
         />
 
-        {/* Users - admin only */}
+        {/* Protected dashboard */}
+
         <Route
-          path="users"
+          path="/dashboard"
           element={
-            <ProtectedRoute allowedRoles={["admin", "super_admin"]}>
-              <Users />
-            </ProtectedRoute>
+            user ? (
+              <ProtectedRoute>
+                <DashboardLayout />
+              </ProtectedRoute>
+            ) : (
+              <Navigate to="/login" replace />
+            )
           }
-        />
-      </Route>
+        >
 
-      {/* Fallback */}
-      <Route path="*" element={<Navigate to="/login" replace />} />
-    </Routes>
+          {/* Dashboard pages */}
+
+          <Route index element={<Home />} />
+
+          <Route path="profile" element={<Profile />} />
+
+          <Route path="security" element={<Security />} />
+
+          {/* Products */}
+
+          <Route
+            path="products"
+            element={
+              <ProtectedRoute allowedRoles={PRODUCT_ROLES}>
+                <Products />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Orders */}
+
+          <Route
+            path="orders"
+            element={
+              <ProtectedRoute allowedRoles={ORDER_ROLES}>
+                <Orders />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Inventory */}
+
+          <Route
+            path="inventory"
+            element={
+              <ProtectedRoute allowedRoles={INVENTORY_ROLES}>
+                <Inventory />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Warehouses */}
+
+          <Route
+            path="warehouses"
+            element={
+              <ProtectedRoute allowedRoles={WAREHOUSE_ROLES}>
+                <Warehouse />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Users */}
+
+          <Route
+            path="users"
+            element={
+              <ProtectedRoute allowedRoles={USER_ROLES}>
+                <Users />
+              </ProtectedRoute>
+            }
+          />
+
+        </Route>
+
+        {/* Fallback */}
+
+        <Route
+          path="*"
+          element={<Navigate to="/login" replace />}
+        />
+
+      </Routes>
+
+    </Suspense>
+
   );
+
 }
 
 export default AppRoutes;

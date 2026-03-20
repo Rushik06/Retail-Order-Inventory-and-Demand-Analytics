@@ -1,68 +1,45 @@
 import type { Request, Response } from 'express';
 import { AuthService } from '../services/auth.service.js';
+import { AppError } from '@repo/shared';
+import { COOKIE_OPTIONS } from '../constants/auth.js'; 
 
 export class AuthController {
-  constructor(private readonly service: AuthService) { }
+  constructor(private readonly service: AuthService) {}
 
   register = async (req: Request, res: Response): Promise<Response> => {
-    try {
-      const result = await this.service.register(req.body);
-      return res.status(201).json(result);
-    } catch (error: unknown) {
-      console.error('Registration error:', error);
-      if (error instanceof Error && error.message === 'EMAIL_TAKEN') {
-        return res.status(409).json({ error: 'Email already exists' });
-      }
-
-      return res.status(500).json({ error: 'Internal server error' });
-    }
+    const result = await this.service.register(req.body);
+    return res.status(201).json(result);
   };
 
   login = async (req: Request, res: Response): Promise<Response> => {
-    try {
-      const result = await this.service.login(req.body);
-      return res.status(200).json(result);
-    } catch (error: unknown) {
-      console.error("LOGIN ERROR:", error);
-
-      if (error instanceof Error && error.message === 'INVALID_CREDENTIALS') {
-        return res.status(401).json({ error: 'Invalid credentials' });
-      }
-
-      return res.status(500).json({
-        error: error instanceof Error ? error.message : "Internal server error"
-      });
-    }
+    const result = await this.service.login(req.body);
+    res.cookie('refreshToken', result.refreshToken, COOKIE_OPTIONS);
+    return res.status(200).json({
+      accessToken: result.accessToken,
+      user: result.user,
+    });
   };
 
   refresh = async (req: Request, res: Response): Promise<Response> => {
-    try {
-      const result = await this.service.refresh(req.body.refreshToken);
-      return res.status(200).json(result);
-    } catch {
-      return res.status(401).json({ error: 'Invalid refresh token' });
-    }
+    const refreshToken = req.cookies.refreshToken;
+    if (!refreshToken) throw new AppError('Refresh token is required', 400);
+
+    const result = await this.service.refresh(refreshToken);
+    res.cookie('refreshToken', result.refreshToken, COOKIE_OPTIONS);
+    return res.status(200).json({ accessToken: result.accessToken });
   };
 
   logout = async (req: Request, res: Response): Promise<Response> => {
-    await this.service.logout(req.body.refreshToken);
-    return res.status(200).json({ message: 'Logged out successfully' });
+    const refreshToken = req.cookies.refreshToken;
+    if (!refreshToken) throw new AppError('Refresh token is required', 400);
+
+    const result = await this.service.logout(refreshToken);
+    res.clearCookie('refreshToken', COOKIE_OPTIONS);
+    return res.status(200).json(result);
   };
+
   getUsers = async (_req: Request, res: Response): Promise<Response> => {
-    try {
-
-      const users = await this.service.getUsers();
-
-      return res.status(200).json(users);
-
-    } catch (error) {
-
-      console.error("GET USERS ERROR:", error);
-
-      return res.status(500).json({
-        error: "Failed to fetch users"
-      });
-
-    }
+    const users = await this.service.getUsers();
+    return res.status(200).json(users);
   };
 }
