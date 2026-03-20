@@ -42,7 +42,7 @@ app.use(
 );
 
 app.use(express.json());
-app.use(cookieParser()); // ← add — must be after express.json()
+app.use(cookieParser()); 
 
 app.use("/api/auth", authLimiter, authRoutes);
 app.use("/api/profile", profileRoutes);
