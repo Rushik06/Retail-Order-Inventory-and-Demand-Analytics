@@ -20,25 +20,16 @@ COPY --from=installer /app .
 COPY --from=pruner /app/out/full/ .
 RUN pnpm turbo build --filter=reporting-service
 
+# DEPLOYER
+FROM base AS deployer
+WORKDIR /app
+COPY --from=builder /app .
+RUN pnpm deploy --filter=reporting-service --prod /app/deployed
+
 # RUNNER
 FROM node:20-alpine AS runner
 WORKDIR /app
-RUN npm install -g pnpm
-
-COPY --from=pruner /app/out/json/ .
-COPY --from=pruner /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
-RUN pnpm install --frozen-lockfile --prod --ignore-scripts
-
-COPY --from=builder /app/apps/reporting-service/dist ./apps/reporting-service/dist
-
-RUN mkdir -p ./node_modules/@repo/shared
-COPY --from=builder /app/packages/shared/dist ./node_modules/@repo/shared/dist
-COPY --from=builder /app/packages/shared/package.json ./node_modules/@repo/shared/package.json
-
-RUN mkdir -p ./apps/reporting-service/node_modules/@repo/shared
-COPY --from=builder /app/packages/shared/dist ./apps/reporting-service/node_modules/@repo/shared/dist
-COPY --from=builder /app/packages/shared/package.json ./apps/reporting-service/node_modules/@repo/shared/package.json
-
+COPY --from=deployer /app/deployed .
 ENV NODE_ENV=production
 EXPOSE 3003
-CMD ["node", "apps/reporting-service/dist/server.js"]
+CMD ["node", "dist/server.js"]
