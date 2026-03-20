@@ -1,9 +1,59 @@
+/*eslint-disable*/
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { AuthController } from "../src/controller/auth.controller.js";
 import type { AuthService } from "../src/services/auth.service.js";
 import type { Request, Response } from "express";
 
-/*eslint-disable */
+/* MOCKS */
+
+// Prevent config/env.ts from crashing on missing PORT env var
+vi.mock("../src/config/index.js", () => ({
+  env: {
+    PORT: "3000",
+    JWT_ACCESS_SECRET: "test-access-secret",
+    JWT_REFRESH_SECRET: "test-refresh-secret",
+    ACCESS_TOKEN_EXPIRY: "15m",
+    REFRESH_TOKEN_EXPIRY: "7d",
+    DATABASE_URL: "postgres://test",
+    REDIS_URL: "redis://test"
+  }
+}));
+
+vi.mock("@repo/shared", () => ({
+  AppError: class AppError extends Error {
+    statusCode: number;
+    constructor(message: string, statusCode: number) {
+      super(message);
+      this.statusCode = statusCode;
+    }
+  },
+  logger: {
+    info: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn()
+  }
+}));
+
+vi.mock("../src/constants/auth.js", () => ({
+  COOKIE_OPTIONS: {
+    httpOnly: true,
+    secure: false,
+    sameSite: "strict",
+    maxAge: 7 * 24 * 60 * 60 * 1000
+  }
+}));
+
+/* HELPERS */
+
+const mockResponse = () => {
+  const res = {} as Response;
+  res.status = vi.fn().mockReturnValue(res);
+  res.json = vi.fn().mockReturnValue(res);
+  res.cookie = vi.fn().mockReturnValue(res);
+  res.clearCookie = vi.fn().mockReturnValue(res);
+  return res;
+};
+
 describe("AuthController", () => {
 
   const mockService = {
@@ -16,13 +66,6 @@ describe("AuthController", () => {
 
   const controller = new AuthController(mockService);
 
-  const mockResponse = () => {
-    const res = {} as Response;
-    res.status = vi.fn().mockReturnValue(res);
-    res.json = vi.fn().mockReturnValue(res);
-    return res;
-  };
-
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -31,30 +74,36 @@ describe("AuthController", () => {
 
   describe("register", () => {
 
-    it("returns 201 and user data when successful", async () => {
+    it("should return 201 with user data on success", async () => {
 
       const req = {
-        body: { email: "test@test.com", password: "123456" }
+        body: { name: "John", email: "john@test.com", password: "pass123" }
       } as Request;
 
       const res = mockResponse();
 
       (mockService.register as any).mockResolvedValue({
         id: "1",
-        email: "test@test.com"
+        name: "John",
+        email: "john@test.com"
       });
 
       await controller.register(req, res);
 
+      expect(mockService.register).toHaveBeenCalledWith(req.body);
       expect(res.status).toHaveBeenCalledWith(201);
-      expect(res.json).toHaveBeenCalledWith({ id: "1", email: "test@test.com" });
+      expect(res.json).toHaveBeenCalledWith({
+        id: "1",
+        name: "John",
+        email: "john@test.com"
+      });
 
     });
 
-    it("throws EMAIL_TAKEN error when email already exists", async () => {
+    it("should throw when service throws EMAIL_TAKEN", async () => {
 
       const req = {
-        body: { email: "dup@test.com", password: "123456" }
+        body: { name: "John", email: "dup@test.com", password: "pass123" }
       } as Request;
 
       const res = mockResponse();
@@ -73,35 +122,57 @@ describe("AuthController", () => {
 
   describe("login", () => {
 
-    it("returns 200 with tokens when successful", async () => {
+    it("should return 200 with accessToken and user, set refreshToken cookie", async () => {
 
       const req = {
-        body: { email: "test@test.com", password: "123456" }
+        body: { email: "john@test.com", password: "pass123" }
       } as Request;
 
       const res = mockResponse();
 
       (mockService.login as any).mockResolvedValue({
-        accessToken: "access",
-        refreshToken: "refresh",
-        user: { email: "test@test.com" }
+        accessToken: "access-token",
+        refreshToken: "refresh-token",
+        user: { id: "1", email: "john@test.com" }
       });
 
       await controller.login(req, res);
 
-      expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.json).toHaveBeenCalledWith(
-        expect.objectContaining({ accessToken: "access" })
+      expect(res.cookie).toHaveBeenCalledWith(
+        "refreshToken",
+        "refresh-token",
+        expect.any(Object)
       );
+
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({
+        accessToken: "access-token",
+        user: { id: "1", email: "john@test.com" }
+      });
 
     });
 
-    it("throws INVALID_CREDENTIALS when credentials are wrong", async () => {
+    it("should not include refreshToken in response body", async () => {
 
-      const req = {
-        body: { email: "wrong@test.com", password: "wrongpass" }
-      } as Request;
+      const req = { body: { email: "john@test.com", password: "pass123" } } as Request;
+      const res = mockResponse();
 
+      (mockService.login as any).mockResolvedValue({
+        accessToken: "access-token",
+        refreshToken: "refresh-token",
+        user: { id: "1", email: "john@test.com" }
+      });
+
+      await controller.login(req, res);
+
+      const jsonCall = (res.json as any).mock.calls[0][0];
+      expect(jsonCall).not.toHaveProperty("refreshToken");
+
+    });
+
+    it("should throw when service throws INVALID_CREDENTIALS", async () => {
+
+      const req = { body: { email: "x@test.com", password: "wrong" } } as Request;
       const res = mockResponse();
 
       (mockService.login as any).mockRejectedValue(
@@ -118,40 +189,35 @@ describe("AuthController", () => {
 
   describe("refresh", () => {
 
-    it("returns 200 with new accessToken", async () => {
+    it("should return 200 with new accessToken and set new cookie", async () => {
 
       const req = {
-        body: { refreshToken: "valid-refresh-token" }
-      } as Request;
+        cookies: { refreshToken: "valid-refresh-token" }
+      } as unknown as Request;
 
       const res = mockResponse();
 
       (mockService.refresh as any).mockResolvedValue({
-        accessToken: "new-access-token"
+        accessToken: "new-access-token",
+        refreshToken: "new-refresh-token"
       });
 
       await controller.refresh(req, res);
 
+      expect(mockService.refresh).toHaveBeenCalledWith("valid-refresh-token");
+      expect(res.cookie).toHaveBeenCalledWith("refreshToken", "new-refresh-token", expect.any(Object));
       expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.json).toHaveBeenCalledWith(
-        expect.objectContaining({ accessToken: "new-access-token" })
-      );
+      expect(res.json).toHaveBeenCalledWith({ accessToken: "new-access-token" });
 
     });
 
-    it("throws INVALID_TOKEN when refresh token is invalid", async () => {
+    it("should throw AppError when refreshToken cookie is missing", async () => {
 
-      const req = {
-        body: { refreshToken: "invalid-token" }
-      } as Request;
-
+      const req = { cookies: {} } as unknown as Request;
       const res = mockResponse();
 
-      (mockService.refresh as any).mockRejectedValue(
-        Object.assign(new Error("INVALID_TOKEN"), { statusCode: 401 })
-      );
-
-      await expect(controller.refresh(req, res)).rejects.toThrow("INVALID_TOKEN");
+      await expect(controller.refresh(req, res)).rejects.toThrow("Refresh token is required");
+      expect(mockService.refresh).not.toHaveBeenCalled();
 
     });
 
@@ -161,20 +227,33 @@ describe("AuthController", () => {
 
   describe("logout", () => {
 
-    it("returns 200 with success message", async () => {
+    it("should return 200 and clear cookie", async () => {
 
       const req = {
-        body: { refreshToken: "valid-refresh-token" }
-      } as Request;
+        cookies: { refreshToken: "valid-refresh-token" }
+      } as unknown as Request;
 
       const res = mockResponse();
 
-      (mockService.logout as any).mockResolvedValue(undefined);
+      (mockService.logout as any).mockResolvedValue({ message: "Logged out successfully" });
 
       await controller.logout(req, res);
 
+      expect(mockService.logout).toHaveBeenCalledWith("valid-refresh-token");
+      expect(res.clearCookie).toHaveBeenCalledWith("refreshToken", expect.any(Object));
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith({ message: "Logged out successfully" });
+
+    });
+
+    it("should throw AppError when refreshToken cookie is missing", async () => {
+
+      const req = { cookies: {} } as unknown as Request;
+      const res = mockResponse();
+
+      await expect(controller.logout(req, res)).rejects.toThrow("Refresh token is required");
+      expect(mockService.logout).not.toHaveBeenCalled();
+      expect(res.clearCookie).not.toHaveBeenCalled();
 
     });
 
@@ -184,22 +263,23 @@ describe("AuthController", () => {
 
   describe("getUsers", () => {
 
-    it("returns 200 with list of users", async () => {
+    it("should return 200 with list of users", async () => {
 
       const req = {} as Request;
       const res = mockResponse();
 
-      const mockUsers = [
+      (mockService.getUsers as any).mockResolvedValue([
         { id: "1", email: "a@test.com" },
         { id: "2", email: "b@test.com" }
-      ];
-
-      (mockService.getUsers as any).mockResolvedValue(mockUsers);
+      ]);
 
       await controller.getUsers(req, res);
 
       expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.json).toHaveBeenCalledWith(mockUsers);
+      expect(res.json).toHaveBeenCalledWith([
+        { id: "1", email: "a@test.com" },
+        { id: "2", email: "b@test.com" }
+      ]);
 
     });
 

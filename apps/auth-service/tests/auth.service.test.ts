@@ -67,7 +67,9 @@ describe("AuthService", () => {
       create: vi.fn(),
       findById: vi.fn(),
       saveRefreshToken: vi.fn(),
-      verifyRefreshToken: vi.fn(),
+      verifyRefreshToken: vi.fn(),  // used in refresh
+      rotateRefreshToken: vi.fn(),  // used in refresh
+      deleteRefreshToken: vi.fn(),  // used in logout
       getAllUsers: vi.fn()
     };
 
@@ -136,6 +138,8 @@ describe("AuthService", () => {
       password: hashed
     });
 
+    mockRepo.saveRefreshToken.mockResolvedValue(undefined);
+
     const result = await service.login({
       email: "test@test.com",
       password: "password123"
@@ -184,11 +188,12 @@ describe("AuthService", () => {
 
   it("should refresh token successfully", async () => {
 
-    // Sign with the same secret the mocked env exposes
     const refreshToken = jwt.sign(
       { id: "123" },
       "test-refresh-secret"
     );
+
+    mockRepo.verifyRefreshToken.mockResolvedValue(undefined);
 
     mockRepo.findById.mockResolvedValue({
       id: "123",
@@ -196,9 +201,14 @@ describe("AuthService", () => {
       email: "test@test.com"
     });
 
+    mockRepo.rotateRefreshToken.mockResolvedValue("new-refresh-token");
+
     const result = await service.refresh(refreshToken);
 
     expect(result).toHaveProperty("accessToken");
+    expect(result).toHaveProperty("refreshToken");
+    expect(mockRepo.verifyRefreshToken).toHaveBeenCalledWith(refreshToken);
+    expect(mockRepo.rotateRefreshToken).toHaveBeenCalled();
 
   });
 
@@ -214,9 +224,12 @@ describe("AuthService", () => {
 
   it("should logout successfully", async () => {
 
+    mockRepo.deleteRefreshToken.mockResolvedValue(undefined);
+
     const result = await service.logout("sometoken");
 
     expect(result).toEqual({ message: "Logged out successfully" });
+    expect(mockRepo.deleteRefreshToken).toHaveBeenCalledWith("sometoken");
 
   });
 

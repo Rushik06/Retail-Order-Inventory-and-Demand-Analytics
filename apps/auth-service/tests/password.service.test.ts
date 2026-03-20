@@ -68,6 +68,8 @@ describe("AuthService", () => {
       findById: vi.fn(),
       saveRefreshToken: vi.fn(),
       verifyRefreshToken: vi.fn(),
+      rotateRefreshToken: vi.fn(),
+      deleteRefreshToken: vi.fn(),
       getAllUsers: vi.fn()
     };
 
@@ -165,6 +167,8 @@ describe("AuthService", () => {
         password: hashed
       });
 
+      mockRepo.saveRefreshToken.mockResolvedValue(undefined);
+
       const result = await service.login({
         email: "test@test.com",
         password: "password123"
@@ -187,6 +191,8 @@ describe("AuthService", () => {
         password: hashed
       });
 
+      mockRepo.saveRefreshToken.mockResolvedValue(undefined);
+
       await service.login({ email: "test@test.com", password: "password123" });
 
       expect(mockRepo.saveRefreshToken).toHaveBeenCalled();
@@ -203,6 +209,8 @@ describe("AuthService", () => {
         email: "test@test.com",
         password: hashed
       });
+
+      mockRepo.saveRefreshToken.mockResolvedValue(undefined);
 
       const result = await service.login({ email: "test@test.com", password: "password123" });
 
@@ -245,10 +253,10 @@ describe("AuthService", () => {
 
     it("should refresh token successfully", async () => {
 
-      const refreshToken = jwt.sign(
-        { id: "123" },
-        "test-refresh-secret"
-      );
+      const refreshToken = jwt.sign({ id: "123" }, "test-refresh-secret");
+
+      mockRepo.verifyRefreshToken.mockResolvedValue(undefined);
+      mockRepo.rotateRefreshToken.mockResolvedValue("new-refresh-token");
 
       mockRepo.findById.mockResolvedValue({
         id: "123",
@@ -259,6 +267,9 @@ describe("AuthService", () => {
       const result = await service.refresh(refreshToken);
 
       expect(result).toHaveProperty("accessToken");
+      expect(result).toHaveProperty("refreshToken");
+      expect(mockRepo.verifyRefreshToken).toHaveBeenCalledWith(refreshToken);
+      expect(mockRepo.rotateRefreshToken).toHaveBeenCalled();
 
     });
 
@@ -274,6 +285,7 @@ describe("AuthService", () => {
 
       const refreshToken = jwt.sign({ id: "ghost" }, "test-refresh-secret");
 
+      mockRepo.verifyRefreshToken.mockResolvedValue(undefined);
       mockRepo.findById.mockResolvedValue(null);
 
       await expect(
@@ -290,10 +302,12 @@ describe("AuthService", () => {
 
     it("should logout successfully", async () => {
 
+      mockRepo.deleteRefreshToken.mockResolvedValue(undefined);
+
       const result = await service.logout("sometoken");
 
       expect(result).toEqual({ message: "Logged out successfully" });
-      expect(mockRepo.verifyRefreshToken).toHaveBeenCalledWith("sometoken");
+      expect(mockRepo.deleteRefreshToken).toHaveBeenCalledWith("sometoken");
 
     });
 
