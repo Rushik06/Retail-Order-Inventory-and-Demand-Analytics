@@ -11,12 +11,7 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-interface EmailOptions {
-  to: string
-  subject: string
-  text?: string
-  html?: string
-}
+import type { EmailOptions } from "../types/email.types.js";
 
 export const sendEmail = async ({
   to,
