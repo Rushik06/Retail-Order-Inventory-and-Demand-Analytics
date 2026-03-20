@@ -1,13 +1,12 @@
 import type { Request, Response } from "express";
 import { inventoryQueryService } from "../services/inventory.query.service.js";
 
-/* GET ALL INVENTORY */
 
+/*GET ALL INVENTORY*/
 export const getAllInventoryController = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-
   const { page, limit, search, sortField, sortOrder } = req.query;
 
   const inventory = await inventoryQueryService.getAllInventory({
@@ -15,21 +14,17 @@ export const getAllInventoryController = async (
     limit: Number(limit) || 10,
     search: String(search || ""),
     sortField: String(sortField || "createdAt"),
-    sortOrder: (sortOrder as "ASC" | "DESC") || "DESC"
+    sortOrder: (sortOrder as "ASC" | "DESC") || "DESC",
   });
 
   res.status(200).json(inventory);
-
 };
 
-
-/* GET INVENTORY BY PRODUCT AND WAREHOUSE */
-
+/*GET INVENTORY BY PRODUCT AND WAREHOUSE ID */
 export const getInventoryController = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-
   const productId = req.params.productId as string;
   const warehouseId = req.params.warehouseId as string;
 
@@ -38,8 +33,5 @@ export const getInventoryController = async (
     warehouseId
   );
 
-  res.status(200).json({
-    data: inventory
-  });
-
+  res.status(200).json({ data: inventory });
 };

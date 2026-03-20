@@ -1,13 +1,13 @@
 import type { Request, Response } from "express";
 import { inventoryMovementService } from "../services/inventory.movement.js";
+import { MESSAGES } from "../constants/messages.js";
 
-/* CREATE INVENTORY */
+/*CREATE-INVENTORY */
 
 export const createInventoryController = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-
   const { productId, warehouseId, availableQty, reservedQty } = req.body;
 
   const inventory = await inventoryMovementService.createInventory(
@@ -18,20 +18,16 @@ export const createInventoryController = async (
   );
 
   res.status(201).json({
-    message: "Inventory created successfully",
-    data: inventory
+    message: MESSAGES.INVENTORY_CREATED,
+    data: inventory,
   });
-
 };
 
-
-/* ADD STOCK */
-
+/*ADD-STOCK */
 export const addStockController = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-
   const { productId, warehouseId, quantity, referenceId } = req.body;
 
   await inventoryMovementService.addStock(
@@ -41,20 +37,14 @@ export const addStockController = async (
     referenceId ?? undefined
   );
 
-  res.status(200).json({
-    message: "Stock added successfully",
-  });
-
+  res.status(200).json({ message: MESSAGES.STOCK_ADDED });
 };
 
-
-/* DEDUCT STOCK */
-
+/*DEDUCT-STOCK */
 export const deductStockController = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-
   const { productId, warehouseId, quantity, referenceId } = req.body;
 
   await inventoryMovementService.deductStock(
@@ -64,8 +54,5 @@ export const deductStockController = async (
     referenceId
   );
 
-  res.status(200).json({
-    message: "Stock deducted successfully",
-  });
-
+  res.status(200).json({ message: MESSAGES.STOCK_DEDUCTED });
 };

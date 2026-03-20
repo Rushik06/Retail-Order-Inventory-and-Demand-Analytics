@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "@/api/axios";
 import { useAuthStore } from "@/app/app.state";
-import { setAccessToken } from "@/utils/token"; // ← add
+import { setAccessToken } from "@/utils/token";
 import { isRequired, isValidEmail } from "@/utils/validators";
 import { toast } from "sonner";
 
