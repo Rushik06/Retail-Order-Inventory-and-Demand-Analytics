@@ -1,12 +1,12 @@
+/*eslint-disable*/
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import type { Request, Response, NextFunction } from "express";
+import type { Request, Response } from "express";
 
 import { exportController } from "../src/controllers/export.controller.js";
 import { exportService } from "../src/services/export.service.js";
 
-/* MOCK SERVICE */
+/* MOCKS */
 
-/*eslint-disable */
 vi.mock("../src/services/export.service.js", () => ({
   exportService: {
     exportPDF: vi.fn(),
@@ -15,181 +15,167 @@ vi.mock("../src/services/export.service.js", () => ({
   }
 }));
 
+/* HELPERS */
+
+const mockResponse = () => {
+  const res = {} as Response;
+  res.status = vi.fn().mockReturnValue(res);
+  res.json = vi.fn().mockReturnValue(res);
+  res.setHeader = vi.fn().mockReturnValue(res);
+  res.send = vi.fn().mockReturnValue(res);
+  return res;
+};
+
 describe("ExportController", () => {
 
-  let req: Partial<Request>;
-  let res: Partial<Response>;
-  let next: NextFunction;
-
   beforeEach(() => {
-
-    req = {
-      body: {}
-    };
-
-    res = {
-      setHeader: vi.fn(),
-      send: vi.fn(),
-      status: vi.fn().mockReturnThis(),
-      json: vi.fn()
-    };
-
-    next = vi.fn();
-
     vi.clearAllMocks();
-
   });
 
   /* EXPORT PDF */
 
-  it("should export PDF file", async () => {
+  describe("exportPDF", () => {
 
-    const mockFile = Buffer.from("pdf");
+    it("should set correct headers and send PDF buffer", async () => {
 
-    (exportService.exportPDF as any).mockResolvedValue(mockFile);
+      const req = {} as Request;
+      const res = mockResponse();
 
-    await exportController.exportPDF(
-      req as Request,
-      res as Response,
-      next
-    );
+      const mockFile = Buffer.from("pdf-content");
+      (exportService.exportPDF as any).mockResolvedValue(mockFile);
 
-    expect(exportService.exportPDF).toHaveBeenCalled();
+      await exportController.exportPDF(req, res);
 
-    expect(res.setHeader).toHaveBeenCalledWith(
-      "Content-Type",
-      "application/pdf"
-    );
+      expect(exportService.exportPDF).toHaveBeenCalled();
 
-    expect(res.setHeader).toHaveBeenCalledWith(
-      "Content-Disposition",
-      "attachment; filename=dashboard-report.pdf"
-    );
+      expect(res.setHeader).toHaveBeenCalledWith(
+        "Content-Type",
+        "application/pdf"
+      );
 
-    expect(res.send).toHaveBeenCalledWith(mockFile);
+      expect(res.setHeader).toHaveBeenCalledWith(
+        "Content-Disposition",
+        "attachment; filename=dashboard-report.pdf"
+      );
 
-  });
+      expect(res.send).toHaveBeenCalledWith(mockFile);
 
-  it("should call next on PDF error", async () => {
+    });
 
-    const error = new Error("PDF error");
+    it("should throw when service throws", async () => {
 
-    (exportService.exportPDF as any).mockRejectedValue(error);
+      const req = {} as Request;
+      const res = mockResponse();
 
-    await exportController.exportPDF(
-      req as Request,
-      res as Response,
-      next
-    );
+      (exportService.exportPDF as any).mockRejectedValue(new Error("PDF_ERROR"));
 
-    expect(next).toHaveBeenCalledWith(error);
+      await expect(exportController.exportPDF(req, res)).rejects.toThrow("PDF_ERROR");
+
+    });
 
   });
 
   /* EXPORT EXCEL */
 
-  it("should export Excel file", async () => {
+  describe("exportExcel", () => {
 
-    const mockFile = Buffer.from("excel");
+    it("should set correct headers and send Excel buffer", async () => {
 
-    (exportService.exportExcel as any).mockResolvedValue(mockFile);
+      const req = {} as Request;
+      const res = mockResponse();
 
-    await exportController.exportExcel(
-      req as Request,
-      res as Response,
-      next
-    );
+      const mockFile = Buffer.from("excel-content");
+      (exportService.exportExcel as any).mockResolvedValue(mockFile);
 
-    expect(exportService.exportExcel).toHaveBeenCalled();
+      await exportController.exportExcel(req, res);
 
-    expect(res.setHeader).toHaveBeenCalledWith(
-      "Content-Type",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    );
+      expect(exportService.exportExcel).toHaveBeenCalled();
 
-    expect(res.setHeader).toHaveBeenCalledWith(
-      "Content-Disposition",
-      "attachment; filename=dashboard-report.xlsx"
-    );
+      expect(res.setHeader).toHaveBeenCalledWith(
+        "Content-Type",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      );
 
-    expect(res.send).toHaveBeenCalledWith(mockFile);
+      expect(res.setHeader).toHaveBeenCalledWith(
+        "Content-Disposition",
+        "attachment; filename=dashboard-report.xlsx"
+      );
 
-  });
+      expect(res.send).toHaveBeenCalledWith(mockFile);
 
-  it("should call next on Excel error", async () => {
+    });
 
-    const error = new Error("Excel error");
+    it("should throw when service throws", async () => {
 
-    (exportService.exportExcel as any).mockRejectedValue(error);
+      const req = {} as Request;
+      const res = mockResponse();
 
-    await exportController.exportExcel(
-      req as Request,
-      res as Response,
-      next
-    );
+      (exportService.exportExcel as any).mockRejectedValue(new Error("EXCEL_ERROR"));
 
-    expect(next).toHaveBeenCalledWith(error);
+      await expect(exportController.exportExcel(req, res)).rejects.toThrow("EXCEL_ERROR");
+
+    });
 
   });
 
   /* EXPORT EMAIL */
 
-  it("should send report email", async () => {
+  describe("exportEmail", () => {
 
-    req.body = { email: "test@example.com" };
+    it("should return 200 with success message when email is provided", async () => {
 
-    (exportService.exportEmail as any).mockResolvedValue(undefined);
+      const req = { body: { email: "test@test.com" } } as Request;
+      const res = mockResponse();
 
-    await exportController.exportEmail(
-      req as Request,
-      res as Response,
-      next
-    );
+      (exportService.exportEmail as any).mockResolvedValue(undefined);
 
-    expect(exportService.exportEmail).toHaveBeenCalledWith("test@example.com");
+      await exportController.exportEmail(req, res);
 
-    expect(res.status).toHaveBeenCalledWith(200);
+      expect(exportService.exportEmail).toHaveBeenCalledWith("test@test.com");
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({
+        success: true,
+        message: "Email sent successfully"
+      });
 
-    expect(res.json).toHaveBeenCalledWith({
-      success: true,
-      message: "Email sent successfully"
     });
 
-  });
+    it("should return 400 when email is missing", async () => {
 
-  it("should return 400 if email missing", async () => {
+      const req = { body: {} } as Request;
+      const res = mockResponse();
 
-    req.body = {};
+      await exportController.exportEmail(req, res);
 
-    await exportController.exportEmail(
-      req as Request,
-      res as Response,
-      next
-    );
+      expect(exportService.exportEmail).not.toHaveBeenCalled();
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({ message: "Email is required" });
 
-    expect(res.status).toHaveBeenCalledWith(400);
-
-    expect(res.json).toHaveBeenCalledWith({
-      message: "Email is required"
     });
 
-  });
+    it("should return 400 when email is empty string", async () => {
 
-  it("should call next on email error", async () => {
+      const req = { body: { email: "" } } as Request;
+      const res = mockResponse();
 
-    req.body = { email: "test@example.com" };
+      await exportController.exportEmail(req, res);
 
-    const error = new Error("Email error");
+      expect(exportService.exportEmail).not.toHaveBeenCalled();
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({ message: "Email is required" });
 
-    (exportService.exportEmail as any).mockRejectedValue(error);
+    });
 
-    await exportController.exportEmail(
-      req as Request,
-      res as Response,
-      next
-    );
+    it("should throw when service throws", async () => {
 
-    expect(next).toHaveBeenCalledWith(error);
+      const req = { body: { email: "test@test.com" } } as Request;
+      const res = mockResponse();
+
+      (exportService.exportEmail as any).mockRejectedValue(new Error("EMAIL_ERROR"));
+
+      await expect(exportController.exportEmail(req, res)).rejects.toThrow("EMAIL_ERROR");
+
+    });
 
   });
 
