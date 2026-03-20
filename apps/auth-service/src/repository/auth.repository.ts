@@ -1,23 +1,14 @@
-import { createHash, randomUUID } from 'crypto';
+import { randomUUID } from 'crypto';
 import { User as UserModel } from '../models/index.js';
 import { Role } from '../models/role.model.js';
 import { redis } from '../utils/redis.js';
+import { redisKey } from '../utils/token-hash.js'; 
 import type { User } from '../types/auth.types.js';
-import { AUTH } from '../constants/auth.js'
+import { AUTH } from '../constants/auth.js';
+
 export class AuthRepository {
 
-
-  // Helpers 
-
-  private hashToken(token: string): string {
-    return createHash('sha256').update(token).digest('hex');
-  }
-
-  private redisKey(token: string): string {
-    return `refresh:${this.hashToken(token)}`;
-  }
-
-  // Find By Email 
+  // Find By Email
 
   async findByEmail(email: string): Promise<User | null> {
     const user = await UserModel.findOne({
@@ -45,7 +36,7 @@ export class AuthRepository {
     };
   }
 
-  // Find By ID 
+  //  Find By ID
 
   async findById(id: string): Promise<User | null> {
     const user = await UserModel.findByPk(id, {
@@ -72,7 +63,7 @@ export class AuthRepository {
     };
   }
 
-  // Get All Users 
+  //  Get All Users
 
   async getAllUsers(): Promise<User[]> {
     const users = await UserModel.findAll({
@@ -99,7 +90,7 @@ export class AuthRepository {
     });
   }
 
-  // Create User 
+  //  Create User 
 
   async create(user: User): Promise<User> {
     const createdUser = await UserModel.create({
@@ -121,19 +112,17 @@ export class AuthRepository {
 
   // Refresh Token Methods 
 
-
   async saveRefreshToken(refreshToken: string, userId: string): Promise<void> {
     await redis.set(
-      this.redisKey(refreshToken),
+      redisKey(refreshToken),           
       userId,
       'EX',
       AUTH.REFRESH_TOKEN_TTL_SECONDS,
     );
   }
 
-
   async verifyRefreshToken(refreshToken: string): Promise<string> {
-    const userId = await redis.get(this.redisKey(refreshToken));
+    const userId = await redis.get(redisKey(refreshToken)); 
 
     if (!userId) {
       throw new Error('Invalid or expired refresh token');
@@ -142,11 +131,9 @@ export class AuthRepository {
     return userId;
   }
 
- 
   async deleteRefreshToken(refreshToken: string): Promise<void> {
-    await redis.del(this.redisKey(refreshToken));
+    await redis.del(redisKey(refreshToken)); 
   }
-
 
   async rotateRefreshToken(oldToken: string, userId: string): Promise<string> {
     await this.deleteRefreshToken(oldToken);
