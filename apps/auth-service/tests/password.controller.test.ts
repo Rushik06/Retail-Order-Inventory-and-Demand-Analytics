@@ -7,6 +7,8 @@ import type { AuthenticatedRequest } from "../src/middleware/auth.middleware.js"
 
 /* MOCKS */
 
+vi.mock("../src/models/index.js", () => ({}));
+
 vi.mock("../src/config/index.js", () => ({
   env: {
     PORT: "3000",
@@ -17,12 +19,13 @@ vi.mock("../src/config/index.js", () => ({
     DATABASE_URL: "postgres://test",
     REDIS_URL: "redis://test"
   },
-  // models import sequelize from config — must be included or they crash
   sequelize: {
     define: vi.fn(),
     sync: vi.fn(),
     transaction: vi.fn(),
-    query: vi.fn()
+    query: vi.fn(),
+    dialect: "postgres",
+    queryInterface: { define: vi.fn() }
   }
 }));
 
