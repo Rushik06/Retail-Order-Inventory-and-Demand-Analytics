@@ -3,11 +3,16 @@ import cors from "cors";
 import morgan from "morgan";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
-import { errorHandler } from "@repo/shared";
+
 import productServiceRoutes from "./routes/product.routes.js";
-import { setupSwagger } from "./swagger/swagger.js";
 import orderRoutes from "./routes/order.routes.js";
 import { authenticate } from "./middleware/authenticate.js";
+import { setupSwagger } from "./swagger/swagger.js";
+import {
+  errorHandler,
+  createVersionedRouter,
+  mountVersionedRouter,
+} from "@repo/shared";
 
 const app: Express = express();
 
@@ -16,10 +21,9 @@ const app: Express = express();
 app.use(helmet());
 
 const limiter = rateLimit({
- windowMs: Number(process.env.RATE_LIMIT_WINDOW) || 15 * 60 * 1000,
- max: Number(process.env.RATE_LIMIT_MAX) 
+  windowMs: Number(process.env.RATE_LIMIT_WINDOW) || 15 * 60 * 1000,
+  max: Number(process.env.RATE_LIMIT_MAX),
 });
-
 
 app.use(limiter);
 
@@ -34,6 +38,8 @@ app.use(
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+/* Swagger */
 
 setupSwagger(app);
 
@@ -50,8 +56,12 @@ app.get("/health", (_req, res) => {
 
 /* Routes */
 
-app.use("/api/products", authenticate, productServiceRoutes);
-app.use("/api/orders", authenticate, orderRoutes);
+const v1 = createVersionedRouter();
+
+v1.use("/products", authenticate, productServiceRoutes);
+v1.use("/orders", authenticate, orderRoutes);
+
+mountVersionedRouter(app, v1);
 
 /* Error handler */
 

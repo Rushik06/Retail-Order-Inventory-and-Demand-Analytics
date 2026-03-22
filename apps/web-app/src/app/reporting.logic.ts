@@ -15,14 +15,12 @@ export const fetchDashboard = async () => {
   return res.data;
 };
 
-
 /* COUNTERS */
 
 export const fetchCounters = async () => {
   const res = await getCounters();
   return res.data;
 };
-
 
 /* CHARTS */
 
@@ -31,7 +29,6 @@ export const fetchCharts = async () => {
   return res.data;
 };
 
-
 /* TABLES */
 
 export const fetchTables = async () => {
@@ -39,59 +36,45 @@ export const fetchTables = async () => {
   return res.data;
 };
 
-
 /* EXPORT PDF */
 
 export const exportDashboardPDF = async () => {
-
   const res = await exportPDF();
 
-  const url = window.URL.createObjectURL(
-    new Blob([res.data])
-  );
+  const url = window.URL.createObjectURL(new Blob([res.data]));
 
   const link = document.createElement("a");
-
   link.href = url;
   link.setAttribute("download", "dashboard-report.pdf");
 
   document.body.appendChild(link);
   link.click();
 
+  document.body.removeChild(link);
+  window.URL.revokeObjectURL(url);
 };
-
 
 /* EXPORT EXCEL */
 
 export const exportDashboardExcel = async () => {
-
   const res = await exportExcel();
 
-  const url = window.URL.createObjectURL(
-    new Blob([res.data])
-  );
+  const url = window.URL.createObjectURL(new Blob([res.data]));
 
   const link = document.createElement("a");
-
   link.href = url;
   link.setAttribute("download", "dashboard-report.xlsx");
 
   document.body.appendChild(link);
   link.click();
 
+  document.body.removeChild(link);
+  window.URL.revokeObjectURL(url);
 };
-
 
 /* EXPORT EMAIL */
 
-export const sendDashboardReportEmail = async (
-  email: string
-) => {
-
-  const res = await exportReportEmail({
-    email,
-  });
-
+export const sendDashboardReportEmail = async (email: string) => {
+  const res = await exportReportEmail({ email });
   return res.data;
-
 };
