@@ -1,35 +1,14 @@
-import swaggerJsdoc from 'swagger-jsdoc';
-import swaggerUi from 'swagger-ui-express';
+import { setupSwagger } from '@repo/shared';
 import type { Express } from 'express';
 
-const options: swaggerJsdoc.Options = {
-  definition: {
-    openapi: '3.0.0',
-    info: {
-      title: 'Product Service API',
-      version: '1.0.0',
-      description: 'Product Service Documentation'
-    },
-    servers: [
-      {
-        url: 'http://localhost:3001'
-      }
-    ],
-    components: {
-      securitySchemes: {
-        BearerAuth: {
-          type: 'http',
-          scheme: 'bearer',
-          bearerFormat: 'JWT'
-        }
-      }
-    }
-  },
-  apis: ['./src/**/*.ts'] // scans route files
-};
-
-const swaggerSpec = swaggerJsdoc(options);
-
-export const setupSwagger = (app: Express) => {
-  app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+export const initSwagger = (app: Express) => {
+  setupSwagger(app, {
+    title: 'Product Service API',
+    version: '1.0.0',
+    description: 'Product Service Documentation',
+    serverUrl: 'http://localhost',
+    apis: process.env.NODE_ENV === 'production'
+      ? ['./dist/**/*.js']
+      : ['./src/**/*.ts']
+  });
 };

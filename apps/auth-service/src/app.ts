@@ -10,7 +10,7 @@ import profileRoutes from "./routes/profile.routes.js";
 import passwordRoutes from "./routes/password.routes.js";
 import rbacRoutes from "./routes/rbac.routes.js";
 
-import { setupSwagger } from "./swagger/swaggers.js";
+import { initSwagger } from "./swagger/swaggers.js";
 import {
   errorHandler,
   createVersionedRouter,
@@ -64,7 +64,7 @@ mountVersionedRouter(app, v1);
 
 /* Swagger */
 
-setupSwagger(app);
+initSwagger(app);
 
 /* Health */
 

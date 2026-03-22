@@ -6,7 +6,7 @@ import rateLimit from "express-rate-limit";
 
 import reportRoutes from "./routes/reporting.routes.js";
 import exportRoutes from "./routes/export.routes.js";
-import { setupSwagger } from "./swagger/swagger.js";
+import { initSwagger } from "./swagger/swagger.js";
 import {
   errorHandler,
   createVersionedRouter,
@@ -40,7 +40,7 @@ app.use(express.urlencoded({ extended: true }));
 
 /* Swagger */
 
-setupSwagger(app);
+initSwagger(app);
 
 app.use(morgan("dev"));
 

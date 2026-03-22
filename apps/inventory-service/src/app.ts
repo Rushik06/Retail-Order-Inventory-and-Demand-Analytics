@@ -7,7 +7,7 @@ import rateLimit from "express-rate-limit";
 import inventoryRoutes from "./routes/inventory.routes.js";
 import warehouseRoutes from "./routes/warehouse.routes.js";
 import { authenticate } from "./middleware/auth.middleware.js";
-import { setupSwagger } from "./swagger/swagger.js";
+import { initSwagger } from "./swagger/swagger.js";
 import {
   errorHandler,
   createVersionedRouter,
@@ -41,7 +41,7 @@ app.use(express.urlencoded({ extended: true }));
 
 /* Swagger */
 
-setupSwagger(app);
+initSwagger(app);
 
 app.use(morgan("dev"));
 

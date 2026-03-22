@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 /*eslint-disable*/
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 vi.mock("../src/api/reporting-axios", () => ({
   getDashboard: vi.fn(),
@@ -32,7 +32,7 @@ import {
   sendDashboardReportEmail
 } from "../src/app/reporting.logic.js";
 
-describe("Reporting Actions", () => {
+describe("Reporting Logic", () => {
 
   beforeEach(() => {
     (getDashboard as any).mockClear();
@@ -45,7 +45,10 @@ describe("Reporting Actions", () => {
 
     vi.spyOn(window.URL, "createObjectURL").mockReturnValue("blob:mock-url");
     vi.spyOn(window.URL, "revokeObjectURL").mockImplementation(() => {});
-    vi.spyOn(document.body, "appendChild").mockImplementation(() => document.body as any);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   /* FETCH */
@@ -110,34 +113,64 @@ describe("Reporting Actions", () => {
       expect(window.URL.createObjectURL).toHaveBeenCalled();
     });
 
-    it("creates anchor element with correct download attribute", async () => {
+    it("revokes object URL after download", async () => {
       (exportPDF as any).mockResolvedValue({ data: new Blob(["pdf"]) });
-
-      const mockClick = vi.fn();
-      vi.spyOn(document, "createElement").mockReturnValue({
-        href: "",
-        setAttribute: vi.fn(),
-        click: mockClick
-      } as any);
 
       await exportDashboardPDF();
 
-      expect(mockClick).toHaveBeenCalled();
+      expect(window.URL.revokeObjectURL).toHaveBeenCalledWith("blob:mock-url");
     });
 
     it("sets download filename to dashboard-report.pdf", async () => {
       (exportPDF as any).mockResolvedValue({ data: new Blob(["pdf"]) });
 
       const mockSetAttribute = vi.fn();
+      const mockClick = vi.fn();
+
       vi.spyOn(document, "createElement").mockReturnValue({
         href: "",
         setAttribute: mockSetAttribute,
-        click: vi.fn()
+        click: mockClick
       } as any);
+
+      vi.spyOn(document.body, "appendChild").mockImplementation(() => document.body as any);
+      vi.spyOn(document.body, "removeChild").mockImplementation(() => document.body as any);
 
       await exportDashboardPDF();
 
       expect(mockSetAttribute).toHaveBeenCalledWith("download", "dashboard-report.pdf");
+    });
+
+    it("clicks the link to trigger download", async () => {
+      (exportPDF as any).mockResolvedValue({ data: new Blob(["pdf"]) });
+
+      const mockClick = vi.fn();
+
+      vi.spyOn(document, "createElement").mockReturnValue({
+        href: "",
+        setAttribute: vi.fn(),
+        click: mockClick
+      } as any);
+
+      vi.spyOn(document.body, "appendChild").mockImplementation(() => document.body as any);
+      vi.spyOn(document.body, "removeChild").mockImplementation(() => document.body as any);
+
+      await exportDashboardPDF();
+
+      expect(mockClick).toHaveBeenCalled();
+    });
+
+    it("removes link from DOM after click", async () => {
+      (exportPDF as any).mockResolvedValue({ data: new Blob(["pdf"]) });
+
+      vi.spyOn(document.body, "appendChild").mockImplementation(() => document.body as any);
+      const mockRemoveChild = vi.spyOn(document.body, "removeChild").mockImplementation(
+        () => document.body as any
+      );
+
+      await exportDashboardPDF();
+
+      expect(mockRemoveChild).toHaveBeenCalled();
     });
 
   });
@@ -162,19 +195,44 @@ describe("Reporting Actions", () => {
       expect(window.URL.createObjectURL).toHaveBeenCalled();
     });
 
+    it("revokes object URL after download", async () => {
+      (exportExcel as any).mockResolvedValue({ data: new Blob(["excel"]) });
+
+      await exportDashboardExcel();
+
+      expect(window.URL.revokeObjectURL).toHaveBeenCalledWith("blob:mock-url");
+    });
+
     it("sets download filename to dashboard-report.xlsx", async () => {
       (exportExcel as any).mockResolvedValue({ data: new Blob(["excel"]) });
 
       const mockSetAttribute = vi.fn();
+
       vi.spyOn(document, "createElement").mockReturnValue({
         href: "",
         setAttribute: mockSetAttribute,
         click: vi.fn()
       } as any);
 
+      vi.spyOn(document.body, "appendChild").mockImplementation(() => document.body as any);
+      vi.spyOn(document.body, "removeChild").mockImplementation(() => document.body as any);
+
       await exportDashboardExcel();
 
       expect(mockSetAttribute).toHaveBeenCalledWith("download", "dashboard-report.xlsx");
+    });
+
+    it("removes link from DOM after click", async () => {
+      (exportExcel as any).mockResolvedValue({ data: new Blob(["excel"]) });
+
+      vi.spyOn(document.body, "appendChild").mockImplementation(() => document.body as any);
+      const mockRemoveChild = vi.spyOn(document.body, "removeChild").mockImplementation(
+        () => document.body as any
+      );
+
+      await exportDashboardExcel();
+
+      expect(mockRemoveChild).toHaveBeenCalled();
     });
 
   });
