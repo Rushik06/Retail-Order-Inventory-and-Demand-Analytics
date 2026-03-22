@@ -1,12 +1,12 @@
 import axios from "axios";
 import { getAccessToken, setAccessToken, clearTokens } from "../utils/token";
 
-const AUTH_URL = import.meta.env.VITE_AUTH_URL;
+const AUTH_URL = import.meta.env.VITE_AUTH_URL; 
 
 export const createApiClient = (baseURL: string) => {
   const api = axios.create({
     baseURL,
-    withCredentials: true, 
+    withCredentials: true,
   });
 
   /* REQUEST INTERCEPTOR */
@@ -43,14 +43,12 @@ export const createApiClient = (baseURL: string) => {
         originalRequest._retry = true;
 
         try {
-          // httpOnly cookie is sent automatically
           const res = await axios.post(
             `${AUTH_URL}/auth/refresh`,
             {},
             { withCredentials: true }
           );
 
-          // Only accessToken comes back in the body
           setAccessToken(res.data.accessToken);
 
           originalRequest.headers.Authorization =
@@ -58,7 +56,6 @@ export const createApiClient = (baseURL: string) => {
 
           return api(originalRequest);
         } catch {
-          // Refresh failed — clear access token and redirect to login
           clearTokens();
           window.location.href = "/login";
         }
