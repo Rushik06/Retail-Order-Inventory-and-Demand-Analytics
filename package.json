@@ -1,6 +1,12 @@
 {
   "name": "retail-order-inventory-and-demand-analytics",
   "version": "1.0.0",
+  "pnpm": {
+    "overrides": {
+      "@types/express": "^5.0.0",
+      "@types/express-serve-static-core": "^5.0.0"
+    }
+  },
   "scripts": {
     "dev": "pnpm --parallel --filter auth-service --filter product-service --filter inventory-service --filter reporting-service --filter web-app run dev",
     "build": "turbo build",
