@@ -56,6 +56,12 @@ The application is a **pnpm + Turborepo monorepo** composed of independently dep
                 └──────────────────────────────────────────────┘
 ```
 
+
+
+<img width="818" height="1280" alt="image" src="https://github.com/user-attachments/assets/b1c553c3-c322-4ca7-aea8-57455ed41dbd" />
+
+
+
 **Inter-service communication:**
 - **REST** for synchronous API calls between the frontend and services via Nginx
 - **RabbitMQ** for asynchronous event streaming (e.g. product-service publishes order events consumed by inventory-service)
@@ -112,8 +118,7 @@ The application is a **pnpm + Turborepo monorepo** composed of independently dep
 <img width="1436" height="1528" alt="MY DBSCHEMA FOR RECENT PROJECT" src="https://github.com/user-attachments/assets/32be0093-611d-46ce-9db4-78ef2d2b9919" />
 
 
-**SystemDesign**
-<img width="818" height="1280" alt="image" src="https://github.com/user-attachments/assets/b1c553c3-c322-4ca7-aea8-57455ed41dbd" />
+
 
 ## Getting Started
 
