@@ -1,0 +1,53 @@
+import type { Request, Response } from "express";
+import * as service from "../services/order.service.js";
+import {
+  createOrderSchema,
+  updateOrderStatusSchema,
+} from "../validations/order.schema.js";
+import { MESSAGES } from "../constants/messages.js";
+
+export const createOrder = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  const parsed = createOrderSchema.safeParse({ body: req.body });
+
+  if (!parsed.success) {
+    return res.status(400).json({
+      message: parsed.error.issues[0]?.message || MESSAGES.VALIDATION_ERROR,
+    });
+  }
+
+  const { customerName, items } = parsed.data.body;
+  const order = await service.createOrder(customerName, items);
+  return res.status(201).json(order);
+};
+
+export const updateOrderStatus = async (
+  req: Request,
+  res: Response
+): Promise<Response> => {
+  const parsed = updateOrderStatusSchema.safeParse({
+    params: req.params,
+    body: req.body,
+  });
+
+  if (!parsed.success) {
+    return res.status(400).json({
+      message: parsed.error.issues[0]?.message || MESSAGES.VALIDATION_ERROR,
+    });
+  }
+
+  const { id } = parsed.data.params;
+  const { status } = parsed.data.body;
+  const order = await service.updateOrderStatus(id, status);
+  return res.json(order);
+};
+
+export const getOrders = async (
+  _req: Request,
+  res: Response
+): Promise<Response> => {
+  const orders = await service.getOrders();
+  return res.json(orders);
+};

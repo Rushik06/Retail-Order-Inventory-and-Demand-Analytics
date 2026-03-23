@@ -1,0 +1,50 @@
+import { DataTypes, Model } from "sequelize";
+import { sequelize } from "../config/index.js";
+import { randomUUID } from "crypto";
+
+export class StockAlert extends Model {}
+
+StockAlert.init(
+  {
+    alert_id: {
+      type: DataTypes.UUID,
+      primaryKey: true,
+      defaultValue: () => randomUUID(),
+    },
+
+    product_id: {
+      type: DataTypes.UUID,
+      allowNull: false,
+    },
+
+    warehouse_id: {
+      type: DataTypes.UUID,
+      allowNull: false,
+    },
+
+    alert_type: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+
+    threshold_qty: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+
+    current_qty: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+
+    is_resolved: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+  },
+  {
+    sequelize,
+    tableName: "stock_alerts",
+    timestamps: true,
+  }
+);

@@ -1,33 +1,46 @@
 {
-  "name": "Retail Order Inventory and Demand Analytics",
+  "name": "retail-order-inventory-and-demand-analytics",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "dev": "nodemon --watch src --exec node --loader ts-node/esm src/server.ts",
-    "start": "abc",
-    "build": "abc",
-    "lint": "eslint .",
-    "format": "prettier --write \"**/*.{ts,js,json,css,md}\"",
-    "prepare": "husky"
+  "pnpm": {
+    "overrides": {
+      "@types/express": "^5.0.0",
+      "@types/express-serve-static-core": "^5.0.0"
+    }
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "scripts": {
+    "dev": "pnpm --parallel --filter auth-service --filter product-service --filter inventory-service --filter reporting-service --filter web-app run dev",
+    "build": "turbo build",
+    "migrate": "pnpm --filter auth-service run migrate && pnpm --filter product-service run migrate && pnpm --filter inventory-service run migrate",
+    "migrate:undo": "pnpm --filter auth-service run migrate:undo && pnpm --filter product-service run migrate:undo && pnpm --filter inventory-service run migrate:undo",
+    "seed": "pnpm --filter auth-service run seed",
+    "seed:undo": "pnpm --filter auth-service run seed:undo",
+    "start": "pnpm --parallel --filter auth-service --filter product-service --filter inventory-service --filter reporting-service start",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write \"**/*.{ts,js,json,css,md}\"",
+    "prepare": "husky",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest --coverage"
+  },
   "packageManager": "pnpm@10.29.3",
   "devDependencies": {
-    "@commitlint/cli": "^20.3.1",
-    "@commitlint/config-conventional": "^20.3.1",
+    "@commitlint/cli": "^20.5.0",
+    "@commitlint/config-conventional": "^20.5.0",
     "@types/express": "^5.0.6",
-    "eslint": "^9.39.2",
-    "globals": "^17.3.0",
+    "@types/node": "^25.5.0",
+    "eslint": "^10.1.0",
+    "globals": "^17.4.0",
     "husky": "^9.1.7",
-    "lint-staged": "^16.2.7",
-    "nodemon": "^3.1.11",
-    "prettier": "^3.8.0",
+    "lint-staged": "^16.4.0",
+    "nodemon": "^3.1.14",
+    "prettier": "^3.8.1",
+    "supertest": "^7.2.2",
     "ts-node": "^10.9.2",
+    "turbo": "^2.8.20",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.54.0"
+    "typescript-eslint": "^8.57.1",
+    "vitest": "^4.1.0"
   },
   "lint-staged": {
     "**/*.{js,ts}": [

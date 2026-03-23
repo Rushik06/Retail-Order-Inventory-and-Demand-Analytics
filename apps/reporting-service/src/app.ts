@@ -1,0 +1,69 @@
+import express, { type Express } from "express";
+import cors from "cors";
+import morgan from "morgan";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
+
+import reportRoutes from "./routes/reporting.routes.js";
+import exportRoutes from "./routes/export.routes.js";
+import { initSwagger } from "./swagger/swagger.js";
+import {
+  errorHandler,
+  createVersionedRouter,
+  mountVersionedRouter,
+} from "@repo/shared";
+
+const app: Express = express();
+
+/* Security */
+
+app.use(helmet());
+
+const limiter = rateLimit({
+  windowMs: Number(process.env.RATE_LIMIT_WINDOW) || 15 * 60 * 1000,
+  max: Number(process.env.RATE_LIMIT_MAX),
+});
+
+app.use(limiter);
+
+/* CORS */
+
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL,
+    credentials: true,
+  })
+);
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+/* Swagger */
+
+initSwagger(app);
+
+app.use(morgan("dev"));
+
+/* Routes */
+
+const v1 = createVersionedRouter();
+
+v1.use("/reports", reportRoutes);
+v1.use("/reports/export", exportRoutes);
+
+mountVersionedRouter(app, v1);
+
+/* Health */
+
+app.get("/health", (_req, res) => {
+  res.status(200).json({
+    status: "running",
+    service: "reporting-service",
+  });
+});
+
+/* Error handler */
+
+app.use(errorHandler);
+
+export default app;
