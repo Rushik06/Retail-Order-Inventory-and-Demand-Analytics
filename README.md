@@ -107,6 +107,14 @@ The application is a **pnpm + Turborepo monorepo** composed of independently dep
 
 ---
 
+
+**Database schema**
+<img width="1436" height="1528" alt="MY DBSCHEMA FOR RECENT PROJECT" src="https://github.com/user-attachments/assets/32be0093-611d-46ce-9db4-78ef2d2b9919" />
+
+
+**SystemDesign**
+<img width="818" height="1280" alt="image" src="https://github.com/user-attachments/assets/b1c553c3-c322-4ca7-aea8-57455ed41dbd" />
+
 ## Getting Started
 
 ### Prerequisites
@@ -262,6 +270,7 @@ src/
 └── validations/   # Zod schemas
 ```
 
+
 ---
 
 ## Scripts
@@ -315,3 +324,50 @@ chore: update dependencies
 ```
 
 Pre-commit hooks also run Prettier and ESLint automatically via `lint-staged`.
+
+
+
+
+## APPLICATION DEMO
+**LOGIN PAGE**:
+![WhatsApp Image 2026-03-22 at 23 12 54](https://github.com/user-attachments/assets/9f029b7d-d6f2-4ef2-b9eb-a58867f264ef)
+
+
+**DASHBOARD PAGE AND OTHER NAVIGATION PAGES**:
+**PRODUCT MANAGEMENT PAGE**
+![WhatsApp Image 2026-03-22 at 23 09 36](https://github.com/user-attachments/assets/c7168bff-655b-40e4-9f09-f81ad9cf4a88)
+
+**ORDER MANAGEMENT PAGE**
+![WhatsApp Image 2026-03-22 at 23 10 01](https://github.com/user-attachments/assets/d688d14a-078d-4956-8e5d-5cad4cfa780e)
+
+**INVENTORY MANAGEMENT PAGE**
+![WhatsApp Image 2026-03-22 at 23 11 06](https://github.com/user-attachments/assets/6e5a35d0-8cbb-4292-a6a1-d1363845caf7)
+
+**WAREHOUSE MANAGEMENT PAGE**
+![WhatsApp Image 2026-03-22 at 23 11 51](https://github.com/user-attachments/assets/0d1f1bd0-3671-416c-ad55-227c98eb4df6)
+
+**USER PROFILE AND SECURITY PAGE FOR PASSWORD**
+![WhatsApp Image 2026-03-22 at 23 12 09](https://github.com/user-attachments/assets/8b9c3f14-7c2e-4791-96fc-9e9f25f78412)
+![WhatsApp Image 2026-03-22 at 23 12 27](https://github.com/user-attachments/assets/efd81045-9220-49e7-8aa5-e19266359008)
+
+
+
+## Project-Estimation time taken
+https://docs.google.com/spreadsheets/d/1KVbjLXil5rsKg5r8pJKmODHYAuHDScktzhYrXWptJI8/edit?gid=0#gid=0
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
